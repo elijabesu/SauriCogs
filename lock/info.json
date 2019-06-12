@@ -1,0 +1,8 @@
+{
+    "author" : ["saurichable"],
+    "install_msg" : "Thank you for installing my cog! You have to do `[p]locksetup` first.",
+    "name" : "Lock",
+    "short" : "Lock `@everyone` from sending messages.",
+    "description" : "Lock `@everyone` from sending messages except Mods.",
+    "tags" : ["lockdown", "lock"]
+}

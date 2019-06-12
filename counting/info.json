@@ -1,0 +1,8 @@
+{
+    "author" : ["saurichable"],
+    "install_msg" : "Thank you for installing my cog!",
+    "name" : "Counting",
+    "short" : "Counting channel",
+    "description" : "Make a counting channel",
+    "tags" : ["counting", "count"]
+}

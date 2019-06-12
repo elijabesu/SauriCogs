@@ -1,0 +1,10 @@
+{
+    "author" : ["saurichable"],
+    "install_msg" : "You're required to read the wiki page (https://github.com/elijabesu/SauriCogs/wiki/Advanced-Lock) as I do not take any responsibility in it breaking your server.",
+    "name" : "AdvancedLock",
+    "hidden" : false,
+    "disabled" : false,
+    "short" : "Lock `@everyone` from sending messages.",
+    "description" : "Lock `@everyone` from sending messages except Mods.",
+    "tags" : ["lockdown", "lock"]
+}

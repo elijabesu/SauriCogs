@@ -1,0 +1,9 @@
+{
+    "author" : ["saurichable"],
+    "install_msg" : "Thank you for installing my cog!\nNote that you ***need*** SauriCogs' Cookies cog installed, loaded and working.",
+    "name" : "CookieStore",
+    "short" : "Additional store to Cookies cog.",
+    "description" : "Additional store to Cookies cog.",
+    "tags" : ["cookies", "shop", "store"],
+    "required_cogs": {"Cookies": "https://github.com/elijabesu/SauriCogs"}
+}

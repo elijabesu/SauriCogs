@@ -1,0 +1,8 @@
+{
+    "author" : ["saurichable"],
+    "install_msg" : "Thank you for installing my cog! **Use `[p]applysetup` first.**",
+    "name" : "Application",
+    "short" : "Simple application cog.",
+    "description" : "Just a simple application cog with a Staff Applicant role.",
+    "tags" : ["application", "app"]
+}

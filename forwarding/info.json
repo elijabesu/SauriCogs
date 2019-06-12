@@ -1,0 +1,8 @@
+{
+    "author" : ["saurichable", "flare", "aikaterna"],
+    "install_msg" : "Thank you for installing my cog! Just load the cog and you're good to go!",
+    "name" : "Forwarding",
+    "short" : "Forward messages to the owner.",
+    "description" : "A cog to forward messages to the bot owner, including messages with attachments.",
+    "tags" : ["forwarding", "forward"]
+}

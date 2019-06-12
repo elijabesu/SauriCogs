@@ -1,0 +1,9 @@
+{
+    "author" : ["saurichable"],
+    "install_msg" : "Thank you for installing my cog!\nNote that you ***need*** Fixator10-Cogs' Leveler and SauriCogs' Cookies cogs installed, loaded and working.",
+    "name" : "LevelUpCookies",
+    "short" : "Set cookie rewards for users that level up!",
+    "description" : "Set cookie rewards for users that level up!",
+    "tags" : ["cookies", "rewards"],
+    "required_cogs": {"Leveler": "https://github.com/fixator10/Fixator10-Cogs/", "Cookies": "https://github.com/elijabesu/SauriCogs"}
+}

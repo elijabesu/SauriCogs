@@ -1,0 +1,8 @@
+{
+    "author" : ["saurichable"],
+    "install_msg" : "Thank you for installing my cog!",
+    "name" : "UserLog",
+    "short" : "Log when users join/leave.",
+    "description" : "Log when users join/leave into your specified channel.",
+    "tags" : ["userlog", "log", "memberlog"]
+}
