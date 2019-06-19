@@ -22,7 +22,7 @@ class CookieStore(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -405,7 +405,7 @@ class CookieStore(Cog):
         if confirmation is False:
             return await ctx.send(
                 "This will delete **all** items from all members' inventories. This action **cannot** be undone.\n"
-                "If you're sure, type `{0}setcookies resetinventories yes`.".format(
+                "If you're sure, type `{0}store resetinventories yes`.".format(
                     ctx.clean_prefix
                 )
             )
