@@ -41,4 +41,5 @@ Click on the cog names to get to my wiki page and learn about them.
 | [pick](https://saurich.com/pick/) | beta | Pick a random user or a user with a specified role. For the latter, use `[p]pickrole <role>` first. **Output is user ID.** I suggest using it along with [nestedcommands](https://github.com/tmercswims/tmerc-cogs) and [scheduler](https://github.com/mikeshardmind/SinbadCogs). |
 | [pingable](https://saurich.com/pingable/) | alpha | Make unpingable roles pingable by regular users with commands. |
 | [suggestion](https://saurich.com/suggestion/) | beta | A bit more than just a simple suggestion box. Only admins can approve or reject suggestions. |
-| [userlog](https://saurich.com/userlog/) | alpha | Log when an user joins or leaves. |
+| [uniquename](https://saurich.com/uniquename/) | alpha | Log when an user joins or leaves. |
+| [userlog](https://saurich.com/userlog/) | beta | Deny members' names to be the same as your Moderators'. |

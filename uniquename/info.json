@@ -1,0 +1,8 @@
+{
+    "author" : ["saurichable"],
+    "install_msg" : "Thank you for installing my cog!",
+    "name" : "UniqueName",
+    "short" : "Deny members' names to be the same as your Moderators'.",
+    "description" : "Deny members' names to be the same as your Moderators'.",
+    "tags" : ["unique", "impersonate"]
+}
