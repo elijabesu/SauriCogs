@@ -375,7 +375,9 @@ class Suggestion(Cog):
                 return await ctx.send("This suggestion already has a reason.")
 
             try:
-                content, embed = await self._build_suggestion(ctx, ctx.author.id, ctx.guild.id, suggestion_id, is_global)
+                content, embed = await self._build_suggestion(
+                    ctx, ctx.author.id, ctx.guild.id, suggestion_id, is_global
+                )
             except:
                 return
             embed.add_field(name="Reason:", value=reason, inline=False)
@@ -399,7 +401,9 @@ class Suggestion(Cog):
     ):
         """Show a suggestion."""
         try:
-            content, embed = await self._build_suggestion(ctx, ctx.author.id, ctx.guild.id, suggestion_id, is_global)
+            content, embed = await self._build_suggestion(
+                ctx, ctx.author.id, ctx.guild.id, suggestion_id, is_global
+            )
         except:
             return
         await ctx.send(content=content, embed=embed)
@@ -425,9 +429,7 @@ class Suggestion(Cog):
             ctx.guild.default_role: discord.PermissionOverwrite(send_messages=False),
             ctx.guild.me: discord.PermissionOverwrite(send_messages=True),
         }
-        msg = await ctx.send(
-            "Do you already have your channel(s) done?"
-        )
+        msg = await ctx.send("Do you already have your channel(s) done?")
         start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
         pred = ReactionPredicate.yes_or_no(msg, ctx.author)
         try:
@@ -507,7 +509,9 @@ class Suggestion(Cog):
 
         else:
             await msg.delete()
-            msg = await ctx.send("Mention the channel where you want me to post new suggestions.")
+            msg = await ctx.send(
+                "Mention the channel where you want me to post new suggestions."
+            )
             try:
                 await bot.wait_for("message", timeout=30, check=predchan)
             except asyncio.TimeoutError:
@@ -544,7 +548,9 @@ class Suggestion(Cog):
                     return await ctx.send("You took too long. Try again, please.")
                 if pred.result is True:
                     await msg.delete()
-                    msg = await ctx.send("Mention the channel where you want me to post approved suggestions.")
+                    msg = await ctx.send(
+                        "Mention the channel where you want me to post approved suggestions."
+                    )
                     try:
                         await bot.wait_for("message", timeout=30, check=predchan)
                     except asyncio.TimeoutError:
@@ -566,7 +572,9 @@ class Suggestion(Cog):
                     return await ctx.send("You took too long. Try again, please.")
                 if pred.result is True:
                     await msg.delete()
-                    msg = await ctx.send("Mention the channel where you want me to post rejected suggestions.")
+                    msg = await ctx.send(
+                        "Mention the channel where you want me to post rejected suggestions."
+                    )
                     try:
                         await bot.wait_for("message", timeout=30, check=predchan)
                     except asyncio.TimeoutError:
@@ -652,7 +660,9 @@ class Suggestion(Cog):
         else:
             await ctx.send("{0} already isn't in the ignored list.".format(server.name))
 
-    async def _build_suggestion(self, ctx, author_id, server_id, suggestion_id, is_global):
+    async def _build_suggestion(
+        self, ctx, author_id, server_id, suggestion_id, is_global
+    ):
         if is_global is True:
             if await self.config.toggle() is True:
                 if author_id != self.bot.owner_id:

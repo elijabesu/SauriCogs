@@ -25,7 +25,6 @@ class UniqueName(Cog):
         self.config.register_guild(toggle=False, roles=[], name="username")
         self.config.register_global(guilds=[])
 
-
     @commands.group(autohelp=True)
     @checks.admin_or_permissions(manage_guild=True)
     @commands.guild_only()
@@ -52,7 +51,11 @@ class UniqueName(Cog):
         """Toggle UniqueName for this server. 
 
         If `on_off` is not provided, the state will be flipped."""
-        target_state = (on_off if on_off is not None else not (await self.config.guild(ctx.guild).toggle()))
+        target_state = (
+            on_off
+            if on_off is not None
+            else not (await self.config.guild(ctx.guild).toggle())
+        )
         await self.config.guild(ctx.guild).toggle.set(target_state)
         async with self.config.guilds() as guilds:
             guilds.append(ctx.guild.id)
