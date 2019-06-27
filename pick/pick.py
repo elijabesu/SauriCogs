@@ -17,7 +17,7 @@ class Pick(Cog):
     I suggest using it along with [nestedcommands](https://github.com/tmercswims/tmerc-cogs) and [scheduler](https://github.com/mikeshardmind/SinbadCogs)."""
 
     __author__ = "saurichable"
-    __version__ = "1.0.0"
+    __version__ = "1.1.0"
 
     def __init__(self, bot):
         self.bot = bot
@@ -33,7 +33,9 @@ class Pick(Cog):
     @commands.guild_only()
     @checks.mod_or_permissions(manage_roles=True)
     async def pick(self, ctx: commands.Context):
-        """Pick a random user. **Output is a user ID.** I suggest using [nestedcommands by tmerc](https://github.com/tmercswims/tmerc-cogs) (Example of usage `[p]say Congratulations <@$(pick)>! You won!`)"""
+        """Pick a random user. **Output is a user ID.**
+        
+        I suggest using [nestedcommands by tmerc](https://github.com/tmercswims/tmerc-cogs) (Example of usage `[p]say Congratulations <@$(pick)>! You won!`)"""
         winner = random.choice(ctx.guild.members)
         await ctx.send("{}".format(winner.id))
 
@@ -41,20 +43,18 @@ class Pick(Cog):
     @commands.command()
     @commands.guild_only()
     @checks.admin_or_permissions(manage_guild=True)
-    async def pickrole(self, ctx, role_name=None):
+    async def pickrole(self, ctx, role: discord.Role):
         """Set a role winners should have."""
-        if not role_name:
-            await self.config.guild(ctx.guild).role.set(None)
-            return await ctx.send("Role removed.")
-        await self.config.guild(ctx.guild).role.set(str(role_name))
-        await ctx.send(f"Role has been set to {role_name}.")
+        await self.config.guild(ctx.guild).role.set(role.id)
+        await ctx.send(f"Role has been set to {role.name}.")
 
     @commands.command()
     @commands.guild_only()
     @checks.mod_or_permissions(manage_roles=True)
     async def rpick(self, ctx: commands.Context):
-        """Pick a random user with specified role. **Output is a user ID.** I suggest using [nestedcommands by tmerc](https://github.com/tmercswims/tmerc-cogs) (Example of usage `[p]say Congratulations <@$(rpick)>! You won!`)"""
-        name_role = await self.config.guild(ctx.guild).role()
-        role = get(ctx.guild.roles, name=name_role)
+        """Pick a random user with specified role. **Output is a user ID.**
+        
+        I suggest using [nestedcommands by tmerc](https://github.com/tmercswims/tmerc-cogs) (Example of usage `[p]say Congratulations <@$(rpick)>! You won!`)"""
+        role = get(ctx.guild.roles, id=await self.config.guild(ctx.guild).role())
         winner = random.choice(role.members)
         await ctx.send("{}".format(winner.id))
