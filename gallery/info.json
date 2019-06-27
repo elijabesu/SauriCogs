@@ -1,0 +1,8 @@
+{
+    "author" : ["saurichable"],
+    "install_msg" : "Thank you for installing my cog!",
+    "name" : "Gallery",
+    "short" : "Gallery channels!",
+    "description" : "Set channels as galleries, deleting all messages that don't contain any attachments.",
+    "tags" : ["gallery"]
+}
