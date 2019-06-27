@@ -1,4 +1,4 @@
-[![](https://img.shields.io/badge/SauriCogs-by_elijabesu-ffb8d7.svg?style=popout-square&logo=python&logoColor=ffb8d7)](http://saurich.com/sauricogs/)
+[![](https://img.shields.io/badge/SauriCogs-by_elijabesu-ffb8d7.svg?style=popout-square&logo=python&logoColor=ffb8d7)](http://cogs.saurich.com/)
 
 [![](https://img.shields.io/badge/Red%20DiscordBot-V3-red.svg)](https://github.com/Cog-Creators/Red-DiscordBot) [![](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black) [![](https://www.codefactor.io/repository/github/elijabesu/sauricogs/badge)](https://www.codefactor.io/repository/github/elijabesu/sauricogs) [![](https://img.shields.io/github/repo-size/elijabesu/SauriCogs.svg)](https://github.com/elijabesu/SauriCogs) [![](https://img.shields.io/github/last-commit/elijabesu/SauriCogs.svg)](https://github.com/elijabesu/SauriCogs) [![](https://img.shields.io/github/issues/elijabesu/SauriCogs.svg)](https://github.com/elijabesu/SauriCogs/issues?q=is%3Aopen+is%3Aissue) [![](https://img.shields.io/github/issues-closed/elijabesu/SauriCogs.svg)](https://github.com/elijabesu/SauriCogs/issues?q=is%3Aissue+is%3Aclosed)
 
@@ -28,18 +28,19 @@ Click on the cog names to get to my wiki page and learn about them.
 
 | Name | Status | Description | 
 | --- | --- | --- | 
-| [advancedlock](https://saurich.com/advancedlock/) | beta | An advanced version of Lock. You're required to read the wiki page as I do not take any responsibility in it breaking your server. | 
-| [application](https://saurich.com/application/) | beta | A simple application cog with a 'Staff Applicant' role. | 
-| [cookies](https://saurich.com/cookies/) | alpha | Collect cookies. |
-| [cookiestore](https://saurich.com/cookiestore/) | alpha | Additional store to Cookies. Note that you ***need*** [cookies](https://github.com/elijabesu/SauriCogs/) cog installed, loaded and working.|
-| [counting](https://saurich.com/counting/) | alpha | Make a counting channel. |
-| [economyraffle](https://saurich.com/economyraffle/) | beta | A simple cog that gives a pre-specified amount of credits to a randomly picked user. I suggest using it along with [scheduler](https://github.com/mikeshardmind/SinbadCogs). | 
-| [forwarding](https://saurich.com/forwarding/) | beta | Forward messages to the bot owner, incl. pictures (max one per message). You can also DM someone as the bot with `[p]pm <user_ID> <message>`. |
-| [lock](https://saurich.com/lock/) | beta | Lock `@everyone` from sending messages.  |
-| [lvlupcookies](https://saurich.com/lvlupcookies/) | alpha |     Set cookie rewards for users that level up! Note that you ***need*** [leveler](https://github.com/fixator10/Fixator10-Cogs) and [cookies](https://github.com/elijabesu/SauriCogs/) cogs installed, loaded and working. |
-| [mentionable](https://saurich.com/mentionable/) | beta | Makes unmentionable roles mentionable. |
-| [pick](https://saurich.com/pick/) | beta | Pick a random user or a user with a specified role. For the latter, use `[p]pickrole <role>` first. **Output is user ID.** I suggest using it along with [nestedcommands](https://github.com/tmercswims/tmerc-cogs) and [scheduler](https://github.com/mikeshardmind/SinbadCogs). |
-| [pingable](https://saurich.com/pingable/) | alpha | Make unpingable roles pingable by regular users with commands. |
-| [suggestion](https://saurich.com/suggestion/) | beta | A bit more than just a simple suggestion box. Only admins can approve or reject suggestions. |
-| [uniquename](https://saurich.com/uniquename/) | alpha | Log when an user joins or leaves. |
-| [userlog](https://saurich.com/userlog/) | beta | Deny members' names to be the same as your Moderators'. |
+| [advancedlock](https://cogs.saurich.com/advancedlock.html) | beta | An advanced version of Lock. You're required to read the wiki page as I do not take any responsibility in it breaking your server. | 
+| [application](https://cogs.saurich.com/application.html) | beta | A simple application cog with a 'Staff Applicant' role. | 
+| [cookies](https://cogs.saurich.com/cookies.html) | alpha | Collect cookies. |
+| [cookiestore](https://cogs.saurich.com/cookiestore.html) | alpha | Additional store to Cookies. |
+| [counting](https://cogs.saurich.com/counting.html) | alpha | Make a counting channel. |
+| [economyraffle](https://cogs.saurich.com/economyraffle.html) | beta | A simple cog that gives a pre-specified amount of credits to a randomly picked user. | 
+| [forwarding](https://cogs.saurich.com/forwarding.html) | beta | Forward messages to the bot owner, incl. pictures (max one per message). You can also DM someone as the bot with `[p]pm <user_ID> <message>`. |
+| [gallery](https://cogs.saurich.com/gallery.html) | alpha | Set channels as galleries, deleting all messages that don't contain any attachments. |
+| [lock](https://cogs.saurich.com/lock.html) | beta | Lock `@everyone` from sending messages. |
+| [lvlupcookies](https://cogs.saurich.com/lvlupcookies.html) | alpha |     Set cookie rewards for users that level up! |
+| [mentionable](https://cogs.saurich.com/mentionable.html) | beta | Makes unmentionable roles mentionable. |
+| [pick](https://cogs.saurich.com/pick.html) | beta | Pick a random user or a user with a specified role. |
+| [pingable](https://cogs.saurich.com/pingable.html) | alpha | Make unpingable roles pingable by regular users with commands. |
+| [suggestion](https://cogs.saurich.com/suggestion.html) | beta | A bit more than just a simple suggestion box. Only admins can approve or reject suggestions. |
+| [uniquename](https://cogs.saurich.com/uniquename.html) | alpha | Deny members' names to be the same as your Moderators'. |
+| [userlog](https://cogs.saurich.com/userlog.html) | beta | Log when an user joins or leaves. |
