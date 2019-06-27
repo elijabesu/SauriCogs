@@ -23,7 +23,7 @@ class Cookies(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -88,7 +88,7 @@ class Cookies(Cog):
                 f"Uh oh, {target.display_name} doesn't have any :cookie:"
             )
         success_chance = random.randint(1, 100)
-        if success_chance <= 90:
+        if success_chance > 90:
             cookies_stolen = int(target_cookies * 0.5)
             if cookies_stolen == 0:
                 cookies_stolen = 1
