@@ -22,7 +22,7 @@ class CookieStore(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.1"
+    __version__ = "1.0.2"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -591,7 +591,11 @@ class CookieStore(Cog):
                     )
                 )
         else:
-            await ctx.send("Uh oh, there's no such item.")
+            page_list = await self._show_store(ctx)
+            if len(page_list) > 1:
+                return await menu(ctx, page_list, DEFAULT_CONTROLS)
+            else:
+                return await ctx.send(embed=page_list[0])
 
     @commands.command(name="return")
     @commands.guild_only()
