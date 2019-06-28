@@ -23,7 +23,7 @@ class Cookies(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.1"
+    __version__ = "1.0.2"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -79,7 +79,10 @@ class Cookies(Cog):
             dtime = self.display_time(next_steal - cur_time)
             return await ctx.send(f"Uh oh, you have to wait {dtime}.")
         if not target:
-            target = random.choice(ctx.guild.members)
+            ids = await self._get_ids(ctx)
+            while target is None:
+                target_id = random.choice(ids)
+                target = ctx.guild.get_member(target_id)
         if target.id == ctx.author.id:
             return await ctx.send("Uh oh, you can't steal from yourself.")
         target_cookies = int(await self.config.member(target).cookies())
@@ -151,11 +154,10 @@ class Cookies(Cog):
     @commands.guild_only()
     async def cookielb(self, ctx: commands.Context):
         """Display the server's cookie leaderboard."""
-        data = await self.config.all_members(ctx.guild)
-        accs = sorted(data, key=lambda x: data[x]["cookies"], reverse=True)
+        ids = await self._get_ids(ctx)
         list = []
         pos = 1
-        pound_len = len(str(len(accs)))
+        pound_len = len(str(len(ids)))
         header = "{pound:{pound_len}}{score:{bar_len}}{name:2}\n".format(
             pound="#",
             name="Name",
@@ -164,7 +166,7 @@ class Cookies(Cog):
             bar_len=pound_len + 9,
         )
         temp_msg = header
-        for a_id in accs:
+        for a_id in ids:
             a = get(ctx.guild.members, id=int(a_id))
             if a is None:
                 continue
@@ -388,6 +390,11 @@ class Cookies(Cog):
                     old_cookies = int(await self.config.member(after).cookies())
                     new_cookies = old_cookies + cookies
                     await self.config.member(after).cookies.set(new_cookies)
+
+    async def _get_ids(self, ctx):
+        data = await self.config.all_members(ctx.guild)
+        ids = sorted(data, key=lambda x: data[x]["cookies"], reverse=True)
+        return ids
 
     @staticmethod
     def display_time(seconds, granularity=2):
