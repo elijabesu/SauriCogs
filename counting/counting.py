@@ -27,8 +27,7 @@ class Counting(Cog):
             self, identifier=1564646215646, force_registration=True
         )
 
-        self.config.register_guild(channel=0, previous=0, goal=0)
-        self.antispam = {}
+        self.config.register_guild(channel=0, previous=0, goal=0, last=0)
 
     @commands.command()
     @commands.guild_only()
@@ -89,6 +88,7 @@ class Counting(Cog):
                 f"Set the channel with `{ctx.clean_prefix}countchannel <channel>`, please."
             )
         await self.config.guild(ctx.guild).previous.set(0)
+        await self.config.guild(ctx.guild).last.set(0)
         await c.send("Counting has been reset.")
         goal = await self.config.guild(ctx.guild).goal()
         await self._set_topic(0, goal, 1, c)
@@ -98,18 +98,11 @@ class Counting(Cog):
     async def on_message(self, message):
         if message.guild is None:
             return
-        counting = await self.config.guild(message.guild).channel()
-        if counting == 0:
+        channel_id = await self.config.guild(message.guild).channel()
+        last_id = await self.config.guild(message.guild).last()
+        if message.channel.id != channel_id:
             return
-        if message.channel.id != counting:
-            return
-        if message.guild not in self.antispam:
-            self.antispam[message.guild] = {}
-        if message.author not in self.antispam[message.guild]:
-            self.antispam[message.guild][message.author] = AntiSpam(
-                [(timedelta(hours=1), 1)]
-            )
-        if self.antispam[message.guild][message.author].spammy:
+        if message.author.id == last_id:
             return await message.delete()
         try:
             now = int(message.content)
@@ -117,28 +110,23 @@ class Counting(Cog):
             goal = await self.config.guild(message.guild).goal()
             if now - 1 == previous:
                 await self.config.guild(message.guild).previous.set(now)
+                if message.author.id != self.bot.user.id:
+                    await self.config.guild(message.guild).last.set(message.author.id)
                 n = now + 1
                 await self._set_topic(now, goal, n, message.channel)
-                self.antispam[message.guild][message.author].stamp()
             else:
-                if message.author.id == self.bot.user.id:
-                    return
-                else:
+                if message.author.id != self.bot.user.id:
                     await message.delete()
         except:
-            if message.author.id == self.bot.user.id:
-                return
-            else:
+            if message.author.id != self.bot.user.id:
                 await message.delete()
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
         if message.guild is None:
             return
-        counting = await self.config.guild(message.guild).channel()
-        if counting == 0:
-            return
-        if message.channel.id != counting:
+        channel_id = await self.config.guild(message.guild).channel()
+        if message.channel.id != channel_id:
             return
         try:
             deleted = int(message.content)
