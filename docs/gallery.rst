@@ -27,3 +27,5 @@ List of commands
 ``[p]addgallery <channel>`` - Add a channel to the list of Gallery channels.
 
 ``[p]rmgallery <channel>`` - Remove a channel from the list of Gallery channels.
+
+``[p]galleryrole [role]`` - Add a whitelisted role.

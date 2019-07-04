@@ -38,3 +38,5 @@ it will delete the current channel.
 ``[p]countgoal [goal]`` – Set the counting goal. If goal isn’t provided, it will be deleted.
 
 ``[p]countreset`` – Reset the counter and start from 0 again!
+
+``[p]countrole [role]`` - Add a whitelisted role.

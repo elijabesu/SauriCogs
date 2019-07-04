@@ -41,9 +41,9 @@ Welcome to SauriCogs' documentation!
     :target: https://www.codefactor.io/repository/github/elijabesu/sauricogs
     :alt: CodeFactor
 
-.. image:: https://readthedocs.org/projects/sauricogs/badge/
-    :target: http://sauricogs.readthedocs.io
-    :alt: Docs build
+.. image:: https://img.shields.io/badge/Support%20me%20on-Patreon-orange.svg?logo=patreon
+    :target: https://www.patreon.com/saurichable
+    :alt: Patreon
 
 .. important:: These cogs are made to work only with 
     `Red DiscordBot V3 <https://red-discordbot.readthedocs.io/en/v3-develop/>`_.
