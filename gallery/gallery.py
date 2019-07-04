@@ -16,7 +16,7 @@ class Gallery(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -24,7 +24,7 @@ class Gallery(Cog):
             self, identifier=564154651321346431, force_registration=True
         )
 
-        self.config.register_guild(channels=[])
+        self.config.register_guild(channels=[], whitelist=None)
 
 
     @commands.command()
@@ -57,6 +57,21 @@ class Gallery(Cog):
         else:
             await ctx.send(f"{channel.mention} already isn't in the Gallery channels list.")
 
+    @commands.command()
+    @commands.guild_only()
+    @checks.admin_or_permissions(manage_guild=True)
+    @checks.bot_has_permissions(manage_messages=True)
+    async def galleryrole(
+        self, ctx: commands.Context, role: discord.Role=None
+    ):
+        """Add a whitelisted role."""
+        if not role:
+            await self.config.guild(ctx.guild).whitelist.set(None)
+            await ctx.send(f"Whitelisted role has been deleted.")
+        else:
+            await self.config.guild(ctx.guild).whitelist.set(role.id)
+            await ctx.send(f"{role.name} has been whitelisted.")
+
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.guild is None:
@@ -64,4 +79,15 @@ class Gallery(Cog):
         if message.channel.id not in await self.config.guild(message.guild).channels():
             return
         if not message.attachments:
-            await message.delete()
+            rid = await self.config.guild(message.guild).whitelist()
+            if rid is not None:
+                role = message.guild.get_role(int(rid))
+                if role is not None:
+                    if role in message.author.roles:
+                        return
+                    else:
+                        await message.delete()
+                else:
+                    await message.delete()
+            else:
+                await message.delete()
