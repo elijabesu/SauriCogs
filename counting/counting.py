@@ -19,7 +19,7 @@ class Counting(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -27,7 +27,7 @@ class Counting(Cog):
             self, identifier=1564646215646, force_registration=True
         )
 
-        self.config.register_guild(channel=0, previous=0, goal=0, last=0)
+        self.config.register_guild(channel=0, previous=0, goal=0, last=0, whitelist=None)
 
     @commands.command()
     @commands.guild_only()
@@ -94,6 +94,21 @@ class Counting(Cog):
         await self._set_topic(0, goal, 1, c)
         await ctx.send("Counting has been reset.")
 
+    @commands.command()
+    @commands.guild_only()
+    @checks.admin_or_permissions(manage_guild=True)
+    @checks.bot_has_permissions(manage_messages=True)
+    async def countrole(
+        self, ctx: commands.Context, role: discord.Role=None
+    ):
+        """Add a whitelisted role."""
+        if not role:
+            await self.config.guild(ctx.guild).whitelist.set(None)
+            await ctx.send(f"Whitelisted role has been deleted.")
+        else:
+            await self.config.guild(ctx.guild).whitelist.set(role.id)
+            await ctx.send(f"{role.name} has been whitelisted.")
+
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.guild is None:
@@ -103,7 +118,18 @@ class Counting(Cog):
         if message.channel.id != channel_id:
             return
         if message.author.id == last_id:
-            return await message.delete()
+            rid = await self.config.guild(message.guild).whitelist()
+            if rid is not None:
+                role = message.guild.get_role(int(rid))
+                if role is not None:
+                    if role in message.author.roles:
+                        return
+                    else:
+                        return await message.delete()
+                else:
+                    return await message.delete()
+            else:
+                return await message.delete()
         try:
             now = int(message.content)
             previous = await self.config.guild(message.guild).previous()
@@ -119,7 +145,18 @@ class Counting(Cog):
                     await message.delete()
         except:
             if message.author.id != self.bot.user.id:
-                await message.delete()
+                rid = await self.config.guild(message.guild).whitelist()
+                if rid is not None:
+                    role = message.guild.get_role(int(rid))
+                    if role is not None:
+                        if role in message.author.roles:
+                            return
+                        else:
+                            await message.delete()
+                    else:
+                        await message.delete()
+                else:
+                    await message.delete()
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
