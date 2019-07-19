@@ -1,5 +1,6 @@
 import asyncio
 import discord
+import re
 
 from typing import Any
 
@@ -16,7 +17,7 @@ class Gallery(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.1"
+    __version__ = "1.1.0"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -79,6 +80,15 @@ class Gallery(Cog):
         if message.channel.id not in await self.config.guild(message.guild).channels():
             return
         if not message.attachments:
+            uris = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', message.content)
+            if len(uris) == 1:
+                uri = ''.join(uris)
+                uri = uri.split('?')[0]
+                parts = uri.split('.')
+                extension = parts[-1]
+                imageTypes = ['jpg','jpeg','tiff','png','gif','bmp']
+                if extension in imageTypes:
+                    return
             rid = await self.config.guild(message.guild).whitelist()
             if rid is not None:
                 role = message.guild.get_role(int(rid))
