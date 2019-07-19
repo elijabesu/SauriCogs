@@ -26,21 +26,21 @@ Click on the cog names to get to my wiki page and learn about them.
 
 ### *If you're considering downloading and using AdvancedLock, you NEED to read the Wiki page!* It will break your entire server if you use it incorrectly and I do not take any responsibility in that.
 
-| Name | Status | Description | 
-| --- | --- | --- | 
-| [advancedlock](https://cogs.saurich.com/advancedlock.html) | beta | An advanced version of Lock. You're required to read the wiki page as I do not take any responsibility in it breaking your server. | 
-| [application](https://cogs.saurich.com/application.html) | beta | A simple application cog with a 'Staff Applicant' role. | 
-| [cookies](https://cogs.saurich.com/cookies.html) | alpha | Collect cookies. |
-| [cookiestore](https://cogs.saurich.com/cookiestore.html) | alpha | Additional store to Cookies. |
-| [counting](https://cogs.saurich.com/counting.html) | alpha | Make a counting channel. |
-| [economyraffle](https://cogs.saurich.com/economyraffle.html) | beta | A simple cog that gives a pre-specified amount of credits to a randomly picked user. | 
-| [forwarding](https://cogs.saurich.com/forwarding.html) | beta | Forward messages to the bot owner, incl. pictures (max one per message). You can also DM someone as the bot with `[p]pm <user_ID> <message>`. |
-| [gallery](https://cogs.saurich.com/gallery.html) | alpha | Set channels as galleries, deleting all messages that don't contain any attachments. |
-| [lock](https://cogs.saurich.com/lock.html) | beta | Lock `@everyone` from sending messages. |
-| [lvlupcookies](https://cogs.saurich.com/lvlupcookies.html) | alpha |     Set cookie rewards for users that level up! |
-| [mentionable](https://cogs.saurich.com/mentionable.html) | beta | Makes unmentionable roles mentionable. |
-| [pick](https://cogs.saurich.com/pick.html) | beta | Pick a random user or a user with a specified role. |
-| [pingable](https://cogs.saurich.com/pingable.html) | alpha | Make unpingable roles pingable by regular users with commands. |
-| [suggestion](https://cogs.saurich.com/suggestion.html) | beta | A bit more than just a simple suggestion box. Only admins can approve or reject suggestions. |
-| [uniquename](https://cogs.saurich.com/uniquename.html) | alpha | Deny members' names to be the same as your Moderators'. |
-| [userlog](https://cogs.saurich.com/userlog.html) | beta | Log when an user joins or leaves. |
+| Name | Description | 
+| --- | --- | 
+| [advancedlock](https://cogs.saurich.com/advancedlock.html) | An advanced version of Lock. You're required to read the wiki page as I do not take any responsibility in it breaking your server. | 
+| [application](https://cogs.saurich.com/application.html) | A simple application cog with a 'Staff Applicant' role. | 
+| [cookies](https://cogs.saurich.com/cookies.html) | Collect cookies. |
+| [cookiestore](https://cogs.saurich.com/cookiestore.html) | Additional store to Cookies. |
+| [counting](https://cogs.saurich.com/counting.html) | Make a counting channel. |
+| [economyraffle](https://cogs.saurich.com/economyraffle.html) | A simple cog that gives a pre-specified amount of credits to a randomly picked user. | 
+| [forwarding](https://cogs.saurich.com/forwarding.html) | Forward messages to the bot owner, incl. pictures (max one per message). You can also DM someone as the bot with `[p]pm <user_ID> <message>`. |
+| [gallery](https://cogs.saurich.com/gallery.html) | Set channels as galleries, deleting all messages that don't contain any attachments. |
+| [lock](https://cogs.saurich.com/lock.html) | Lock `@everyone` from sending messages. |
+| [lvlupcookies](https://cogs.saurich.com/lvlupcookies.html) | Set cookie rewards for users that level up! |
+| [mentionable](https://cogs.saurich.com/mentionable.html) | Makes unmentionable roles mentionable. |
+| [pick](https://cogs.saurich.com/pick.html) | Pick a random user or a user with a specified role. |
+| [pingable](https://cogs.saurich.com/pingable.html) | Make unpingable roles pingable by regular users with commands. |
+| [suggestion](https://cogs.saurich.com/suggestion.html) | A bit more than just a simple suggestion box. Only admins can approve or reject suggestions. |
+| [uniquename](https://cogs.saurich.com/uniquename.html) | Deny members' names to be the same as your Moderators'. |
+| [userlog](https://cogs.saurich.com/userlog.html) | Log when an user joins or leaves. |
