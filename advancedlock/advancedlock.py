@@ -7,6 +7,7 @@ from datetime import datetime
 
 from redbot.core import Config, checks, commands
 from redbot.core.utils.predicates import MessagePredicate
+from redbot.core.utils.chat_formatting import humanize_list
 
 from redbot.core.bot import Red
 
@@ -20,7 +21,7 @@ class AdvancedLock(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -368,7 +369,7 @@ class AdvancedLock(Cog):
             for role_id in data["roles"]:
                 ro = get(ctx.guild.roles, id=role_id).name
                 ro_list.append(ro)
-            ro_desc = ", ".join(ro_list)
+            ro_desc = humanize_list(ro_list)
         except TypeError:
             ro_desc = "Not specified"
         except AttributeError:
@@ -381,7 +382,7 @@ class AdvancedLock(Cog):
             for def_role_id in data["def_roles"]:
                 def_ro = get(ctx.guild.roles, id=def_role_id).name
                 def_list.append(def_ro)
-            def_desc = ", ".join(def_list)
+            def_desc = humanize_list(def_list)
         except TypeError:
             def_desc = "Not specified"
         except AttributeError:
@@ -394,7 +395,7 @@ class AdvancedLock(Cog):
             for ignore_id in data["ignore"]:
                 ig = get(ctx.guild.text_channels, id=ignore_id).name
                 ig_list.append(ig)
-            ig_desc = ", ".join(ig_list)
+            ig_desc = humanize_list(ig_list)
         except TypeError:
             ig_desc = "Not specified"
         except AttributeError:
@@ -410,7 +411,7 @@ class AdvancedLock(Cog):
             for c_id in config_channels:
                 c = get(ctx.guild.text_channels, id=int(c_id)).name
                 c_list.append(c)
-            c_desc = ", ".join(c_list)
+            c_desc = humanize_list(c_list)
         except TypeError:
             c_desc = "Not specified"
         except AttributeError:
@@ -474,7 +475,7 @@ class AdvancedLock(Cog):
                     for role_id in c["roles"]:
                         ro = get(ctx.guild.roles, id=role_id).name
                         ro_list.append(ro)
-                    ro_desc = ", ".join(ro_list)
+                    ro_desc = humanize_list(ro_list)
                 except:
                     ro_desc = "Not specified"
                 await ctx.send(ro_desc)
@@ -565,7 +566,7 @@ class AdvancedLock(Cog):
             for channel in ctx.guild.text_channels:
                 if channel.id not in check_channels:
                     missing_list.append(channel.mention)
-            missing = ", ".join(missing_list)
+            missing = humanize_list(missing_list)
             await ctx.send(f"These channels are not set nor ignored:\n{missing}")
         else:
             await ctx.send("All channels are set or ignored!")
