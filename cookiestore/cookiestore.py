@@ -7,7 +7,7 @@ from discord.utils import get
 from datetime import datetime
 
 from redbot.core import Config, checks, commands
-from redbot.core.utils.chat_formatting import pagify, box
+from redbot.core.utils.chat_formatting import pagify, box, humanize_list
 from redbot.core.utils.predicates import MessagePredicate
 from redbot.core.utils.menus import menu, DEFAULT_CONTROLS
 
@@ -22,7 +22,7 @@ class CookieStore(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.2"
+    __version__ = "1.0.3"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -658,7 +658,7 @@ class CookieStore(Cog):
             else:
                 role_obj = get(ctx.guild.roles, name=i)
                 list.append(role_obj.mention)
-        desc = ", ".join(list)
+        desc = humanize_list(list)
         if list == []:
             desc = "Nothing to see here."
 
