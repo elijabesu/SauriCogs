@@ -21,7 +21,7 @@ class AdvancedLock(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.1"
+    __version__ = "1.0.2"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -475,7 +475,7 @@ class AdvancedLock(Cog):
                     for role_id in c["roles"]:
                         ro = get(ctx.guild.roles, id=role_id).name
                         ro_list.append(ro)
-                    ro_desc = humanize_list(ro_list)
+                    ro_desc = f"The following roles may access {channel.mention}: " + humanize_list(ro_list)
                 except:
                     ro_desc = "Not specified"
                 await ctx.send(ro_desc)
