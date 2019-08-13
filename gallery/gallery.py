@@ -17,7 +17,7 @@ class Gallery(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.1.0"
+    __version__ = "1.2.0"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -25,7 +25,7 @@ class Gallery(Cog):
             self, identifier=564154651321346431, force_registration=True
         )
 
-        self.config.register_guild(channels=[], whitelist=None)
+        self.config.register_guild(channels=[], whitelist=None, time=0)
 
 
     @commands.command()
@@ -73,6 +73,19 @@ class Gallery(Cog):
             await self.config.guild(ctx.guild).whitelist.set(role.id)
             await ctx.send(f"{role.name} has been whitelisted.")
 
+    @commands.command()
+    @commands.guild_only()
+    @checks.admin_or_permissions(manage_guild=True)
+    @checks.bot_has_permissions(manage_messages=True)
+    async def gallerytime(
+        self, ctx: commands.Context, time: int
+    ):
+        """Set how long (in seconds!!) the bot should wait before deleting non images.
+        
+        0 to reset (default time)"""
+        await self.config.guild(ctx.guild).time.set(time)
+        await ctx.send(f"I will wait {time} seconds before deleting messages that are not images.")
+
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.guild is None:
@@ -90,14 +103,21 @@ class Gallery(Cog):
                 if extension in imageTypes:
                     return
             rid = await self.config.guild(message.guild).whitelist()
+            time = await self.config.guild(message.guild).time()
             if rid is not None:
                 role = message.guild.get_role(int(rid))
                 if role is not None:
                     if role in message.author.roles:
                         return
                     else:
+                        if time != 0:
+                            await asyncio.sleep(time)
                         await message.delete()
                 else:
+                    if time != 0:
+                        await asyncio.sleep(time)
                     await message.delete()
             else:
+                if time != 0:
+                    await asyncio.sleep(time)
                 await message.delete()
