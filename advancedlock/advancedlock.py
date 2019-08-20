@@ -21,7 +21,7 @@ class AdvancedLock(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.2"
+    __version__ = "1.0.3"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -718,6 +718,25 @@ class AdvancedLock(Cog):
                     c_ctx = ctx.channel.id
                     try:
                         c = await self.config.guild(ctx.guild).channels.get_raw(c_ctx)
+                        if c is None:
+                            if defa is False:
+                                await ctx.send(
+                                    "Uh oh. This channel has no settings. Ask your Admins to add it."
+                                )
+                                return
+                            else:
+                                def_roles = await self.config.guild(ctx.guild).def_roles()
+                                for def_role_id in def_roles:
+                                    def_ro = get(ctx.guild.roles, id=def_role_id)
+                                    await ctx.channel.set_permissions(
+                                        def_ro, read_messages=True, send_messages=True
+                                    )
+                        else:
+                            for role_id in c["roles"]:
+                                ro = get(ctx.guild.roles, id=role_id)
+                                await ctx.channel.set_permissions(
+                                    ro, read_messages=True, send_messages=True
+                                )
                     except:
                         if defa is False:
                             await ctx.send(
@@ -731,25 +750,7 @@ class AdvancedLock(Cog):
                                 await ctx.channel.set_permissions(
                                     def_ro, read_messages=True, send_messages=True
                                 )
-                    if c is None:
-                        if defa is False:
-                            await ctx.send(
-                                "Uh oh. This channel has no settings. Ask your Admins to add it."
-                            )
-                            return
-                        else:
-                            def_roles = await self.config.guild(ctx.guild).def_roles()
-                            for def_role_id in def_roles:
-                                def_ro = get(ctx.guild.roles, id=def_role_id)
-                                await ctx.channel.set_permissions(
-                                    def_ro, read_messages=True, send_messages=True
-                                )
-                    else:
-                        for role_id in c["roles"]:
-                            ro = get(ctx.guild.roles, id=role_id)
-                            await ctx.channel.set_permissions(
-                                ro, read_messages=True, send_messages=True
-                            )
+
             await ctx.channel.set_permissions(
                 mods, read_messages=True, send_messages=True
             )
