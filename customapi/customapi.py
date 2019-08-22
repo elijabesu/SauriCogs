@@ -2,6 +2,8 @@ import requests
 import asyncio
 import discord
 
+from typing import Any
+
 from redbot.core import commands
 from redbot.core.bot import Red
 
@@ -14,7 +16,7 @@ class CustomAPI(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
