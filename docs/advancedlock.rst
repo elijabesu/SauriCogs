@@ -223,6 +223,12 @@ And letting everyone be able to type in the channel again, by running
 
     [p]unlock
 
+.. tip:: Mods can also set how many seconds the bot should wait before automatically unlocking the channel by running
+
+    .. code-block:: none
+
+        [p]lock [seconds]
+
 If they wish to lock the entire server, they may use
 
 .. code-block:: none
@@ -282,7 +288,7 @@ List of commands
 
 ``[p]setlock all`` - Check if all channels are set.
 
-``[p]lock`` - Lock `@everyone` from sending messages.
+``[p]lock [seconds]`` - Lock `@everyone` from sending messages. If seconds is provided, the bot will automatically unlock the channel.
 
 ``[p]unlock`` - Unlock the channel for `@everyone`.
 

@@ -29,3 +29,5 @@ List of commands
 ``[p]rmgallery <channel>`` - Remove a channel from the list of Gallery channels.
 
 ``[p]galleryrole [role]`` - Add a whitelisted role.
+
+``[p]gallerytime [seconds]`` - Set how long the bot should wait before deleting non images.
