@@ -21,7 +21,7 @@ class AdvancedLock(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.3"
+    __version__ = "1.1.0"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -575,8 +575,10 @@ class AdvancedLock(Cog):
     @commands.command()
     @commands.guild_only()
     @checks.bot_has_permissions(manage_channels=True)
-    async def lock(self, ctx: commands.Context):
-        """ Lock `@everyone` from sending messages."""
+    async def lock(self, ctx: commands.Context, seconds=0):
+        """ Lock `@everyone` from sending messages.
+        
+        Optionally, you can set how many seconds the channel should stay locked for."""
         has_been_set = await self.config.guild(ctx.guild).has_been_set()
         if has_been_set is False:
             await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
@@ -664,7 +666,12 @@ class AdvancedLock(Cog):
                 mods, read_messages=True, send_messages=True
             )
 
-        await ctx.send(":lock: Channel locked. Only Moderators can type.")
+        if seconds == 0:
+            return await ctx.send(":lock: Channel locked. Only Moderators can type.")
+
+        await ctx.send(f":lock: Channel locked for {seconds} seconds. Only Moderators can type.")
+        await asyncio.sleep(seconds)
+        await ctx.invoke(self.bot.get_command("unlock"))
 
     @checks.mod_or_permissions(manage_roles=True)
     @commands.command()
