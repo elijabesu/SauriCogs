@@ -21,7 +21,7 @@ class Marriage(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "0.1.2"
+    __version__ = "0.1.4"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -146,7 +146,7 @@ class Marriage(Cog):
             else:
                 spouse_text = humanize_list(spouses)
 
-        been_married = await conf.marcount() + " time(s)"
+        been_married = f"{await conf.marcount()} time(s)"
         if await conf.marcount() != 0:
             exes_ids = await conf.exes()
             exes = []
@@ -243,7 +243,7 @@ class Marriage(Cog):
             amount = default_amount
         if await self.config.guild(ctx.guild).currency() == 0:
             currency = await bank.get_currency_name(ctx.guild)
-            end_amount = amount + " " + currency
+            end_amount = f"{amount} {currency}"
             if await bank.can_spend(ctx.author, amount) is True:
                 if await bank.can_spend(spouse, amount) is True:
                     await bank.withdraw_credits(ctx.author, amount)
@@ -255,7 +255,7 @@ class Marriage(Cog):
         else:
             author_cookies = int(await self.bot.get_cog("Cookies").config.member(ctx.author).cookies())
             target_cookies = int(await self.bot.get_cog("Cookies").config.member(spouse).cookies())
-            end_amount = amount + " :cookie:"
+            end_amount = f"{amount} :cookie:"
             if amount <= author_cookies:
                 if amount <= target_cookies:
                     await self.bot.get_cog("Cookies").config.member(ctx.author).cookies.set(author_cookies - amount)
@@ -302,7 +302,7 @@ class Marriage(Cog):
                 amount = default_amount * default_multiplier
             if await self.config.guild(ctx.guild).currency() == 0:
                 currency = await bank.get_currency_name(ctx.guild)
-                end_amount = amount + " " + currency
+                end_amount = f"{amount} {currency}"
                 if await bank.can_spend(ctx.author, amount) is True:
                     if await bank.can_spend(spouse, amount) is True:
                         await bank.withdraw_credits(ctx.author, amount)
@@ -314,7 +314,7 @@ class Marriage(Cog):
             else:
                 author_cookies = int(await self.bot.get_cog("Cookies").config.member(ctx.author).cookies())
                 target_cookies = int(await self.bot.get_cog("Cookies").config.member(spouse).cookies())
-                end_amount = amount + " :cookie:"
+                end_amount = f"{amount} :cookie:"
                 if amount <= author_cookies:
                     if amount <= target_cookies:
                         await self.bot.get_cog("Cookies").config.member(ctx.author).cookies.set(author_cookies - amount)
