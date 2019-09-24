@@ -475,7 +475,10 @@ class AdvancedLock(Cog):
                     for role_id in c["roles"]:
                         ro = get(ctx.guild.roles, id=role_id).name
                         ro_list.append(ro)
-                    ro_desc = f"The following roles may access {channel.mention}: " + humanize_list(ro_list)
+                    ro_desc = (
+                        f"The following roles may access {channel.mention}: "
+                        + humanize_list(ro_list)
+                    )
                 except:
                     ro_desc = "Not specified"
                 await ctx.send(ro_desc)
@@ -669,7 +672,9 @@ class AdvancedLock(Cog):
         if seconds == 0:
             return await ctx.send(":lock: Channel locked. Only Moderators can type.")
 
-        await ctx.send(f":lock: Channel locked for {seconds} seconds. Only Moderators can type.")
+        await ctx.send(
+            f":lock: Channel locked for {seconds} seconds. Only Moderators can type."
+        )
         await asyncio.sleep(seconds)
         await ctx.invoke(self.bot.get_command("unlock"))
 
@@ -732,7 +737,9 @@ class AdvancedLock(Cog):
                                 )
                                 return
                             else:
-                                def_roles = await self.config.guild(ctx.guild).def_roles()
+                                def_roles = await self.config.guild(
+                                    ctx.guild
+                                ).def_roles()
                                 for def_role_id in def_roles:
                                     def_ro = get(ctx.guild.roles, id=def_role_id)
                                     await ctx.channel.set_permissions(

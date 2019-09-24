@@ -38,6 +38,7 @@ Click on the cog names to get to my wiki page and learn about them.
 | [gallery](https://cogs.saurich.com/gallery.html) | Set channels as galleries, deleting all messages that don't contain any attachments. |
 | [lock](https://cogs.saurich.com/lock.html) | Lock `@everyone` from sending messages. |
 | [lvlupcookies](https://cogs.saurich.com/lvlupcookies.html) | Set cookie rewards for users that level up! |
+| [marriage](https://cogs.saurich.com/marriage.html) | Marriage cog with some extra shit. |
 | [mentionable](https://cogs.saurich.com/mentionable.html) | Makes unmentionable roles mentionable. |
 | [pick](https://cogs.saurich.com/pick.html) | Pick a random user or a user with a specified role. |
 | [pingable](https://cogs.saurich.com/pingable.html) | Make unpingable roles pingable by regular users with commands. |

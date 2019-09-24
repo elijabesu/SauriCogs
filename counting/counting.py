@@ -27,7 +27,9 @@ class Counting(Cog):
             self, identifier=1564646215646, force_registration=True
         )
 
-        self.config.register_guild(channel=0, previous=0, goal=0, last=0, whitelist=None)
+        self.config.register_guild(
+            channel=0, previous=0, goal=0, last=0, whitelist=None
+        )
 
     @commands.command()
     @commands.guild_only()
@@ -98,9 +100,7 @@ class Counting(Cog):
     @commands.guild_only()
     @checks.admin_or_permissions(manage_guild=True)
     @checks.bot_has_permissions(manage_messages=True)
-    async def countrole(
-        self, ctx: commands.Context, role: discord.Role=None
-    ):
+    async def countrole(self, ctx: commands.Context, role: discord.Role = None):
         """Add a whitelisted role."""
         if not role:
             await self.config.guild(ctx.guild).whitelist.set(None)

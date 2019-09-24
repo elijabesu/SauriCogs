@@ -96,6 +96,7 @@ Finally, you can install the desired cog::
    gallery
    lock
    lvlupcookies
+   marriage
    mentionable
    pick
    pingable
