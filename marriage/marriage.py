@@ -7,8 +7,9 @@ from discord.utils import get
 from datetime import datetime
 
 from redbot.core import Config, checks, commands, bank
+from redbot.core.utils.chat_formatting import pagify, box, humanize_list
 from redbot.core.utils.predicates import MessagePredicate
-from redbot.core.utils.chat_formatting import humanize_list
+from redbot.core.utils.menus import menu, DEFAULT_CONTROLS
 
 from redbot.core.bot import Red
 
@@ -22,7 +23,7 @@ class Marriage(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "0.3.0"
+    __version__ = "0.3.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -38,8 +39,6 @@ class Marriage(Cog):
         """Various Marriage settings."""
         pass
 
-    @checks.admin_or_permissions(manage_guild=True)
-    @commands.guild_only()
     @marriage.command(name="toggle")
     async def marriage_toggle(self, ctx: commands.Context, on_off: bool = None):
         """Toggle Marriage for current server. 
@@ -57,7 +56,6 @@ class Marriage(Cog):
             await ctx.send("Marriage is now disabled.")
 
     @checks.is_owner()
-    @commands.guild_only()
     @marriage.command(name="currency")
     async def marriage_currency(self, ctx: commands.Context, currency: int):
         """Set the currency that should be used. 0 for Red's economy, 1 for SauriCogs' cookies"""
@@ -71,8 +69,6 @@ class Marriage(Cog):
         await self.config.guild(ctx.guild).currency.set(currency)
         await ctx.tick()
 
-    @checks.admin_or_permissions(manage_guild=True)
-    @commands.guild_only()
     @marriage.command(name="multiple")
     async def marriage_multiple(self, ctx: commands.Context, state: bool):
         """Enable/disable whether members can be married to multiple people at once."""
@@ -83,8 +79,6 @@ class Marriage(Cog):
         await self.config.guild(ctx.guild).multi.set(state)
         await ctx.send(text)
 
-    @checks.admin_or_permissions(manage_guild=True)
-    @commands.guild_only()
     @marriage.command(name="marprice")
     async def marriage_marprice(self, ctx: commands.Context, price: int):
         """Set the price for getting married.
@@ -95,8 +89,6 @@ class Marriage(Cog):
         await self.config.guild(ctx.guild).marprice.set(price)
         await ctx.tick()
 
-    @checks.admin_or_permissions(manage_guild=True)
-    @commands.guild_only()
     @marriage.command(name="divprice")
     async def marriage_divprice(self, ctx: commands.Context, multiplier: int):
         """Set the MULTIPLIER for getting divorced.
@@ -106,6 +98,16 @@ class Marriage(Cog):
             return await ctx.send("Uh oh, that ain't a valia multiplier.")
         await self.config.guild(ctx.guild).divprice.set(multiplier)
         await ctx.tick()
+
+    @marriage.group(autohelp=True)
+    async def stuff(self, ctx):
+        """Various actions and gifts settings."""
+        pass
+
+    @stuff.command(name="temper")
+    async def marriage_stuff_temper(self, ctx: commands.Context, id: int, temper: int):
+        """Temper has to be in range [-100; 100]. Negative actions (f.e. flirting with someone other than one's spouse) should have negative temper.
+        !!! Remember that starting point for everyone is 100 == happy and satisfied"""
 
     @commands.guild_only()
     @commands.command()
@@ -148,7 +150,7 @@ class Marriage(Cog):
                     spouses.append(spouse)
                 except:
                     continue 
-            if spouse == []:
+            if spouses == []:
                 spouse_text = "None"
             else:
                 spouse_text = humanize_list(spouses)
@@ -168,7 +170,7 @@ class Marriage(Cog):
             else:
                 ex_text = humanize_list(exes)
         
-        crush = ctx.guild.get_member(await conf.crush())
+        crush = ctx.guild.get_member(await conf.crush()).name
 
         e = discord.Embed(colour = member.color)
         e.set_author(name="{0}'s Profile".format(member.name), icon_url=member.avatar_url)
@@ -206,7 +208,7 @@ class Marriage(Cog):
             ex_text = "unknown"
         else:
             ex_text = humanize_list(exes)
-        await ctx.send(f"{member.mention}'s exes are: {ex_text}'")
+        await ctx.send(f"{member.mention}'s exes are: {ex_text}")
 
     @commands.guild_only()
     @commands.command()
@@ -296,7 +298,7 @@ class Marriage(Cog):
             acurrent.append(spouse.id)
         async with self.config.member(spouse).current() as tcurrent:
             tcurrent.append(ctx.author.id)
-        await ctx.send(f":church: {ctx.author.mention} and {spouse.mention} are now a happy married couple! Congrats! :tada:\n*You both payed {end_amount}.*")
+        await ctx.send(f":church: {ctx.author.mention} and {spouse.mention} are now a happy married couple! Congrats! :tada:\n*You both paid {end_amount}.*")
 
     @commands.guild_only()
     @commands.command()
@@ -333,7 +335,7 @@ class Marriage(Cog):
                         amount = default_amount * default_multiplier
                     if await self.config.guild(ctx.guild).currency() == 0:
                         currency = await bank.get_currency_name(ctx.guild)
-                        end_amount = f"You both payed {amount} {currency}"
+                        end_amount = f"You both paid {amount} {currency}"
                         if await bank.can_spend(ctx.author, amount) is True:
                             if await bank.can_spend(spouse, amount) is True:
                                 await bank.withdraw_credits(ctx.author, amount)
@@ -345,7 +347,7 @@ class Marriage(Cog):
                     else:
                         author_cookies = int(await self.bot.get_cog("Cookies").config.member(ctx.author).cookies())
                         target_cookies = int(await self.bot.get_cog("Cookies").config.member(spouse).cookies())
-                        end_amount = f"You both payed {amount} :cookie:"
+                        end_amount = f"You both paid {amount} :cookie:"
                         if amount <= author_cookies:
                             if amount <= target_cookies:
                                 await self.bot.get_cog("Cookies").config.member(ctx.author).cookies.set(author_cookies - amount)
@@ -365,7 +367,7 @@ class Marriage(Cog):
                     tbal = await bank.get_balance(spouse)
                     aamount = abal * court_multiplier
                     tamount = tbal * court_multiplier
-                    end_amount = f"{ctx.author.name} payed {aamount} {currency}, {spouse.name} payed {tamount} {currency}"
+                    end_amount = f"{ctx.author.name} paid {aamount} {currency}, {spouse.name} paid {tamount} {currency}"
                     await bank.withdraw_credits(ctx.author, amount)
                     await bank.withdraw_credits(spouse, amount)
                 else:
@@ -373,7 +375,7 @@ class Marriage(Cog):
                     target_cookies = int(await self.bot.get_cog("Cookies").config.member(spouse).cookies())
                     aamount = author_cookies * court_multiplier
                     tamount = target_cookies * court_multiplier
-                    end_amount = f"{ctx.author.name} payed {aamount} :cookie:, {spouse.name} payed {tamount} :cookie:"
+                    end_amount = f"{ctx.author.name} paid {aamount} :cookie:, {spouse.name} paid {tamount} :cookie:"
                     await self.bot.get_cog("Cookies").config.member(ctx.author).cookies.set(author_cookies - aamount)
                     await self.bot.get_cog("Cookies").config.member(spouse).cookies.set(target_cookies - tamount)
             async with self.config.member(ctx.author).current() as acurrent:
