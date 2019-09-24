@@ -24,7 +24,7 @@ class Marriage(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "0.4.1"
+    __version__ = "0.4.2"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -226,7 +226,11 @@ class Marriage(Cog):
             spouses = []
             for spouse_id in spouse_ids:
                 try:
-                    spouse = ctx.guild.get_member(spouse_id).name
+                    spouse = ctx.guild.get_member(spouse_id)
+                    if spouse is None:
+                        continue
+                    else:
+                        spouse = spouse.name
                     spouses.append(spouse)
                 except:
                     continue
@@ -244,7 +248,11 @@ class Marriage(Cog):
                 exes = []
                 for ex_id in exes_ids:
                     try:
-                        ex = ctx.guild.get_member(ex_id).name
+                        ex = ctx.guild.get_member(ex_id)
+                        if ex is None:
+                            continue
+                        else:
+                            ex = ex.name
                         exes.append(ex)
                     except:
                         continue
@@ -253,7 +261,11 @@ class Marriage(Cog):
                 else:
                     ex_text = humanize_list(exes)
 
-        crush = ctx.guild.get_member(await conf.crush()).name
+        crush = ctx.guild.get_member(await conf.crush())
+        if crush is None:
+            crush = "None"
+        else:
+            crush = crush.name
 
         e = discord.Embed(colour=member.color)
         e.set_author(
@@ -288,7 +300,11 @@ class Marriage(Cog):
         exes = []
         for ex_id in exes_ids:
             try:
-                ex = ctx.guild.get_member(ex_id).name
+                ex = ctx.guild.get_member(ex_id)
+                if ex is None:
+                    continue
+                else:
+                    ex = ex.name
                 exes.append(ex)
             except:
                 continue
