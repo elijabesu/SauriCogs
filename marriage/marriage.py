@@ -24,7 +24,7 @@ class Marriage(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "0.4.3"
+    __version__ = "0.4.4"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -563,7 +563,9 @@ class Marriage(Cog):
         item: str = None,
     ):
         """Do something with someone"""
-        if await self.config.guild(ctx.guild).toggle() is False:
+        gc = self.config.guild
+        mc = self.config.member
+        if await gc(ctx.guild).toggle() is False:
             return await ctx.send("Marriage is not enabled!")
 
         if action == "flirt":
@@ -601,37 +603,37 @@ class Marriage(Cog):
                 "Available actions are: `flirt`, `fuck`, `dinner`, `date`, `gift`"
             )
 
-        action = await self.config.guild(ctx.guild).shit.get_raw(action)
+        action = await gc(ctx.guild).shit.get_raw(action)
         temper = action[0]
         cookies = action[1]
 
-        t_temp = await self.config.member(target).temper()
+        t_temp = await mc(target).temper()
         t_missing = 100 - t_temp
         if t_missing != 0:
             if temper <= t_missing:
-                await self.config.member(target).temper.set(t_temp + temper)
+                await mc(target).temper.set(t_temp + temper)
             else:
-                await self.config.member(target).temper.set(100)
+                await mc(target).temper.set(100)
 
-            a_temp = await self.config.member(ctx.author).temper()
-            a_missing = 100 - a_temp
-            if a_missing != 0:
-                if temper <= a_missing:
-                    await self.config.member(ctx.author).temper.set(a_temp + temper)
-                else:
-                    await self.config.member(ctx.author).temper.set(100)
+        a_temp = await mc(ctx.author).temper()
+        a_missing = 100 - a_temp
+        if a_missing != 0:
+            if temper <= a_missing:
+                await mc(ctx.author).temper.set(a_temp + temper)
+            else:
+                await mc(ctx.author).temper.set(100)
 
-        is_spouse = await self.config.member(ctx.author).current(target.id)
+        is_spouse = await mc(ctx.author).current(target.id)
         if is_spouse:
             pass
         else:
-            if await self.config.guild(ctx.author).married() is True:
-                spouses = await self.config.member(ctx.author).current()
+            if await mc(ctx.author).married() is True:
+                spouses = await mc(ctx.author).current()
                 for sid in spouses:
                     spouse = ctx.guild.get_member(sid)
-                    s_temp = await self.config.member(spouse).temper()
+                    s_temp = await mc(spouse).temper()
                     new_s_temp = s_temp - temper
-                    await self.config.member(spouse).temper.set(new_s_temp)
+                    await mc(spouse).temper.set(new_s_temp)
                     if new_s_temp == 0:
                         async with self.config.member(ctx.author).current() as acurrent:
                             acurrent.remove(spouse.id)
