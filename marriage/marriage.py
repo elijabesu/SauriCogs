@@ -64,7 +64,7 @@ class Marriage(Cog):
             if currency != 1:
                 return await ctx.send("Uh oh, currency can only be 0 or 1.")
             else:
-                loaded = await self.bot.get_cog("Cookies")
+                loaded = self.bot.get_cog("Cookies")
                 if loaded is None:
                     return await ctx.send(f"Uh oh, Cookies isn't loaded. Load it using `{ctx.clean_prefix}load cookies`")
         await self.config.guild(ctx.guild).currency.set(currency)
