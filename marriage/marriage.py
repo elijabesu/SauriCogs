@@ -21,13 +21,13 @@ class Marriage(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "0.2.0"
+    __version__ = "0.2.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=5465461324979524, force_registration=True)
 
-        self.config.register_member(married=False, spouse=[], divorced=False, exes=[], about="I'm mysterious", crush=None, marcount=0)
+        self.config.register_member(married=False, current=[], divorced=False, exes=[], about="I'm mysterious", crush=None, marcount=0)
         self.config.register_guild(toggle=False, marprice=1500, divprice=2, currency=0, multi=False)
 
     @commands.group(autohelp=True)
