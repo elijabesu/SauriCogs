@@ -21,7 +21,7 @@ class Marriage(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "0.1.4"
+    __version__ = "0.1.5"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -128,7 +128,7 @@ class Marriage(Cog):
         if is_married is False:
             is_divorced = await conf.married()
             if is_divorced is False:
-                rs_status = "Unknown"
+                rs_status = "Single"
             else:
                 rs_status = "Divorced"
         else:
@@ -142,7 +142,7 @@ class Marriage(Cog):
                 except:
                     continue 
             if spouse == []:
-                spouse_text = "Unknown"
+                spouse_text = "None"
             else:
                 spouse_text = humanize_list(spouses)
 
@@ -157,9 +157,11 @@ class Marriage(Cog):
                 except:
                     continue 
             if exes == []:
-                ex_text = "Unknown"
+                ex_text = "None"
             else:
                 ex_text = humanize_list(exes)
+        
+        crush = ctx.guild.get_member(await conf.crush())
 
         e = discord.Embed(colour = member.color)
         e.set_author(name="{0}'s Profile".format(member.name), icon_url=member.avatar_url)
@@ -172,7 +174,7 @@ class Marriage(Cog):
         e.add_field(name="Been married:", value=been_married, inline=True)
         if await conf.marcount() != 0:
             e.add_field(name="Ex spouses:", value=ex_text, inline=False)
-        e.add_field(name="Crush:", value=await conf.crush(), inline=True)
+        e.add_field(name="Crush:", value=crush, inline=True)
 
         await ctx.send(embed=e)
 
@@ -203,6 +205,8 @@ class Marriage(Cog):
         if not member:
             await self.config.member(ctx.author).crush.set(None)
         else:
+            if member.id == ctx.author.id:
+                return await ctx.send("You cannot have a crush on yourself!")
             await self.config.member(ctx.author).crush.set(member.id)
         await ctx.tick()
 
@@ -210,6 +214,8 @@ class Marriage(Cog):
     @commands.command()
     async def marry(self, ctx: commands.Context, spouse: discord.Member):
         """Marry the love of your life!"""
+        if spouse.id == ctx.author.id:
+            return await ctx.send("You cannot marry yourself!")
         if await self.config.guild(ctx.guild).multi() is False:
             if await self.config.member(ctx.author).married() is True:
                 return await ctx.send("You're already married!")
@@ -281,6 +287,8 @@ class Marriage(Cog):
     @commands.command()
     async def divorce(self, ctx: commands.Context, spouse: discord.Member):
         """Divorse your current spouse"""
+        if spouse.id == ctx.author.id:
+            return await ctx.send("You cannot divorce yourself!")
         is_spouse = await self.config.member(ctx.author).current(spouse.id)
         if is_spouse:
             default_amount = await self.config.guild(ctx.guild).marprice()
