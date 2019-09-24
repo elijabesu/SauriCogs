@@ -21,7 +21,7 @@ class Marriage(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "0.1.0"
+    __version__ = "0.1.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -187,7 +187,7 @@ class Marriage(Cog):
         for ex_id in exes_ids:
             try:
                 ex = ctx.guild.get_member(ex_id).name
-                exes.append[]
+                exes.append(ex)
             except:
                 continue 
         if exes == []:
