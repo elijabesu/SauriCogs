@@ -24,7 +24,7 @@ class Marriage(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "0.4.0"
+    __version__ = "0.4.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -266,12 +266,12 @@ class Marriage(Cog):
         e.add_field(name="Relationship status:", value=rs_status, inline=True)
         if is_married is True:
             e.add_field(name="Spouse(s):", value=spouse_text, inline=True)
-        e.add_field(name="Temper:", value=await conf.temper(), inline=True)
         e.add_field(name="About:", value=await conf.about(), inline=False)
         e.add_field(name="Been married:", value=been_married, inline=True)
         if await conf.marcount() != 0:
             e.add_field(name="Ex spouses:", value=ex_text, inline=False)
         e.add_field(name="Crush:", value=crush, inline=True)
+        e.add_field(name="Temper:", value=await conf.temper(), inline=True)
 
         await ctx.send(embed=e)
 
@@ -546,27 +546,27 @@ class Marriage(Cog):
         target: discord.Member,
         item: str = None,
     ):
-        """Flirt with someone"""
+        """Do something with someone"""
         gc = self.config.guild
         mc = self.config.member
         if await gc(ctx.guild).toggle() is False:
             return await ctx.send("Marriage is not enabled!")
 
-        if action is "flirt":
+        if action == "flirt":
             endtext = (
                 f":heart_eyes: {ctx.author.mention} is flirting with {target.mention}"
             )
-        elif action is "fuck":
+        elif action == "fuck":
             endtext = f":smirk: {ctx.author.mention} wants to bang {target.mention}, did they do it? We'll never know..."
-        elif action is "dinner":
+        elif action == "dinner":
             endtext = (
                 f":ramen: {ctx.author.mention} took {target.mention} on a fancy dinner"
             )
-        elif action is "date":
+        elif action == "date":
             endtext = (
                 f":relaxed: {ctx.author.mention} took {target.mention} on a nice date"
             )
-        elif action is "gift":
+        elif action == "gift":
             gifts = [
                 "flower",
                 "sweets",
