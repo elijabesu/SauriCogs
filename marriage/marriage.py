@@ -21,7 +21,7 @@ class Marriage(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "0.1.1"
+    __version__ = "0.1.2"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -55,7 +55,7 @@ class Marriage(Cog):
         else:
             await ctx.send("Marriage is now disabled.")
 
-    @checks.owner()
+    @checks.is_owner()
     @commands.guild_only()
     @marriage.command(name="currency")
     async def marriage_currency(self, ctx: commands.Context, currency: int):
