@@ -24,7 +24,7 @@ class Marriage(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "0.4.6"
+    __version__ = "0.4.7"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -629,9 +629,12 @@ class Marriage(Cog):
                 for sid in spouses:
                     spouse = ctx.guild.get_member(sid)
                     s_temp = await mc(spouse).temper()
-                    new_s_temp = s_temp - temper
+                    if s_temp < temper:
+                        new_s_temp = 0
+                    else:
+                        new_s_temp = s_temp - temper
                     await mc(spouse).temper.set(new_s_temp)
-                    if new_s_temp == 0:
+                    if new_s_temp <= 0:
                         async with self.config.member(ctx.author).current() as acurrent:
                             acurrent.remove(spouse.id)
                         async with self.config.member(spouse).current() as tcurrent:
