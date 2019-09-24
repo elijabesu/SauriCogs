@@ -1,0 +1,9 @@
+{
+    "author" : ["saurichable"],
+    "install_msg" : "Thank you for installing my cog!",
+    "name" : "Marriage",
+    "hidden": true,
+    "short" : "Simple marriage cog.",
+    "description" : "Simple marriage cog.",
+    "tags" : ["marriage", "marry", "waifu"]
+}
