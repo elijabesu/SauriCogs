@@ -23,7 +23,7 @@ class Marriage(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "0.3.1"
+    __version__ = "0.3.2"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -382,6 +382,10 @@ class Marriage(Cog):
                 acurrent.remove(spouse.id)
             async with self.config.member(spouse).current() as tcurrent:
                 tcurrent.remove(ctx.author.id)
+            async with self.config.member(ctx.author).exes() as aexes:
+                aexes.append(spouse.id)
+            async with self.config.member(spouse).exes() as texes:
+                texes.append(ctx.author.id)
             if len(await self.config.member(ctx.author).current()) == 0:
                 await self.config.member(ctx.author).married.set(False)
                 await self.config.member(ctx.author).divorced.set(True)
