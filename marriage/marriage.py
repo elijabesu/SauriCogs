@@ -21,7 +21,7 @@ class Marriage(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "0.1.5"
+    __version__ = "0.2.0"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -110,6 +110,9 @@ class Marriage(Cog):
     @commands.command()
     async def addabout(self, ctx: commands.Context, *, about: str):
         """Add your about text"""
+        if await self.config.guild(ctx.guild).toggle() is False:
+            return await ctx.send("Marriage is not enabled!")
+
         if len(about) > 1000:
             return await ctx.send("Uh oh, this is not an essay.")
         else:
@@ -120,6 +123,9 @@ class Marriage(Cog):
     @commands.command()
     async def about(self, ctx: commands.Context, member: discord.Member = None):
         """Display your or someone else's about"""
+        if await self.config.guild(ctx.guild).toggle() is False:
+            return await ctx.send("Marriage is not enabled!")
+
         if not member:
             member = ctx.author
         conf = self.config.member(member)
@@ -182,6 +188,9 @@ class Marriage(Cog):
     @commands.command()
     async def exes(self, ctx: commands.Context, member: discord.Member = None):
         """Display your or someone else's exes"""
+        if await self.config.guild(ctx.guild).toggle() is False:
+            return await ctx.send("Marriage is not enabled!")
+
         if not member:
             member = ctx.author
         exes_ids = await self.config.member(member).exes()
@@ -202,6 +211,9 @@ class Marriage(Cog):
     @commands.command()
     async def crush(self, ctx: commands.Context, member: discord.Member = None):
         """Tell us who you have a crush on"""
+        if await self.config.guild(ctx.guild).toggle() is False:
+            return await ctx.send("Marriage is not enabled!")
+
         if not member:
             await self.config.member(ctx.author).crush.set(None)
         else:
@@ -214,6 +226,9 @@ class Marriage(Cog):
     @commands.command()
     async def marry(self, ctx: commands.Context, spouse: discord.Member):
         """Marry the love of your life!"""
+        if await self.config.guild(ctx.guild).toggle() is False:
+            return await ctx.send("Marriage is not enabled!")
+
         if spouse.id == ctx.author.id:
             return await ctx.send("You cannot marry yourself!")
         if await self.config.guild(ctx.guild).multi() is False:
@@ -221,7 +236,6 @@ class Marriage(Cog):
                 return await ctx.send("You're already married!")
             if await self.config.member(spouse).married() is True:
                 return await ctx.send("They're already married!")
-            return await ctx.send("Cancelling...")
 
         await ctx.send(f"{ctx.author.mention} has asked {spouse.mention} to marry them!\n{spouse.mention}, what do you say?")
         pred = MessagePredicate.yes_or_no(ctx, ctx.channel, spouse)
@@ -287,6 +301,9 @@ class Marriage(Cog):
     @commands.command()
     async def divorce(self, ctx: commands.Context, spouse: discord.Member):
         """Divorse your current spouse"""
+        if await self.config.guild(ctx.guild).toggle() is False:
+            return await ctx.send("Marriage is not enabled!")
+
         if spouse.id == ctx.author.id:
             return await ctx.send("You cannot divorce yourself!")
         is_spouse = await self.config.member(ctx.author).current(spouse.id)
