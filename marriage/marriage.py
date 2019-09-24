@@ -24,7 +24,7 @@ class Marriage(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "0.4.5"
+    __version__ = "0.4.6"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -338,8 +338,7 @@ class Marriage(Cog):
 
         if spouse.id == ctx.author.id:
             return await ctx.send("You cannot marry yourself!")
-        is_spouse = await self.config.member(ctx.author).current(spouse.id)
-        if is_spouse:
+        if spouse.id in await self.config.member(ctx.author).current():
             return await ctx.send("You two are already married!")
         if await self.config.guild(ctx.guild).multi() is False:
             if await self.config.member(ctx.author).married() is True:
@@ -430,8 +429,7 @@ class Marriage(Cog):
 
         if spouse.id == ctx.author.id:
             return await ctx.send("You cannot divorce yourself!")
-        is_spouse = await self.config.member(ctx.author).current(spouse.id)
-        if is_spouse:
+        if spouse.id in await self.config.member(ctx.author).current():
             if court is False:
                 await ctx.send(
                     f"{ctx.author.mention} wants to divorce you, {spouse.mention}, do you accept?\nIf you say no, you will go to the court."
@@ -597,7 +595,7 @@ class Marriage(Cog):
             if item not in gifts:
                 return await ctx.send(f"Available actions/gifts are: {gifts}")
             action = item
-            endtext = f":gift: {ctx.author.mention} has gifted {item} to {target}"
+            endtext = f":gift: {ctx.author.mention} has gifted {item} to {target.mention}"
         else:
             return await ctx.send(
                 "Available actions are: `flirt`, `fuck`, `dinner`, `date`, `gift`"
