@@ -1,15 +1,11 @@
-import asyncio
 import discord
 import random
 
 from typing import Any
-from discord.utils import get
-from datetime import datetime
 
 from redbot.core import Config, checks, commands, bank
-from redbot.core.utils.chat_formatting import pagify, box, humanize_list
+from redbot.core.utils.chat_formatting import humanize_list
 from redbot.core.utils.predicates import MessagePredicate
-from redbot.core.utils.menus import menu, DEFAULT_CONTROLS
 
 from redbot.core.bot import Red
 
@@ -24,7 +20,7 @@ class Marriage(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.0"
+    __version__ = "1.1.0"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -41,6 +37,17 @@ class Marriage(Cog):
             crush=None,
             marcount=0,
             temper=100,
+            gifts={
+                "flower": 0,
+                "sweets": 0,
+                "alcohol": 0,
+                "loveletter": 0,
+                "food": 0,
+                "makeup": 0,
+                "car": 0,
+                "yacht": 0,
+                "house": 0,
+            },
         )
         self.config.register_guild(
             toggle=False,
@@ -65,7 +72,8 @@ class Marriage(Cog):
             },
         )
 
-    # Actions/Gifts are saved as lists, position 0 is temper, position 1 is cookies
+    # "shit": [temper, price]
+    # "gift": owned pcs
 
     @commands.group(autohelp=True)
     @commands.guild_only()
@@ -414,14 +422,21 @@ class Marriage(Cog):
 
         await self.config.member(ctx.author).marcount.set(author_marcount + 1)
         await self.config.member(spouse).marcount.set(target_marcount + 1)
+
         await self.config.member(ctx.author).married.set(True)
         await self.config.member(spouse).married.set(True)
+
         await self.config.member(ctx.author).divorced.set(False)
         await self.config.member(spouse).divorced.set(False)
+
         async with self.config.member(ctx.author).current() as acurrent:
             acurrent.append(spouse.id)
         async with self.config.member(spouse).current() as tcurrent:
             tcurrent.append(ctx.author.id)
+
+        await self.config.member(ctx.author).temper.set(100)
+        await self.config.member(spouse).temper.set(100)
+
         await ctx.send(
             f":church: {ctx.author.mention} and {spouse.mention} are now a happy married couple! Congrats! :tada:\n*You both paid {end_amount}.*"
         )
@@ -602,16 +617,55 @@ class Marriage(Cog):
             ]
             if item not in gifts:
                 return await ctx.send(f"Available gifts are: {gifts}")
-            action = item
             endtext = f":gift: {ctx.author.mention} has gifted a(n) {item} to {target.mention}"
         else:
             return await ctx.send(
-                "Available actions are: `flirt`, `fuck`, `dinner`, `date`, `gift`"
+                "Available actions are: `flirt`, `fuck`, `dinner`, `date`, and `gift`"
             )
 
-        action = await gc(ctx.guild).shit.get_raw(action)
-        temper = action[0]
-        cookies = action[1]
+        if action == "gift":
+            author_gift = await mc(ctx.author).gifts.get_raw(item)
+            target_gift = await mc(target).gits.get_raw(item)
+            action = await gc(ctx.guild).shit.get_raw(item)
+            temper = action[0]
+            price = action[1]
+        else:
+            action = await gc(ctx.guild).shit.get_raw(action)
+            temper = action[0]
+            price = action[1]
+            author_gift = 0
+            target_gift = -1
+
+        if author_gift == 0:
+            if await self.config.guild(ctx.guild).currency() == 0:
+                if await bank.can_spend(ctx.author, price) is True:
+                    await bank.withdraw_credits(ctx.author, price)
+                    target_gift += 1
+                    author_gift -= 1
+                else:
+                    return await ctx.send("Uh oh, you cannot afford this.")
+            else:
+                author_cookies = int(
+                    await self.bot.get_cog("Cookies")
+                    .config.member(ctx.author)
+                    .cookies()
+                )
+                if price <= author_cookies:
+                    await self.bot.get_cog("Cookies").config.member(
+                        ctx.author
+                    ).cookies.set(author_cookies - price)
+                    target_gift += 1
+                    author_gift -= 1
+                else:
+                    return await ctx.send("Uh oh, you cannot afford this.")
+        else:
+            author_gift -= 1
+            target_gift += 1
+
+        if author_gift >= 0:
+            await mc(ctx.author).gifts.set_raw(item, value=author_gift)
+        if target_gift > 0:
+            await mc(target).gifts.set_raw(item, value=target_gift)
 
         t_temp = await mc(target).temper()
         t_missing = 100 - t_temp
