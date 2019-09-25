@@ -20,7 +20,7 @@ class Marriage(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.1.0"
+    __version__ = "1.1.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -625,7 +625,7 @@ class Marriage(Cog):
 
         if action == "gift":
             author_gift = await mc(ctx.author).gifts.get_raw(item)
-            target_gift = await mc(target).gits.get_raw(item)
+            target_gift = await mc(target).gifts.get_raw(item)
             action = await gc(ctx.guild).shit.get_raw(item)
             temper = action[0]
             price = action[1]
