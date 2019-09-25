@@ -20,7 +20,7 @@ class Marriage(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.2.0"
+    __version__ = "1.2.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -325,17 +325,17 @@ class Marriage(Cog):
             text="{0}#{1} ({2})".format(member.name, member.discriminator, member.id)
         )
         e.set_thumbnail(url=member.avatar_url)
-        e.add_field(name="Status:", value=rs_status, inline=True)
-        if is_married is True:
-            e.add_field(name=spouse_header, value=spouse_text, inline=True)
-        e.add_field(name="Balance:", value=f"{bal} {currency}", inline=True)
         e.add_field(name="About:", value=await conf.about(), inline=False)
-        e.add_field(name="Been married:", value=been_married, inline=True)
+        e.add_field(name="Status:", value=rs_status)
+        if is_married is True:
+            e.add_field(name=spouse_header, value=spouse_text)
+        e.add_field(name="Crush:", value=crush)
+        e.add_field(name="Been married:", value=been_married)
         if await conf.marcount() != 0:
-            e.add_field(name="Ex spouses:", value=ex_text, inline=False)
-        e.add_field(name="Crush:", value=crush, inline=True)
-        e.add_field(name="Temper:", value=await conf.temper(), inline=True)
-        e.add_field(name="Available gifts:", value=gift_text, inline=False)
+            e.add_field(name="Ex spouses:", value=ex_text)
+        e.add_field(name="Temper:", value=await conf.temper())
+        e.add_field(name="Balance:", value=f"{bal} {currency}")
+        e.add_field(name="Available gifts:", value=gift_text)
 
         await ctx.send(embed=e)
 
