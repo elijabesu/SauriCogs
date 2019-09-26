@@ -21,7 +21,7 @@ class Marriage(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.3.1"
+    __version__ = "1.3.2"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -731,12 +731,10 @@ class Marriage(Cog):
                 endtext = f":smirk: {ctx.author.mention} banged {member.mention}"
             else:
                 a_temp = await mc(ctx.author).temper()
-                a_missing = 100 - a_temp
-                if a_missing != 0:
-                    if temper <= a_missing:
-                        await mc(ctx.author).temper.set(a_temp - temper)
-                    else:
-                        await mc(ctx.author).temper.set(0)
+                if temper < a_temp:
+                    await mc(ctx.author).temper.set(a_temp - temper)
+                else:
+                    await mc(ctx.author).temper.set(0)
                 endtext = "They refused to bang you."
         else:
             t_temp = await mc(member).temper()
