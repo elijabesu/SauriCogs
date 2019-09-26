@@ -1,4 +1,5 @@
 import discord
+import asyncio
 import random
 
 from typing import Any
@@ -20,7 +21,7 @@ class Marriage(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.3.0"
+    __version__ = "1.3.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -708,7 +709,7 @@ class Marriage(Cog):
             await ctx.send(f"{ctx.author.mention} wants to bang you, {member.mention}, give consent?")
             pred = MessagePredicate.yes_or_no(ctx, ctx.channel, member)
             try:
-                await bot.wait_for("message", timeout=60, check=pred)
+                await self.bot.wait_for("message", timeout=60, check=pred)
             except asyncio.TimeoutError:
                 return await ctx.send("They took too long. Try again later, please. (You didn't lose any temper.)")
             if pred.result is True:
