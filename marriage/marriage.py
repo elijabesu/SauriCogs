@@ -20,7 +20,7 @@ class Marriage(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.2.1"
+    __version__ = "1.3.0"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -330,10 +330,10 @@ class Marriage(Cog):
         if is_married is True:
             e.add_field(name=spouse_header, value=spouse_text)
         e.add_field(name="Crush:", value=crush)
+        e.add_field(name="Temper:", value=await conf.temper())
         e.add_field(name="Been married:", value=been_married)
         if await conf.marcount() != 0:
             e.add_field(name="Ex spouses:", value=ex_text)
-        e.add_field(name="Temper:", value=await conf.temper())
         e.add_field(name="Balance:", value=f"{bal} {currency}")
         e.add_field(name="Available gifts:", value=gift_text)
 
@@ -625,12 +625,13 @@ class Marriage(Cog):
         if await gc(ctx.guild).toggle() is False:
             return await ctx.send("Marriage is not enabled!")
 
+        consent = 1
         if action == "flirt":
             endtext = (
                 f":heart_eyes: {ctx.author.mention} is flirting with {member.mention}"
             )
         elif action == "fuck":
-            endtext = f":smirk: {ctx.author.mention} wants to bang {member.mention}, did they do it? We'll never know..."
+            consent = 0
         elif action == "dinner":
             endtext = (
                 f":ramen: {ctx.author.mention} took {member.mention} on a fancy dinner"
@@ -703,21 +704,55 @@ class Marriage(Cog):
         if member_gift > 0:
             await mc(member).gifts.set_raw(item, value=member_gift)
 
-        t_temp = await mc(member).temper()
-        t_missing = 100 - t_temp
-        if t_missing != 0:
-            if temper <= t_missing:
-                await mc(member).temper.set(t_temp + temper)
-            else:
-                await mc(member).temper.set(100)
+        if consent == 0:
+            await ctx.send(f"{ctx.author.mention} wants to bang you, {member.mention}, give consent?")
+            pred = MessagePredicate.yes_or_no(ctx, ctx.channel, member)
+            try:
+                await bot.wait_for("message", timeout=60, check=pred)
+            except asyncio.TimeoutError:
+                return await ctx.send("They took too long. Try again later, please. (You didn't lose any temper.)")
+            if pred.result is True:
+                t_temp = await mc(member).temper()
+                t_missing = 100 - t_temp
+                if t_missing != 0:
+                    if temper <= t_missing:
+                        await mc(member).temper.set(t_temp + temper)
+                    else:
+                        await mc(member).temper.set(100)
 
-        a_temp = await mc(ctx.author).temper()
-        a_missing = 100 - a_temp
-        if a_missing != 0:
-            if temper <= a_missing:
-                await mc(ctx.author).temper.set(a_temp + temper)
+                a_temp = await mc(ctx.author).temper()
+                a_missing = 100 - a_temp
+                if a_missing != 0:
+                    if temper <= a_missing:
+                        await mc(ctx.author).temper.set(a_temp + temper)
+                    else:
+                        await mc(ctx.author).temper.set(100)
+                endtext = f":smirk: {ctx.author.mention} banged {member.mention}"
             else:
-                await mc(ctx.author).temper.set(100)
+                a_temp = await mc(ctx.author).temper()
+                a_missing = 100 - a_temp
+                if a_missing != 0:
+                    if temper <= a_missing:
+                        await mc(ctx.author).temper.set(a_temp - temper)
+                    else:
+                        await mc(ctx.author).temper.set(0)
+                endtext = "They refused to bang you."
+        else:
+            t_temp = await mc(member).temper()
+            t_missing = 100 - t_temp
+            if t_missing != 0:
+                if temper <= t_missing:
+                    await mc(member).temper.set(t_temp + temper)
+                else:
+                    await mc(member).temper.set(100)
+
+            a_temp = await mc(ctx.author).temper()
+            a_missing = 100 - a_temp
+            if a_missing != 0:
+                if temper <= a_missing:
+                    await mc(ctx.author).temper.set(a_temp + temper)
+                else:
+                    await mc(ctx.author).temper.set(100)
 
         spouses = await mc(ctx.author).current()
         if member.id in spouses:
