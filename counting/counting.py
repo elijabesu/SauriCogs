@@ -19,7 +19,7 @@ class Counting(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.1.0"
+    __version__ = "1.1.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -143,7 +143,7 @@ class Counting(Cog):
         If `on_off` is not provided, the state will be flipped.
         Optionally add how many seconds the bot should wait before deleting the message (0 for not deleting)."""
         target_state = (
-            on_off if on_off is not None else not (await self.config.toggle())
+            on_off if on_off is not None else not (await self.config.guild(ctx.guild).warning())
         )
         await self.config.guild(ctx.guild).warning.set(target_state)
         if target_state:
