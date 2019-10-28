@@ -19,7 +19,7 @@ class Counting(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.1.1"
+    __version__ = "1.1.2"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -72,24 +72,24 @@ class Counting(Cog):
         await ctx.send(f"Goal set to {goal}.")
 
     @setcount.command(name="start")
-    async def setcount_start(self, ctx: commands.Context, start: int):
+    async def setcount_start(self, ctx: commands.Context, number: int):
         """Set the starting number."""
         c_id = await self.config.guild(ctx.guild).channel()
         if c_id == 0:
             return await ctx.send(
-                f"Set the channel with `{ctx.clean_prefix}countchannel <channel>`, please."
+                f"Set the channel with `{ctx.clean_prefix}setcount channel <channel>`, please."
             )
         channel = get(ctx.guild.text_channels, id=c_id)
         if channel is None:
             return await ctx.send(
-                f"Set the channel with `{ctx.clean_prefix}countchannel <channel>`, please."
+                f"Set the channel with `{ctx.clean_prefix}setcount channel <channel>`, please."
             )
         await self.config.guild(ctx.guild).previous.set(0)
         await self.config.guild(ctx.guild).last.set(0)
         goal = await self.config.guild(ctx.guild).goal()
         next_number = start + 1
         await self._set_topic(start, goal, next_number, channel)
-        await c.send(start)
+        await channel.send(start)
         if c_id != ctx.channel.id:
             await ctx.send(f"Counting start set to {start}.")
 
