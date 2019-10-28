@@ -19,7 +19,7 @@ class Counting(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.1"
+    __version__ = "1.1.0"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -28,14 +28,25 @@ class Counting(Cog):
         )
 
         self.config.register_guild(
-            channel=0, previous=0, goal=0, last=0, whitelist=None
+            channel=0,
+            previous=0,
+            goal=0,
+            last=0,
+            whitelist=None,
+            warning=False,
+            seconds=0,
         )
 
-    @commands.command()
-    @commands.guild_only()
-    @checks.admin_or_permissions(manage_channels=True)
+    @checks.admin_or_permissions(administrator=True)
     @checks.bot_has_permissions(manage_channels=True, manage_messages=True)
-    async def countchannel(
+    @commands.group(autohelp=True)
+    @commands.guild_only()
+    async def setcount(self, ctx: commands.Context):
+        """Counting settings"""
+        pass
+
+    @setcount.command(name="channel")
+    async def setcount_channel(
         self, ctx: commands.Context, channel: discord.TextChannel = None
     ):
         """Set the counting channel.
@@ -49,11 +60,8 @@ class Counting(Cog):
         await self._set_topic(0, goal, 1, channel)
         await ctx.send(f"{channel.name} has been set for counting.")
 
-    @commands.command()
-    @commands.guild_only()
-    @checks.admin_or_permissions(manage_channels=True)
-    @checks.bot_has_permissions(manage_channels=True, manage_messages=True)
-    async def countgoal(self, ctx: commands.Context, goal: int = 0):
+    @setcount.command(name="goal")
+    async def setcount_goal(self, ctx: commands.Context, goal: int = 0):
         """Set the counting goal.
 
         If goal isn't provided, it will be deleted."""
@@ -63,11 +71,8 @@ class Counting(Cog):
         await self.config.guild(ctx.guild).goal.set(goal)
         await ctx.send(f"Goal set to {goal}.")
 
-    @commands.command()
-    @commands.guild_only()
-    @checks.admin_or_permissions(manage_channels=True)
-    @checks.bot_has_permissions(manage_channels=True, manage_messages=True)
-    async def countstart(self, ctx: commands.Context, start: int):
+    @setcount.command(name="start")
+    async def setcount_start(self, ctx: commands.Context, start: int):
         """Set the starting number."""
         c_id = await self.config.guild(ctx.guild).channel()
         if c_id == 0:
@@ -88,16 +93,13 @@ class Counting(Cog):
         if c_id != ctx.channel.id:
             await ctx.send(f"Counting start set to {start}.")
 
-    @commands.command()
-    @commands.guild_only()
-    @checks.admin_or_permissions(manage_channels=True)
-    @checks.bot_has_permissions(manage_channels=True, manage_messages=True)
-    async def countreset(self, ctx: commands.Context, confirmation: bool = False):
+    @setcount.command(name="reset")
+    async def setcount_reset(self, ctx: commands.Context, confirmation: bool = False):
         """Reset the counter and start from 0 again!"""
         if confirmation is False:
             return await ctx.send(
                 "This will reset the ongoing counting. This action **cannot** be undone.\n"
-                "If you're sure, type `{0}countreset yes`.".format(ctx.clean_prefix)
+                "If you're sure, type `{0}setcount reset yes`.".format(ctx.clean_prefix)
             )
 
         p = await self.config.guild(ctx.guild).previous()
@@ -122,11 +124,8 @@ class Counting(Cog):
         if c_id != ctx.channel.id:
             await ctx.send("Counting has been reset.")
 
-    @commands.command()
-    @commands.guild_only()
-    @checks.admin_or_permissions(manage_guild=True)
-    @checks.bot_has_permissions(manage_messages=True)
-    async def countrole(self, ctx: commands.Context, role: discord.Role = None):
+    @setcount.command(name="role")
+    async def setcount_role(self, ctx: commands.Context, role: discord.Role = None):
         """Add a whitelisted role."""
         if not role:
             await self.config.guild(ctx.guild).whitelist.set(None)
@@ -135,12 +134,39 @@ class Counting(Cog):
             await self.config.guild(ctx.guild).whitelist.set(role.id)
             await ctx.send(f"{role.name} has been whitelisted.")
 
+    @setcount.command(name="warnmsg")
+    async def setcount_warnmsg(
+        self, ctx: commands.Context, on_off: bool = None, seconds: int = 0
+    ):
+        """Toggle a warning message.
+
+        If `on_off` is not provided, the state will be flipped.
+        Optionally add how many seconds the bot should wait before deleting the message (0 for not deleting)."""
+        target_state = (
+            on_off if on_off is not None else not (await self.config.toggle())
+        )
+        await self.config.guild(ctx.guild).warning.set(target_state)
+        if target_state:
+            if seconds < 0:
+                seconds = 0
+            await self.config.guild(ctx.guild).seconds.set(seconds)
+            if seconds == 0:
+                await ctx.send("Warning messages are now enabled.")
+            else:
+                await ctx.send(
+                    f"Warning messages are now enabled, will be deleted after {seconds} seconds."
+                )
+        else:
+            await ctx.send("Warning messages are now disabled.")
+
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.guild is None:
             return
         channel_id = await self.config.guild(message.guild).channel()
         last_id = await self.config.guild(message.guild).last()
+        warning = await self.config.guild(message.guild).warning()
+        seconds = await self.config.guild(message.guild).seconds()
         if message.channel.id != channel_id:
             return
         if message.author.id == last_id:
@@ -159,6 +185,7 @@ class Counting(Cog):
         try:
             now = int(message.content)
             previous = await self.config.guild(message.guild).previous()
+            next_number = previous + 1
             goal = await self.config.guild(message.guild).goal()
             if now - 1 == previous:
                 await self.config.guild(message.guild).previous.set(now)
@@ -168,6 +195,13 @@ class Counting(Cog):
                 await self._set_topic(now, goal, n, message.channel)
             else:
                 if message.author.id != self.bot.user.id:
+                    if warning is True:
+                        warn_msg = await message.channel.send(
+                            f"The next message in this channel must be {next_number}"
+                        )
+                        if seconds != 0:
+                            await asyncio.sleep(seconds)
+                            await warn_msg.delete()
                     await message.delete()
         except:
             if message.author.id != self.bot.user.id:
@@ -178,10 +212,31 @@ class Counting(Cog):
                         if role in message.author.roles:
                             return
                         else:
+                            if warning is True:
+                                warn_msg = await message.channel.send(
+                                    f"The next message in this channel must be {next_number}"
+                                )
+                                if seconds != 0:
+                                    await asyncio.sleep(seconds)
+                                    await warn_msg.delete()
                             await message.delete()
                     else:
+                        if warning is True:
+                            warn_msg = await message.channel.send(
+                                f"The next message in this channel must be {next_number}"
+                            )
+                            if seconds != 0:
+                                await asyncio.sleep(seconds)
+                                await warn_msg.delete()
                         await message.delete()
                 else:
+                    if warning is True:
+                        warn_msg = await message.channel.send(
+                            f"The next message in this channel must be {next_number}"
+                        )
+                        if seconds != 0:
+                            await asyncio.sleep(seconds)
+                            await warn_msg.delete()
                     await message.delete()
 
     @commands.Cog.listener()
