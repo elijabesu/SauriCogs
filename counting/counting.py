@@ -87,11 +87,11 @@ class Counting(Cog):
         await self.config.guild(ctx.guild).previous.set(0)
         await self.config.guild(ctx.guild).last.set(0)
         goal = await self.config.guild(ctx.guild).goal()
-        next_number = start + 1
-        await self._set_topic(start, goal, next_number, channel)
-        await channel.send(start)
+        next_number = number + 1
+        await self._set_topic(number, goal, next_number, channel)
+        await channel.send(number)
         if c_id != ctx.channel.id:
-            await ctx.send(f"Counting start set to {start}.")
+            await ctx.send(f"Counting start set to {number}.")
 
     @setcount.command(name="reset")
     async def setcount_reset(self, ctx: commands.Context, confirmation: bool = False):
