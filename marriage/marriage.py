@@ -296,9 +296,7 @@ class Marriage(Cog):
             currency = await bank.get_currency_name(ctx.guild)
             bal = await bank.get_balance(member)
         else:
-            bal = int(
-                await self.bot.get_cog("Cookies").config.member(member).cookies()
-            )
+            bal = int(await self.bot.get_cog("Cookies").config.member(member).cookies())
             currency = ":cookie:"
 
         gifts = await conf.gifts.get_raw()
@@ -425,6 +423,7 @@ class Marriage(Cog):
             amount = default_amount * multiplier
         else:
             amount = default_amount
+        amount = int(round(amount))
         if await self.config.guild(ctx.guild).currency() == 0:
             currency = await bank.get_currency_name(ctx.guild)
             end_amount = f"{amount} {currency}"
@@ -514,6 +513,7 @@ class Marriage(Cog):
                         amount = default_amount * multiplier * default_multiplier
                     else:
                         amount = default_amount * default_multiplier
+                    amount = int(round(amount))
                     if await self.config.guild(ctx.guild).currency() == 0:
                         currency = await bank.get_currency_name(ctx.guild)
                         end_amount = f"You both paid {amount} {currency}"
@@ -655,7 +655,9 @@ class Marriage(Cog):
             ]
             if item not in gifts:
                 return await ctx.send(f"Available gifts are: {gifts}")
-            endtext = f":gift: {ctx.author.mention} has gifted one {item} to {member.mention}"
+            endtext = (
+                f":gift: {ctx.author.mention} has gifted one {item} to {member.mention}"
+            )
         else:
             return await ctx.send(
                 "Available actions are: `flirt`, `fuck`, `dinner`, `date`, and `gift`"
@@ -675,6 +677,7 @@ class Marriage(Cog):
             member_gift = -1
 
         if author_gift == 0:
+            price = int(round(price))
             if await self.config.guild(ctx.guild).currency() == 0:
                 if await bank.can_spend(ctx.author, price) is True:
                     await bank.withdraw_credits(ctx.author, price)
@@ -706,12 +709,16 @@ class Marriage(Cog):
             await mc(member).gifts.set_raw(item, value=member_gift)
 
         if consent == 0:
-            await ctx.send(f"{ctx.author.mention} wants to bang you, {member.mention}, give consent?")
+            await ctx.send(
+                f"{ctx.author.mention} wants to bang you, {member.mention}, give consent?"
+            )
             pred = MessagePredicate.yes_or_no(ctx, ctx.channel, member)
             try:
                 await self.bot.wait_for("message", timeout=60, check=pred)
             except asyncio.TimeoutError:
-                return await ctx.send("They took too long. Try again later, please. (You didn't lose any temper.)")
+                return await ctx.send(
+                    "They took too long. Try again later, please. (You didn't lose any temper.)"
+                )
             if pred.result is True:
                 t_temp = await mc(member).temper()
                 t_missing = 100 - t_temp
