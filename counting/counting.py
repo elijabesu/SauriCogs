@@ -67,6 +67,31 @@ class Counting(Cog):
     @commands.guild_only()
     @checks.admin_or_permissions(manage_channels=True)
     @checks.bot_has_permissions(manage_channels=True, manage_messages=True)
+    async def countstart(self, ctx: commands.Context, start: int):
+        """Set the starting number."""
+        c_id = await self.config.guild(ctx.guild).channel()
+        if c_id == 0:
+            return await ctx.send(
+                f"Set the channel with `{ctx.clean_prefix}countchannel <channel>`, please."
+            )
+        channel = get(ctx.guild.text_channels, id=c_id)
+        if channel is None:
+            return await ctx.send(
+                f"Set the channel with `{ctx.clean_prefix}countchannel <channel>`, please."
+            )
+        await self.config.guild(ctx.guild).previous.set(0)
+        await self.config.guild(ctx.guild).last.set(0)
+        goal = await self.config.guild(ctx.guild).goal()
+        next_number = start + 1
+        await self._set_topic(start, goal, next_number, channel)
+        await c.send(start)
+        if c_id != ctx.channel.id:
+            await ctx.send(f"Counting start set to {start}.")
+
+    @commands.command()
+    @commands.guild_only()
+    @checks.admin_or_permissions(manage_channels=True)
+    @checks.bot_has_permissions(manage_channels=True, manage_messages=True)
     async def countreset(self, ctx: commands.Context, confirmation: bool = False):
         """Reset the counter and start from 0 again!"""
         if confirmation is False:
@@ -94,7 +119,8 @@ class Counting(Cog):
         await c.send("Counting has been reset.")
         goal = await self.config.guild(ctx.guild).goal()
         await self._set_topic(0, goal, 1, c)
-        await ctx.send("Counting has been reset.")
+        if c_id != ctx.channel.id:
+            await ctx.send("Counting has been reset.")
 
     @commands.command()
     @commands.guild_only()
