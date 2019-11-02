@@ -19,7 +19,7 @@ class Counting(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.1.2"
+    __version__ = "1.1.3"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -84,7 +84,7 @@ class Counting(Cog):
             return await ctx.send(
                 f"Set the channel with `{ctx.clean_prefix}setcount channel <channel>`, please."
             )
-        await self.config.guild(ctx.guild).previous.set(0)
+        await self.config.guild(ctx.guild).previous.set(number)
         await self.config.guild(ctx.guild).last.set(0)
         goal = await self.config.guild(ctx.guild).goal()
         next_number = number + 1
