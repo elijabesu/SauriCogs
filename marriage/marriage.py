@@ -21,7 +21,7 @@ class Marriage(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.3.2"
+    __version__ = "1.4.0"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -488,89 +488,49 @@ class Marriage(Cog):
 
         if member.id == ctx.author.id:
             return await ctx.send("You cannot divorce yourself!")
-        if member.id in await self.config.member(ctx.author).current():
-            if court is False:
-                await ctx.send(
-                    f"{ctx.author.mention} wants to divorce you, {member.mention}, do you accept?\nIf you say no, you will go to the court."
-                )
-                pred = MessagePredicate.yes_or_no(ctx, ctx.channel, member)
-                await self.bot.wait_for("message", check=pred)
-                if pred.result is True:
-                    default_amount = await self.config.guild(ctx.guild).marprice()
-                    default_multiplier = await self.config.guild(ctx.guild).divprice()
-                    author_marcount = await self.config.member(ctx.author).marcount()
-                    target_marcount = await self.config.member(member).marcount()
+        if member.id not in await self.config.member(ctx.author).current():
+            return await ctx.send("You two aren't married!")
 
-                    author_multiplier = author_marcount / 2 + 1
-                    target_multiplier = target_marcount / 2 + 1
+        if court is False:
+            await ctx.send(
+                f"{ctx.author.mention} wants to divorce you, {member.mention}, do you accept?\nIf you say no, you will go to the court."
+            )
+            pred = MessagePredicate.yes_or_no(ctx, ctx.channel, member)
+            await self.bot.wait_for("message", check=pred)
+            if pred.result is True:
+                default_amount = await self.config.guild(ctx.guild).marprice()
+                default_multiplier = await self.config.guild(ctx.guild).divprice()
+                author_marcount = await self.config.member(ctx.author).marcount()
+                target_marcount = await self.config.member(member).marcount()
 
-                    if author_multiplier <= target_multiplier:
-                        multiplier = target_multiplier
-                    else:
-                        multiplier = author_multiplier
+                author_multiplier = author_marcount / 2 + 1
+                target_multiplier = target_marcount / 2 + 1
 
-                    if multiplier != 0:
-                        amount = default_amount * multiplier * default_multiplier
-                    else:
-                        amount = default_amount * default_multiplier
-                    amount = int(round(amount))
-                    if await self.config.guild(ctx.guild).currency() == 0:
-                        currency = await bank.get_currency_name(ctx.guild)
-                        end_amount = f"You both paid {amount} {currency}"
-                        if await bank.can_spend(ctx.author, amount) is True:
-                            if await bank.can_spend(member, amount) is True:
-                                await bank.withdraw_credits(ctx.author, amount)
-                                await bank.withdraw_credits(member, amount)
-                            else:
-                                return await ctx.send(
-                                    f"Uh oh, you two cannot afford this... But you can force a court by doing `{ctx.clean_prefix}divorce {member.mention} yes`"
-                                )
-                        else:
-                            return await ctx.send(
-                                f"Uh oh, you two cannot afford this... But you can force a court by doing `{ctx.clean_prefix}divorce {member.mention} yes`"
-                            )
-                    else:
-                        author_cookies = int(
-                            await self.bot.get_cog("Cookies")
-                            .config.member(ctx.author)
-                            .cookies()
-                        )
-                        target_cookies = int(
-                            await self.bot.get_cog("Cookies")
-                            .config.member(member)
-                            .cookies()
-                        )
-                        end_amount = f"You both paid {amount} :cookie:"
-                        if amount <= author_cookies:
-                            if amount <= target_cookies:
-                                await self.bot.get_cog("Cookies").config.member(
-                                    ctx.author
-                                ).cookies.set(author_cookies - amount)
-                                await self.bot.get_cog("Cookies").config.member(
-                                    member
-                                ).cookies.set(target_cookies - amount)
-                            else:
-                                return await ctx.send(
-                                    f"Uh oh, you two cannot afford this... But you can force a court by doing `{ctx.clean_prefix}divorce {member.mention} yes`"
-                                )
-                        else:
-                            return await ctx.send(
-                                f"Uh oh, you two cannot afford this... But you can force a court by doing `{ctx.clean_prefix}divorce {member.mention} yes`"
-                            )
+                if author_multiplier <= target_multiplier:
+                    multiplier = target_multiplier
                 else:
-                    pass
-            else:  ## COURT:
-                court = random.randint(1, 100)
-                court_multiplier = court / 100
+                    multiplier = author_multiplier
+
+                if multiplier != 0:
+                    amount = default_amount * multiplier * default_multiplier
+                else:
+                    amount = default_amount * default_multiplier
+                amount = int(round(amount))
                 if await self.config.guild(ctx.guild).currency() == 0:
                     currency = await bank.get_currency_name(ctx.guild)
-                    abal = await bank.get_balance(ctx.author)
-                    tbal = await bank.get_balance(member)
-                    aamount = abal * court_multiplier
-                    tamount = tbal * court_multiplier
-                    end_amount = f"{ctx.author.name} paid {aamount} {currency}, {member.name} paid {tamount} {currency}"
-                    await bank.withdraw_credits(ctx.author, amount)
-                    await bank.withdraw_credits(member, amount)
+                    end_amount = f"You both paid {amount} {currency}"
+                    if await bank.can_spend(ctx.author, amount) is True:
+                        if await bank.can_spend(member, amount) is True:
+                            await bank.withdraw_credits(ctx.author, amount)
+                            await bank.withdraw_credits(member, amount)
+                        else:
+                            return await ctx.send(
+                                f"Uh oh, you two cannot afford this... But you can force a court by doing `{ctx.clean_prefix}divorce {member.mention} yes`"
+                            )
+                    else:
+                        return await ctx.send(
+                            f"Uh oh, you two cannot afford this... But you can force a court by doing `{ctx.clean_prefix}divorce {member.mention} yes`"
+                        )
                 else:
                     author_cookies = int(
                         await self.bot.get_cog("Cookies")
@@ -582,34 +542,74 @@ class Marriage(Cog):
                         .config.member(member)
                         .cookies()
                     )
-                    aamount = author_cookies * court_multiplier
-                    tamount = target_cookies * court_multiplier
-                    end_amount = f"{ctx.author.name} paid {aamount} :cookie:, {member.name} paid {tamount} :cookie:"
-                    await self.bot.get_cog("Cookies").config.member(
-                        ctx.author
-                    ).cookies.set(author_cookies - aamount)
-                    await self.bot.get_cog("Cookies").config.member(member).cookies.set(
-                        target_cookies - tamount
-                    )
-            async with self.config.member(ctx.author).current() as acurrent:
-                acurrent.remove(member.id)
-            async with self.config.member(member).current() as tcurrent:
-                tcurrent.remove(ctx.author.id)
-            async with self.config.member(ctx.author).exes() as aexes:
-                aexes.append(member.id)
-            async with self.config.member(member).exes() as texes:
-                texes.append(ctx.author.id)
-            if len(await self.config.member(ctx.author).current()) == 0:
-                await self.config.member(ctx.author).married.set(False)
-                await self.config.member(ctx.author).divorced.set(True)
-            if len(await self.config.member(member).current()) == 0:
-                await self.config.member(member).married.set(True)
-                await self.config.member(member).divorced.set(False)
-            return await ctx.send(
-                f":broken_heart: {ctx.author.mention} and {member.mention} got divorced...\n*{end_amount}.*"
-            )
-        else:
-            return await ctx.send("You two aren't married!")
+                    end_amount = f"You both paid {amount} :cookie:"
+                    if amount <= author_cookies:
+                        if amount <= target_cookies:
+                            await self.bot.get_cog("Cookies").config.member(
+                                ctx.author
+                            ).cookies.set(author_cookies - amount)
+                            await self.bot.get_cog("Cookies").config.member(
+                                member
+                            ).cookies.set(target_cookies - amount)
+                        else:
+                            return await ctx.send(
+                                f"Uh oh, you two cannot afford this... But you can force a court by doing `{ctx.clean_prefix}divorce {member.mention} yes`"
+                            )
+                    else:
+                        return await ctx.send(
+                            f"Uh oh, you two cannot afford this... But you can force a court by doing `{ctx.clean_prefix}divorce {member.mention} yes`"
+                        )
+            else:
+                court = True
+        if court is True:
+            court = random.randint(1, 100)
+            court_multiplier = court / 100
+            if await self.config.guild(ctx.guild).currency() == 0:
+                currency = await bank.get_currency_name(ctx.guild)
+                abal = await bank.get_balance(ctx.author)
+                tbal = await bank.get_balance(member)
+                aamount = abal * court_multiplier
+                tamount = tbal * court_multiplier
+                end_amount = f"{ctx.author.name} paid {aamount} {currency}, {member.name} paid {tamount} {currency}"
+                await bank.withdraw_credits(ctx.author, amount)
+                await bank.withdraw_credits(member, amount)
+            else:
+                author_cookies = int(
+                    await self.bot.get_cog("Cookies")
+                    .config.member(ctx.author)
+                    .cookies()
+                )
+                target_cookies = int(
+                    await self.bot.get_cog("Cookies")
+                    .config.member(member)
+                    .cookies()
+                )
+                aamount = author_cookies * court_multiplier
+                tamount = target_cookies * court_multiplier
+                end_amount = f"{ctx.author.name} paid {aamount} :cookie:, {member.name} paid {tamount} :cookie:"
+                await self.bot.get_cog("Cookies").config.member(
+                    ctx.author
+                ).cookies.set(author_cookies - aamount)
+                await self.bot.get_cog("Cookies").config.member(member).cookies.set(
+                    target_cookies - tamount
+                )
+        async with self.config.member(ctx.author).current() as acurrent:
+            acurrent.remove(member.id)
+        async with self.config.member(member).current() as tcurrent:
+            tcurrent.remove(ctx.author.id)
+        async with self.config.member(ctx.author).exes() as aexes:
+            aexes.append(member.id)
+        async with self.config.member(member).exes() as texes:
+            texes.append(ctx.author.id)
+        if len(await self.config.member(ctx.author).current()) == 0:
+            await self.config.member(ctx.author).married.set(False)
+            await self.config.member(ctx.author).divorced.set(True)
+        if len(await self.config.member(member).current()) == 0:
+            await self.config.member(member).married.set(True)
+            await self.config.member(member).divorced.set(False)
+        await ctx.send(
+            f":broken_heart: {ctx.author.mention} and {member.mention} got divorced...\n*{end_amount}.*"
+        )
 
     @commands.guild_only()
     @commands.command()
