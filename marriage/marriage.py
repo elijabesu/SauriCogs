@@ -21,7 +21,7 @@ class Marriage(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.4.0"
+    __version__ = "1.4.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -252,6 +252,7 @@ class Marriage(Cog):
                 except:
                     continue
             if spouses == []:
+                spouse_header = "Spouse:"
                 spouse_text = "None"
             else:
                 spouse_text = humanize_list(spouses)
