@@ -572,8 +572,8 @@ class Marriage(Cog):
                 aamount = abal * court_multiplier
                 tamount = tbal * court_multiplier
                 end_amount = f"{ctx.author.name} paid {aamount} {currency}, {member.name} paid {tamount} {currency}"
-                await bank.withdraw_credits(ctx.author, amount)
-                await bank.withdraw_credits(member, amount)
+                await bank.withdraw_credits(ctx.author, aamount)
+                await bank.withdraw_credits(member, tamount)
             else:
                 author_cookies = int(
                     await self.bot.get_cog("Cookies")
