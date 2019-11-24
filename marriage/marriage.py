@@ -21,7 +21,7 @@ class Marriage(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.4.1"
+    __version__ = "1.4.2"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -569,8 +569,8 @@ class Marriage(Cog):
                 currency = await bank.get_currency_name(ctx.guild)
                 abal = await bank.get_balance(ctx.author)
                 tbal = await bank.get_balance(member)
-                aamount = abal * court_multiplier
-                tamount = tbal * court_multiplier
+                aamount = int(round(abal * court_multiplier))
+                tamount = int(round(tbal * court_multiplier))
                 end_amount = f"{ctx.author.name} paid {aamount} {currency}, {member.name} paid {tamount} {currency}"
                 await bank.withdraw_credits(ctx.author, aamount)
                 await bank.withdraw_credits(member, tamount)
@@ -585,8 +585,8 @@ class Marriage(Cog):
                     .config.member(member)
                     .cookies()
                 )
-                aamount = author_cookies * court_multiplier
-                tamount = target_cookies * court_multiplier
+                aamount = int(round(author_cookies * court_multiplier))
+                tamount = int(round(target_cookies * court_multiplier))
                 end_amount = f"{ctx.author.name} paid {aamount} :cookie:, {member.name} paid {tamount} :cookie:"
                 await self.bot.get_cog("Cookies").config.member(
                     ctx.author
@@ -791,7 +791,7 @@ class Marriage(Cog):
                             await self.config.member(spouse).divorced.set(True)
                         if await self.config.guild(ctx.guild).currency() == 0:
                             abal = await bank.get_balance(ctx.author)
-                            tamount = tbal * court_multiplier
+                            tamount = int(round(tbal * court_multiplier))
                             await bank.withdraw_credits(ctx.author, abal)
                             await bank.deposit_credits(spouse, abal)
                         else:
