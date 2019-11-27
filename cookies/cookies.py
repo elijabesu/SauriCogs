@@ -7,13 +7,14 @@ from typing import Any, Union
 from discord.utils import get
 from datetime import datetime
 
-from redbot.core.bank import _MAX_BALANCE
 from redbot.core import Config, checks, commands
 from redbot.core.utils.chat_formatting import pagify, box
 from redbot.core.utils.predicates import MessagePredicate
 from redbot.core.utils.menus import menu, DEFAULT_CONTROLS
 
 from redbot.core.bot import Red
+
+_MAX_BALANCE = 2 ** 63 - 1
 
 
 class Cookies(commands.Cog):
