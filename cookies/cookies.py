@@ -7,6 +7,7 @@ from typing import Any, Union
 from discord.utils import get
 from datetime import datetime
 
+from redbot.core.bank import _MAX_BALANCE
 from redbot.core import Config, checks, commands
 from redbot.core.utils.chat_formatting import pagify, box
 from redbot.core.utils.predicates import MessagePredicate
@@ -14,10 +15,8 @@ from redbot.core.utils.menus import menu, DEFAULT_CONTROLS
 
 from redbot.core.bot import Red
 
-Cog: Any = getattr(commands, "Cog", object)
 
-
-class Cookies(Cog):
+class Cookies(commands.Cog):
     """
     Collect cookies.
     """
@@ -57,6 +56,8 @@ class Cookies(Cog):
                 maximum = int(await self.config.guild(ctx.guild).maximum())
                 amount = int(random.choice(list(range(minimum, maximum))))
                 cookies += amount
+            if self._max_balance_check(cookies):
+                return await ctx.send("Uh oh, you have reached the maximum amount of cookies that you can put in your bag. :frowning:")
             next_cookie = cur_time + await self.config.guild(ctx.guild).cooldown()
             await self.config.member(ctx.author).next_cookie.set(next_cookie)
             await self.config.member(ctx.author).cookies.set(cookies)
@@ -96,8 +97,13 @@ class Cookies(Cog):
             if cookies_stolen == 0:
                 cookies_stolen = 1
             stolen = random.randint(1, cookies_stolen)
-            target_cookies -= stolen
             author_cookies += stolen
+            if self._max_balance_check(author_cookies):
+                return await ctx.send(
+                    "Uh oh, you have reached the maximum amount of cookies that you can put in your bag. :frowning:\n"
+                    f"You stole any cookie of {target.display_name}."
+                )
+            target_cookies -= stolen
             await ctx.send(f"You stole {stolen} :cookie: from {target.display_name}!")
         else:
             cookies_penalty = int(author_cookies * 0.25)
@@ -105,6 +111,12 @@ class Cookies(Cog):
                 cookies_penalty = 1
             penalty = random.randint(1, cookies_penalty)
             target_cookies += penalty
+            if self._max_balance_check(target_cookies):
+                return await ctx.send(
+                    f"Uh oh, you got caught while trying to steal {target.display_name}'s :cookie:\n"
+                    f"{target.display_name} has reached the maximum amount of cookies, "
+                    "so you haven't lost any cookie."
+                )
             author_cookies -= penalty
             await ctx.send(
                 f"You got caught while trying to steal {target.display_name}'s :cookie:\nYour penalty is {penalty} :cookie: which they got!"
@@ -127,11 +139,15 @@ class Cookies(Cog):
             pass
         else:
             return await ctx.send("You don't have enough cookies yourself!")
-        author_cookies -= amount
-        await self.config.member(ctx.author).cookies.set(author_cookies)
-
         target_cookies = int(await self.config.member(target).cookies())
         target_cookies += amount
+        if self._max_balance_check(target_cookies):
+            return await ctx.send(
+                f"Uh oh, {target.display_name} has reached the maximum amount of cookies that they can have in their bag. :frowning:"
+            )
+
+        author_cookies -= amount
+        await self.config.member(ctx.author).cookies.set(author_cookies)
         await self.config.member(target).cookies.set(target_cookies)
         await ctx.send(
             "{0} has gifted {1} :cookie: to {2}".format(
@@ -213,9 +229,12 @@ class Cookies(Cog):
 
         If 0, members will get a random amount."""
         bot = self.bot
-        await self.config.guild(ctx.guild).amount.set(amount)
         if amount < 0:
             return await ctx.send("Uh oh, the amount cannot be negative.")
+        if self._max_balance_check(amount):
+            return await ctx.send(f"Uh oh, you can't set an amount of cookies greater than {_MAX_BALANCE:,}.")
+
+        await self.config.guild(ctx.guild).amount.set(amount)
         if amount != 0:
             await ctx.send("Members will receive {0} cookies.".format(amount))
         else:
@@ -285,6 +304,8 @@ class Cookies(Cog):
         """Set someone's amount of cookies."""
         if amount <= 0:
             return await ctx.send("Uh oh, amount has to be more than 0.")
+        if self._max_balance_check(amount):
+            return await ctx.send(f"Uh oh, amount can't be greater than {_MAX_BALANCE:,}.")
         await self.config.member(target).cookies.set(amount)
         await ctx.send(
             "Set {0}'s balance to {1} :cookie:".format(target.mention, amount)
@@ -299,6 +320,8 @@ class Cookies(Cog):
             return await ctx.send("Uh oh, amount has to be more than 0.")
         target_cookies = int(await self.config.member(target).cookies())
         target_cookies += amount
+        if self._max_balance_check(target_cookies):
+            return await ctx.send(f"Uh oh, {target.display_name} has reached the maximum amount of cookies.")
         await self.config.member(target).cookies.set(target_cookies)
         await ctx.send(
             "Added {0} :cookie: to {1}'s balance.".format(amount, target.mention)
@@ -389,6 +412,8 @@ class Cookies(Cog):
                 if cookies != 0:
                     old_cookies = int(await self.config.member(after).cookies())
                     new_cookies = old_cookies + cookies
+                    if self._max_balance_check(new_cookies):
+                        continue
                     await self.config.member(after).cookies.set(new_cookies)
 
     async def _get_ids(self, ctx):
@@ -416,3 +441,8 @@ class Cookies(Cog):
                     name = name.rstrip("s")
                 result.append("{} {}".format(value, name))
         return ", ".join(result[:granularity])
+
+    @staticmethod
+    def _max_balance_check(value: int):
+        if value > _MAX_BALANCE:
+            return True
