@@ -25,7 +25,7 @@ class Mentionable(Cog):
     @commands.command()
     @commands.guild_only()
     @checks.bot_has_permissions(manage_roles=True)
-    async def mention(self, ctx: commands.Context, role: discord.Role):
+    async def mention(self, ctx: commands.Context, *, role: discord.Role):
         """Makes that role mentionable"""
         if not role.mentionable:
             await role.edit(mentionable=True)
@@ -37,7 +37,7 @@ class Mentionable(Cog):
     @commands.command()
     @commands.guild_only()
     @checks.bot_has_permissions(manage_roles=True)
-    async def unmention(self, ctx: commands.Context, role: discord.Role):
+    async def unmention(self, ctx: commands.Context, *, role: discord.Role):
         """
        Makes that role unmentionable
        """
