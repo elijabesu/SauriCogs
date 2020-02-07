@@ -606,8 +606,8 @@ class Marriage(Cog):
             await self.config.member(ctx.author).married.set(False)
             await self.config.member(ctx.author).divorced.set(True)
         if len(await self.config.member(member).current()) == 0:
-            await self.config.member(member).married.set(True)
-            await self.config.member(member).divorced.set(False)
+            await self.config.member(member).married.set(False)
+            await self.config.member(member).divorced.set(True)
         await ctx.send(
             f":broken_heart: {ctx.author.mention} and {member.mention} got divorced...\n*{end_amount}.*"
         )
