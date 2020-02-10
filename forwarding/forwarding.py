@@ -115,7 +115,7 @@ class Forwarding(commands.Cog):
         pass
 
     @setforward.command(name="channel")
-    async def setforward_channel(self, ctx: commands.Context, *, channel: Union[discord.TextChannel, int):
+    async def setforward_channel(self, ctx: commands.Context, *, channel: Union[discord.TextChannel, int]):
         """Set a channel in the current guild to be used for forwarding.
         
         Use 0 to reset."""
@@ -131,7 +131,7 @@ class Forwarding(commands.Cog):
             await ctx.send(f"I will forward all DMs to {channel.mention}.")
 
     @setforward.command(name="role")
-    async def setforward_role(self, ctx: commands.Context, *, role: Union[discord.Role, int):
+    async def setforward_role(self, ctx: commands.Context, *, role: Union[discord.Role, int]):
         """Set a role to be pinged for forwarding.
         
         Use 0 to reset."""
