@@ -15,7 +15,7 @@ class Forwarding(commands.Cog):
     You can also DM someone as the bot with `[p]pm <user_ID> <message>`."""
 
     __author__ = "saurichable"
-    __version__ = "2.2.0"
+    __version__ = "2.2.2"
 
     def __init__(self, bot):
         self.bot = bot
@@ -122,11 +122,11 @@ class Forwarding(commands.Cog):
         """Set a channel in the current guild to be used for forwarding.
         
         Use 0 to reset."""
-        if channel.is_integer():
+        if isinstance(channel, int):
             if channel == 0:
                 await self.config.guild_id.set(0)
                 await self.config.channel_id.set(0)
-                await ctx.send("I will forward all DMs to you.")
+                return await ctx.send("I will forward all DMs to you.")
             else:
                 return await ctx.send("Invalid value.")
         else:
@@ -139,10 +139,10 @@ class Forwarding(commands.Cog):
         """Set a role to be pinged for forwarding.
         
         Use 0 to reset."""
-        if role.is_integer():
+        if isinstance(role, int):
             if role == 0:
                 await self.config.ping_role_id.set(0)
-                await ctx.send("I will not ping any role.")
+                return await ctx.send("I will not ping any role.")
             else:
                 return await ctx.send("Invalid value.")
         else:
@@ -154,10 +154,10 @@ class Forwarding(commands.Cog):
         """Set a role to be pinged for forwarding.
         
         Use 0 to reset."""
-        if member.is_integer():
+        if isinstance(member, int):
             if member == 0:
                 await self.config.ping_user_id.set(0)
-                await ctx.send("I will not ping anyone.")
+                return await ctx.send("I will not ping anyone.")
             else:
                 return await ctx.send("Invalid value.")
         else:
