@@ -15,7 +15,7 @@ class Forwarding(commands.Cog):
     You can also DM someone as the bot with `[p]pm <user_ID> <message>`."""
 
     __author__ = "saurichable"
-    __version__ = "2.1.0"
+    __version__ = "2.2.0"
 
     def __init__(self, bot):
         self.bot = bot
@@ -122,12 +122,13 @@ class Forwarding(commands.Cog):
         """Set a channel in the current guild to be used for forwarding.
         
         Use 0 to reset."""
-        if channel == 0:
-            await self.config.guild_id.set(0)
-            await self.config.channel_id.set(0)
-            await ctx.send("I will forward all DMs to you.")
-        elif channel < 0 or channel > 0:
-            return await ctx.send("Invalid value.")
+        if channel.is_integer():
+            if channel == 0:
+                await self.config.guild_id.set(0)
+                await self.config.channel_id.set(0)
+                await ctx.send("I will forward all DMs to you.")
+            else:
+                return await ctx.send("Invalid value.")
         else:
             await self.config.guild_id.set(ctx.guild.id)
             await self.config.channel_id.set(channel.id)
@@ -138,11 +139,12 @@ class Forwarding(commands.Cog):
         """Set a role to be pinged for forwarding.
         
         Use 0 to reset."""
-        if role == 0:
-            await self.config.ping_role_id.set(0)
-            await ctx.send("I will not ping any role.")
-        elif role < 0 or role > 0:
-            return await ctx.send("Invalid value.")
+        if role.is_integer():
+            if role == 0:
+                await self.config.ping_role_id.set(0)
+                await ctx.send("I will not ping any role.")
+            else:
+                return await ctx.send("Invalid value.")
         else:
             await self.config.ping_role_id.set(role.id)
             await ctx.send(f"I will ping {role.mention}.")
@@ -152,11 +154,12 @@ class Forwarding(commands.Cog):
         """Set a role to be pinged for forwarding.
         
         Use 0 to reset."""
-        if member == 0:
-            await self.config.ping_user_id.set(0)
-            await ctx.send("I will not ping anyone.")
-        elif member < 0 or member > 0:
-            return await ctx.send("Invalid value.")
+        if member.is_integer():
+            if member == 0:
+                await self.config.ping_user_id.set(0)
+                await ctx.send("I will not ping anyone.")
+            else:
+                return await ctx.send("Invalid value.")
         else:
             await self.config.ping_user_id.set(member.id)
             await ctx.send(f"I will ping {member.mention}.")
