@@ -15,7 +15,7 @@ class Forwarding(commands.Cog):
     You can also DM someone as the bot with `[p]pm <user_ID> <message>`."""
 
     __author__ = "saurichable"
-    __version__ = "2.2.2"
+    __version__ = "2.2.3"
 
     def __init__(self, bot):
         self.bot = bot
@@ -43,10 +43,10 @@ class Forwarding(commands.Cog):
                     else:
                         await channel.sent(content=f"{ping_user.mention}", embed=embed)
                 else:
-                    if not role.mentionable:
-                        await role.edit(mentionable=True)
+                    if not ping_role.mentionable:
+                        await ping_role.edit(mentionable=True)
                         await channel.sent(content=f"{ping_role.mention}", embed=embed)
-                        await role.edit(mentionable=False)
+                        await ping_role.edit(mentionable=False)
                     else:
                         await channel.sent(content=f"{ping_role.mention}", embed=embed)
 
