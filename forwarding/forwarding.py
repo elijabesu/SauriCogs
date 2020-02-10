@@ -2,7 +2,7 @@ import discord
 
 from discord.utils import get
 
-from redbot.core import commands, checks
+from redbot.core import Config, commands, checks
 
 from redbot.core.bot import Red
 from typing import Any, Union
