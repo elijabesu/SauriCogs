@@ -406,26 +406,25 @@ class AdvancedLock(Cog):
         has_been_set = await self.config.guild(ctx.guild).has_been_set()
         if has_been_set is False:
             return await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
-        try:
-            is_already_channel = await self.config.guild(ctx.guild).channels.get_raw(
-                channel.id
-            )
-            if is_already_channel is None:
-                return await ctx.send("That channel has no extra permissions.")
-            if is_already_channel:
-                c = await self.config.guild(ctx.guild).channels.get_raw(channel.id)
-                ro_list = []
-                try:
-                    for role_id in c["roles"]:
-                        ro = get(ctx.guild.roles, id=role_id).name
-                        ro_list.append(ro)
-                    ro_desc = (
-                        f"The following roles may access {channel.mention}: "
-                        + humanize_list(ro_list)
-                    )
-                except Exception:
-                    ro_desc = "Not specified"
-                await ctx.send(ro_desc)
+        is_already_channel = await self.config.guild(ctx.guild).channels.get_raw(
+            channel.id
+        )
+        if is_already_channel is None:
+            return await ctx.send("That channel has no extra permissions.")
+        if is_already_channel:
+            c = await self.config.guild(ctx.guild).channels.get_raw(channel.id)
+            ro_list = []
+            try:
+                for role_id in c["roles"]:
+                    ro = get(ctx.guild.roles, id=role_id).name
+                    ro_list.append(ro)
+                ro_desc = (
+                    f"The following roles may access {channel.mention}: "
+                    + humanize_list(ro_list)
+                )
+            except Exception:
+                ro_desc = "Not specified"
+            await ctx.send(ro_desc)
 
     @checks.admin_or_permissions(manage_guild=True)
     @commands.guild_only()
