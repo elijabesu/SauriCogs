@@ -168,7 +168,7 @@ class Cookies(commands.Cog):
     async def cookielb(self, ctx: commands.Context):
         """Display the server's cookie leaderboard."""
         ids = await self._get_ids(ctx)
-        list = []
+        lst = []
         pos = 1
         pound_len = len(str(len(ids)))
         header = "{pound:{pound_len}}{score:{bar_len}}{name:2}\n".format(
@@ -199,16 +199,16 @@ class Cookies(commands.Cog):
                     f"<<{name}>>\n"
                 )
             if pos % 10 == 0:
-                list.append(box(temp_msg, lang="md"))
+                lst.append(box(temp_msg, lang="md"))
                 temp_msg = header
             pos += 1
         if temp_msg != header:
-            list.append(box(temp_msg, lang="md"))
-        if list:
-            if len(list) > 1:
-                await menu(ctx, list, DEFAULT_CONTROLS)
+            lst.append(box(temp_msg, lang="md"))
+        if lst:
+            if len(lst) > 1:
+                await menu(ctx, lst, DEFAULT_CONTROLS)
             else:
-                await ctx.send(list[0])
+                await ctx.send(lst[0])
         else:
             empty = "Nothing to see here."
             await ctx.send(box(empty, lang="md"))

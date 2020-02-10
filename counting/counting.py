@@ -203,7 +203,7 @@ class Counting(Cog):
                             await asyncio.sleep(seconds)
                             await warn_msg.delete()
                     await message.delete()
-        except:
+        except TypeError:
             if message.author.id != self.bot.user.id:
                 rid = await self.config.guild(message.guild).whitelist()
                 if rid is not None:

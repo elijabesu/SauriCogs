@@ -204,7 +204,7 @@ class Suggestion(Cog):
                     await oldmsg.edit(content=content, embed=embed)
                     try:
                         await oldmsg.clear_reactions()
-                    except:
+                    except discord.Forbidden:
                         pass
         await self.config.custom("SUGGESTION", server, suggestion_id).finished.set(True)
         await self.config.custom("SUGGESTION", server, suggestion_id).approved.set(True)

@@ -446,8 +446,7 @@ class CookieStore(Cog):
             page_list = await self._show_store(ctx)
             if len(page_list) > 1:
                 return await menu(ctx, page_list, DEFAULT_CONTROLS)
-            else:
-                return await ctx.send(embed=page_list[0])
+            return await ctx.send(embed=page_list[0])
 
         item = item.strip("@")
         inventory = await self.config.member(ctx.author).inventory.get_raw()
@@ -586,8 +585,7 @@ class CookieStore(Cog):
             page_list = await self._show_store(ctx)
             if len(page_list) > 1:
                 return await menu(ctx, page_list, DEFAULT_CONTROLS)
-            else:
-                return await ctx.send(embed=page_list[0])
+            return await ctx.send(embed=page_list[0])
 
     @commands.command(name="return")
     @commands.guild_only()
@@ -639,16 +637,16 @@ class CookieStore(Cog):
         """See all items you own."""
         inventory = await self.config.member(ctx.author).inventory.get_raw()
 
-        list = []
+        lst = []
         for i in inventory:
             info = await self.config.member(ctx.author).inventory.get_raw(i)
             if info.get("is_role") is False:
-                list.append(i)
+                lst.append(i)
             else:
                 role_obj = get(ctx.guild.roles, name=i)
-                list.append(role_obj.mention)
-        desc = humanize_list(list)
-        if list == []:
+                lst.append(role_obj.mention)
+        desc = humanize_list(lst)
+        if lst == []:
             desc = "Nothing to see here."
 
         embed = discord.Embed(

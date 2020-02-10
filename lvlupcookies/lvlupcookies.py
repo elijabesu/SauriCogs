@@ -60,7 +60,7 @@ class LevelUpCookies(Cog):
     @lvlupcookies.command(name="show")
     async def lvlupcookies_show(self, ctx: commands.Context):
         """Show how many cookies a level gives."""
-        list = []
+        lst = []
         for level in await self.config.guild(ctx.guild).rewards.get_raw():
             l = await self.config.guild(ctx.guild).rewards.get_raw(level)
             c = l.get("cookies")
@@ -69,11 +69,11 @@ class LevelUpCookies(Cog):
             else:
                 name = "cookies"
             text = f"Level {level} - {c} {name}"
-            list.append(text)
-        if list == []:
+            lst.append(text)
+        if lst == []:
             desc = "Nothing to see here."
         else:
-            desc = "\n".join(list)
+            desc = "\n".join(lst)
         page_list = []
         for page in pagify(desc, delims=["\n"], page_length=1000):
             embed = discord.Embed(
