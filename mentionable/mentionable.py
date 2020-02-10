@@ -29,9 +29,9 @@ class Mentionable(Cog):
         """Makes that role mentionable"""
         if not role.mentionable:
             await role.edit(mentionable=True)
-            await ctx.send("{} is now mentionable.".format(role))
+            await ctx.send(f"{role} is now mentionable.")
         else:
-            await ctx.send("{} is already mentionable.".format(role))
+            await ctx.send(f"{role} is already mentionable.")
 
     @checks.admin_or_permissions(manage_roles=True)
     @commands.command()
@@ -42,7 +42,7 @@ class Mentionable(Cog):
        Makes that role unmentionable
        """
         if not role.mentionable:
-            await ctx.send("{} is already unmentionable.".format(role))
+            await ctx.send(f"{role} is already unmentionable.")
         else:
             await role.edit(mentionable=False)
-            await ctx.send("{} is now unmentionable.".format(role))
+            await ctx.send(f"{role} is now unmentionable.")

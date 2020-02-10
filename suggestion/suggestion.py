@@ -119,8 +119,8 @@ class Suggestion(Cog):
             await ctx.author.send(
                 content="Your suggestion has been sent for approval!", embed=embed
             )
-        except:
-            return
+        except discord.Forbidden:
+            pass
 
     @checks.admin_or_permissions(administrator=True)
     @commands.command()
@@ -163,9 +163,8 @@ class Suggestion(Cog):
             ):
                 return await ctx.send("This suggestion has been finished already.")
 
-        try:
-            oldmsg = await oldchannel.fetch_message(id=msg_id)
-        except:
+        oldmsg = await oldchannel.fetch_message(id=msg_id)
+        if oldmsg is None:
             return await ctx.send("Uh oh, message with this ID doesn't exist.")
         embed = oldmsg.embeds[0]
         content = oldmsg.content
@@ -180,13 +179,13 @@ class Suggestion(Cog):
             op_avatar = ctx.guild.icon_url
 
         embed.set_author(
-            name="Approved suggestion by {0}".format(op_name), icon_url=op_avatar
+            name=f"Approved suggestion by {op_name}", icon_url=op_avatar
         )
         if is_global is True:
             await oldmsg.edit(content=content, embed=embed)
             try:
                 await oldmsg.clear_reactions()
-            except:
+            except discord.Forbidden:
                 pass
         else:
             if channel is not None:
@@ -213,8 +212,8 @@ class Suggestion(Cog):
 
         try:
             await op.send(content="Your suggestion has been approved!", embed=embed)
-        except:
-            return
+        except discord.Forbidden:
+            pass
 
     @checks.admin_or_permissions(administrator=True)
     @commands.command()
@@ -259,9 +258,8 @@ class Suggestion(Cog):
             ):
                 return await ctx.send("This suggestion has been finished already.")
 
-        try:
-            oldmsg = await oldchannel.fetch_message(id=msg_id)
-        except:
+        oldmsg = await oldchannel.fetch_message(id=msg_id)
+        if oldmsg is None:
             return await ctx.send("Uh oh, message with this ID doesn't exist.")
         embed = oldmsg.embeds[0]
         content = oldmsg.content
@@ -276,7 +274,7 @@ class Suggestion(Cog):
             op_avatar = ctx.guild.icon_url
 
         embed.set_author(
-            name="Rejected suggestion by {0}".format(op_name), icon_url=op_avatar
+            name=f"Rejected suggestion by {op_name}", icon_url=op_avatar
         )
 
         if reason:
@@ -292,7 +290,7 @@ class Suggestion(Cog):
             await oldmsg.edit(content=content, embed=embed)
             try:
                 await oldmsg.clear_reactions()
-            except:
+            except discord.Forbidden:
                 pass
         else:
             if channel is not None:
@@ -311,7 +309,7 @@ class Suggestion(Cog):
                     await oldmsg.edit(content=content, embed=embed)
                     try:
                         await oldmsg.clear_reactions()
-                    except:
+                    except discord.Forbidden:
                         pass
         await self.config.custom("SUGGESTION", server, suggestion_id).finished.set(True)
         await self.config.custom("SUGGESTION", server, suggestion_id).rejected.set(True)
@@ -319,8 +317,8 @@ class Suggestion(Cog):
 
         try:
             await op.send(content="Your suggestion has been rejected!", embed=embed)
-        except:
-            return
+        except discord.Forbidden:
+            pass
 
     @checks.admin_or_permissions(administrator=True)
     @commands.command()
@@ -374,18 +372,13 @@ class Suggestion(Cog):
             ):
                 return await ctx.send("This suggestion already has a reason.")
 
-            try:
-                content, embed = await self._build_suggestion(
-                    ctx, ctx.author.id, ctx.guild.id, suggestion_id, is_global
-                )
-            except:
-                return
+            content, embed = await self._build_suggestion(
+                ctx, ctx.author.id, ctx.guild.id, suggestion_id, is_global
+            )
             embed.add_field(name="Reason:", value=reason, inline=False)
-            try:
-                msg = await channel.fetch_message(id=msg_id)
+            msg = await channel.fetch_message(id=msg_id)
+            if msg is not None:
                 await msg.edit(content=content, embed=embed)
-            except:
-                pass
         await self.config.custom("SUGGESTION", server, suggestion_id).reason.set(True)
         await self.config.custom("SUGGESTION", server, suggestion_id).rtext.set(reason)
         await ctx.tick()
@@ -400,12 +393,9 @@ class Suggestion(Cog):
         is_global: Optional[bool] = False,
     ):
         """Show a suggestion."""
-        try:
-            content, embed = await self._build_suggestion(
-                ctx, ctx.author.id, ctx.guild.id, suggestion_id, is_global
-            )
-        except:
-            return
+        content, embed = await self._build_suggestion(
+            ctx, ctx.author.id, ctx.guild.id, suggestion_id, is_global
+        )
         await ctx.send(content=content, embed=embed)
 
     @checks.admin_or_permissions(administrator=True)
@@ -639,10 +629,10 @@ class Suggestion(Cog):
             async with self.config.ignore() as ignore:
                 ignore.append(server.id)
             await ctx.send(
-                "{0} has been added into the ignored list.".format(server.name)
+                f"{server.name} has been added into the ignored list."
             )
         else:
-            await ctx.send("{0} is already in the ignored list.".format(server.name))
+            await ctx.send(f"{server.name} is already in the ignored list.")
 
     @setglobal.command(name="unignore")
     async def setsuggest_setglobal_unignore(
@@ -655,10 +645,10 @@ class Suggestion(Cog):
             async with self.config.ignore() as ignore:
                 ignore.remove(server.id)
             await ctx.send(
-                "{0} has been removed from the ignored list.".format(server.name)
+                f"{server.name} has been removed from the ignored list."
             )
         else:
-            await ctx.send("{0} already isn't in the ignored list.".format(server.name))
+            await ctx.send(f"{server.name} already isn't in the ignored list.")
 
     async def _build_suggestion(
         self, ctx, author_id, server_id, suggestion_id, is_global

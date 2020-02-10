@@ -42,8 +42,7 @@ class Lock(Cog):
         try:
             await bot.wait_for("message", timeout=30, check=pred)
         except asyncio.TimeoutError:
-            await ctx.send("You took too long. Try again, please.")
-            return
+            return await ctx.send("You took too long. Try again, please.")
         if pred.result is False:
             await self.config.guild(ctx.guild).everyone.set(True)
         else:
@@ -54,8 +53,7 @@ class Lock(Cog):
         try:
             await bot.wait_for("message", timeout=30, check=role)
         except asyncio.TimeoutError:
-            await ctx.send("You took too long. Try again, please.")
-            return
+            return await ctx.send("You took too long. Try again, please.")
         mod_role = role.result
         await self.config.guild(ctx.guild).moderator.set(str(mod_role))
 
@@ -70,17 +68,12 @@ class Lock(Cog):
             async with self.config.guild(ctx.guild).ignore() as ignore:
                 ignore.append(new_channel.id)
             await ctx.send(
-                "{0} has been added into the ignored channels list.".format(
-                    new_channel.mention
-                )
+                f"{new_channel.mention} has been added into the ignored channels list."
             )
         else:
             await ctx.send(
-                "{0} is already in the ignored channels list.".format(
-                    new_channel.mention
-                )
+                f"{new_channel.mention} is already in the ignored channels list."
             )
-            return
 
     @checks.admin_or_permissions(manage_guild=True)
     @commands.guild_only()
@@ -91,18 +84,13 @@ class Lock(Cog):
         """ Remove channels from the ignored list. """
         if new_channel.id not in await self.config.guild(ctx.guild).ignore():
             await ctx.send(
-                "{0} already isn't in the ignored channels list.".format(
-                    new_channel.mention
-                )
+                f"{new_channel.mention} already isn't in the ignored channels list."
             )
-            return
         else:
             async with self.config.guild(ctx.guild).ignore() as ignore:
                 ignore.remove(new_channel.id)
             await ctx.send(
-                "{0} has been removed from the ignored channels list.".format(
-                    new_channel.mention
-                )
+                f"{new_channel.mention} has been removed from the ignored channels list."
             )
 
     @checks.mod_or_permissions(manage_roles=True)
@@ -117,8 +105,7 @@ class Lock(Cog):
         which = await self.config.guild(ctx.guild).everyone()
 
         if name_moderator is None:
-            await ctx.send("Uh oh. Looks like your Admins haven't setup this yet.")
-            return
+            return await ctx.send("Uh oh. Looks like your Admins haven't setup this yet.")
 
         if which is True:
             await ctx.channel.set_permissions(
@@ -143,8 +130,7 @@ class Lock(Cog):
         which = await self.config.guild(ctx.guild).everyone()
 
         if name_moderator is None:
-            await ctx.send("Uh oh. Looks like your Admins haven't setup this yet.")
-            return
+            return await ctx.send("Uh oh. Looks like your Admins haven't setup this yet.")
 
         if which is True:
             await ctx.channel.set_permissions(
@@ -164,15 +150,10 @@ class Lock(Cog):
     async def lockserver(self, ctx: commands.Context, confirmation: bool = False):
         """ Lock `@everyone` from sending messages in the entire server."""
         if confirmation is False:
-            await ctx.send(
+            return await ctx.send(
                 "This will overwrite every channel's permissions.\n"
-                "If you're sure, type `{0}lockserver yes` (you can set an alias for this so I don't ask you every time).".format(
-                    ctx.clean_prefix
-                )
+                f"If you're sure, type `{ctx.clean_prefix}lockserver yes` (you can set an alias for this so I don't ask you every time)."
             )
-            return
-        else:
-            pass
 
         async with ctx.typing():
             everyone = get(ctx.guild.roles, name="@everyone")
@@ -182,14 +163,11 @@ class Lock(Cog):
             ignore = await self.config.guild(ctx.guild).ignore()
 
             if name_moderator is None:
-                await ctx.send("Uh oh. Looks like your Admins haven't setup this yet.")
-                return
+                return await ctx.send("Uh oh. Looks like your Admins haven't setup this yet.")
 
             for channel in ctx.guild.text_channels:
                 if channel.id in ignore:
                     continue
-                else:
-                    pass
                 if which is True:
                     await channel.set_permissions(
                         everyone, read_messages=True, send_messages=False
@@ -217,14 +195,11 @@ class Lock(Cog):
             ignore = await self.config.guild(ctx.guild).ignore()
 
             if name_moderator is None:
-                await ctx.send("Uh oh. Looks like your Admins haven't setup this yet.")
-                return
+                return await ctx.send("Uh oh. Looks like your Admins haven't setup this yet.")
 
             for channel in ctx.guild.text_channels:
                 if channel.id in ignore:
                     continue
-                else:
-                    pass
                 if which is True:
                     await channel.set_permissions(
                         everyone, read_messages=True, send_messages=True

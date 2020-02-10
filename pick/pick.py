@@ -37,7 +37,7 @@ class Pick(Cog):
         
         I suggest using [nestedcommands by tmerc](https://github.com/tmercswims/tmerc-cogs) (Example of usage `[p]say Congratulations <@$(pick)>! You won!`)"""
         winner = random.choice(ctx.guild.members)
-        await ctx.send("{}".format(winner.id))
+        await ctx.send(f"{winner.id}")
 
     # ROLES SETUP:
     @commands.command()
@@ -57,4 +57,4 @@ class Pick(Cog):
         I suggest using [nestedcommands by tmerc](https://github.com/tmercswims/tmerc-cogs) (Example of usage `[p]say Congratulations <@$(rpick)>! You won!`)"""
         role = get(ctx.guild.roles, id=await self.config.guild(ctx.guild).role())
         winner = random.choice(role.members)
-        await ctx.send("{}".format(winner.id))
+        await ctx.send(f"{winner.id}")

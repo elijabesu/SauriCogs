@@ -67,13 +67,11 @@ class AdvancedLock(Cog):
         has_been_set = await self.config.guild(ctx.guild).has_been_set()
         if target_state:
             if has_been_set is False:
-                await ctx.send(
+                return await ctx.send(
                     f"Lock is now enabled but remember to do `{ctx.clean_prefix}setlock setup`"
                 )
-            else:
-                await ctx.send("Lock is now enabled.")
-        else:
-            await ctx.send("Lock is now disabled.")
+            return await ctx.send("Lock is now enabled.")
+        await ctx.send("Lock is now disabled.")
 
     @checks.admin_or_permissions(manage_guild=True)
     @commands.guild_only()
@@ -89,8 +87,7 @@ class AdvancedLock(Cog):
         try:
             await bot.wait_for("message", timeout=30, check=pred)
         except asyncio.TimeoutError:
-            await ctx.send("You took too long. Try again, please.")
-            return
+            return await ctx.send("You took too long. Try again, please.")
         if pred.result is False:  # if no, everyone can see channels
             await self.config.guild(guild).everyone.set(True)
             await self.config.guild(guild).special.clear()
@@ -106,8 +103,7 @@ class AdvancedLock(Cog):
             try:
                 await bot.wait_for("message", timeout=30, check=pred)
             except asyncio.TimeoutError:
-                await ctx.send("You took too long. Try again, please.")
-                return
+                return await ctx.send("You took too long. Try again, please.")
             if pred.result is False:  # if not, all special roles can see same channels
                 await self.config.guild(guild).special.set(False)
                 arole_list = []
@@ -121,20 +117,16 @@ class AdvancedLock(Cog):
                 try:
                     answer = await bot.wait_for("message", timeout=120, check=check)
                 except asyncio.TimeoutError:
-                    await ctx.send("You took too long. Try again, please.")
-                    return
+                    return await ctx.send("You took too long. Try again, please.")
                 arole_list = await self._get_roles_from_content(ctx, answer.content)
                 if arole_list is None:
-                    await ctx.send("Invalid answer, canceling.")
-                    return
+                    return await ctx.send("Invalid answer, canceling.")
                 await self.config.guild(guild).roles.set(arole_list)
             else:  # if yes, some roles can see some channels, some other roles can see some other channels
                 await self.config.guild(ctx.guild).special.set(True)
                 await self.config.guild(guild).roles.clear()
                 await ctx.send(
-                    "**Use `{0}setlock add` to add a channel.**".format(
-                        ctx.clean_prefix
-                    )
+                    f"**Use `{ctx.clean_prefix}setlock add` to add a channel.**"
                 )
                 await ctx.send(
                     "Would you like to add default value for when a channel isn't specified? (yes/no)"
@@ -142,13 +134,10 @@ class AdvancedLock(Cog):
                 try:
                     await bot.wait_for("message", timeout=30, check=pred)
                 except asyncio.TimeoutError:
-                    await ctx.send("You took too long. Try again, please.")
-                    return
+                    return await ctx.send("You took too long. Try again, please.")
                 if pred.result is False:  # if no, it will give an error
                     await ctx.send(
-                        "Okay, `{0}lock` will give an error and will not lock a channel if the channel hasn't been added.".format(
-                            ctx.clean_prefix
-                        )
+                        f"Okay, `{ctx.clean_prefix}lock` will give an error and will not lock a channel if the channel hasn't been added."
                     )
                     await self.config.guild(guild).defa.set(False)
                     await self.config.guild(guild).def_roles.clear()
@@ -165,12 +154,10 @@ class AdvancedLock(Cog):
                     try:
                         answer = await bot.wait_for("message", timeout=120, check=check)
                     except asyncio.TimeoutError:
-                        await ctx.send("You took too long. Try again, please.")
-                        return
+                        return await ctx.send("You took too long. Try again, please.")
                     drole_list = await self._get_roles_from_content(ctx, answer.content)
                     if drole_list is None:
-                        await ctx.send("Invalid answer, canceling.")
-                        return
+                        return await ctx.send("Invalid answer, canceling.")
                     await self.config.guild(guild).def_roles.set(drole_list)
 
         await ctx.send("What is your Moderator role?")
@@ -178,8 +165,7 @@ class AdvancedLock(Cog):
         try:
             await bot.wait_for("message", timeout=30, check=role)
         except asyncio.TimeoutError:
-            await ctx.send("You took too long. Try again, please.")
-            return
+            return await ctx.send("You took too long. Try again, please.")
         mod_role = role.result
         await self.config.guild(ctx.guild).moderator.set(mod_role.id)
         await self.config.guild(ctx.guild).has_been_set.set(True)
@@ -197,12 +183,10 @@ class AdvancedLock(Cog):
         guild = ctx.guild
         has_been_set = await self.config.guild(ctx.guild).has_been_set()
         if has_been_set is False:
-            await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
-            return
+            return await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
         special = await self.config.guild(ctx.guild).special()
         if special is False:
-            await ctx.send("Your initial setup is incorrect.")
-            return
+            return await ctx.send("Your initial setup is incorrect.")
 
         arole_list = []
         await ctx.send(
@@ -215,16 +199,14 @@ class AdvancedLock(Cog):
         try:
             answer = await bot.wait_for("message", timeout=120, check=check)
         except asyncio.TimeoutError:
-            await ctx.send("You took too long. Try again, please.")
-            return
+            return await ctx.send("You took too long. Try again, please.")
         arole_list = await self._get_roles_from_content(ctx, answer.content)
         if arole_list is None:
-            await ctx.send("Invalid answer, canceling.")
-            return
+            return await ctx.send("Invalid answer, canceling.")
         await self.config.guild(ctx.guild).channels.set_raw(
             channel.id, value={"roles": arole_list}
         )
-        await ctx.send("{0}'s permissions set.".format(channel.mention))
+        await ctx.send(f"{channel.mention}'s permissions set.")
 
     @checks.admin_or_permissions(manage_guild=True)
     @commands.guild_only()
@@ -233,23 +215,17 @@ class AdvancedLock(Cog):
         """ Remove channels with special permissions. """
         has_been_set = await self.config.guild(ctx.guild).has_been_set()
         if has_been_set is False:
-            await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
-            return
+            return await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
         special = await self.config.guild(ctx.guild).special()
         if special is False:
-            await ctx.send("Your initial setup is incorrect.")
-            return
+            return await ctx.send("Your initial setup is incorrect.")
 
-        try:
-            is_already_channel = await self.config.guild(ctx.guild).channels.get_raw(
-                channel.id
-            )
-            if is_already_channel:
-                await self.config.guild(ctx.guild).channels.clear_raw(channel.id)
-                await ctx.send("{0}'s permissions removed.".format(channel.mention))
-                return
-        except:
-            await ctx.send("That channel has no extra permissions already.")
+        is_already_channel = await self.config.guild(ctx.guild).channels.get_raw(channel.id)
+        if is_already_channel is None:
+            return await ctx.send("That channel has no extra permissions already.")
+        if is_already_channel:
+            await self.config.guild(ctx.guild).channels.clear_raw(channel.id)
+            await ctx.send(f"{channel.mention}'s permissions removed.")
 
     @checks.admin_or_permissions(manage_guild=True)
     @commands.guild_only()
@@ -260,35 +236,24 @@ class AdvancedLock(Cog):
         """ Ignore a channel during server lock. """
         has_been_set = await self.config.guild(ctx.guild).has_been_set()
         if has_been_set is False:
-            await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
-            return
-        try:
-            is_already_channel = await self.config.guild(ctx.guild).channels.get_raw(
-                new_channel.id
-            )
-            if is_already_channel:
-                await ctx.send(
-                    "{0} has been previously added into the active list, remove it first with `{1}setlock remove {0}`.".format(
-                        new_channel.mention, ctx.clean_prefix
-                    )
-                )
-                return
-        except:
+            return await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
+        is_already_channel = await self.config.guild(ctx.guild).channels.get_raw(
+            new_channel.id
+        )
+        if is_already_channel is None:
             if new_channel.id not in await self.config.guild(ctx.guild).ignore():
                 async with self.config.guild(ctx.guild).ignore() as ignore:
                     ignore.append(new_channel.id)
-                await ctx.send(
-                    "{0} has been added into the ignored channels list.".format(
-                        new_channel.mention
-                    )
+                return await ctx.send(
+                    f"{new_channel.mention} has been added into the ignored channels list."
                 )
-            else:
-                await ctx.send(
-                    "{0} is already in the ignored channels list.".format(
-                        new_channel.mention
-                    )
-                )
-                return
+            return await ctx.send(
+                f"{new_channel.mention} is already in the ignored channels list."
+            )
+        if is_already_channel:
+            await ctx.send(
+                f"{new_channel.mention} has been previously added into the active list, remove it first with `{ctx.clean_prefix}setlock remove {new_channel.mention}`."
+            )
 
     @checks.admin_or_permissions(manage_guild=True)
     @commands.guild_only()
@@ -299,38 +264,26 @@ class AdvancedLock(Cog):
         """ Remove channels from the ignored list. """
         has_been_set = await self.config.guild(ctx.guild).has_been_set()
         if has_been_set is False:
-            await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
-            return
-        try:
-            is_already_channel = await self.config.guild(ctx.guild).channels.get_raw(
-                new_channel.id
+            return await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
+        is_already_channel = await self.config.guild(ctx.guild).channels.get_raw(
+            new_channel.id
+        )
+        if is_already_channel is None:
+            is_ignored = await self.config.guild(ctx.guild).ignore(new_channel.id)
+            if is_ignored is None:
+                return await ctx.send(
+                f"{new_channel.mention} already isn't in the ignored channels list."
             )
-            if is_already_channel:
-                await ctx.send(
-                    "{0} has been previously added into the active list, remove it first with `{1}setlock remove {0}`.".format(
-                        new_channel.mention, ctx.clean_prefix
-                    )
+            if is_ignored:
+                async with self.config.guild(ctx.guild).ignore() as ignore:
+                    ignore.remove(new_channel.id)
+                return await ctx.send(
+                    f"{new_channel.mention} has been removed from the ignored channels list."
                 )
-                return
-        except:
-            try:
-                is_ignored = await self.config.guild(ctx.guild).ignore(new_channel.id)
-                if is_ignored:
-                    async with self.config.guild(ctx.guild).ignore() as ignore:
-                        ignore.remove(new_channel.id)
-                    await ctx.send(
-                        "{0} has been removed from the ignored channels list.".format(
-                            new_channel.mention
-                        )
-                    )
-                    return
-            except:
-                await ctx.send(
-                    "{0} already isn't in the ignored channels list.".format(
-                        new_channel.mention
-                    )
-                )
-                return
+        if is_already_channel:
+            await ctx.send(
+                f"{new_channel.mention} has been previously added into the active list, remove it first with `{ctx.clean_prefix}setlock remove {new_channel.mention}`."
+            )
 
     @checks.admin_or_permissions(manage_guild=True)
     @commands.guild_only()
@@ -339,21 +292,17 @@ class AdvancedLock(Cog):
         """ List all channels' settings. """
         has_been_set = await self.config.guild(ctx.guild).has_been_set()
         if has_been_set is False:
-            await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
-            return
+            return await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
         data = await self.config.guild(ctx.guild).all()
 
-        try:
-            toggle = data["toggle"]
-        except:
+        toggle = data["toggle"]
+        if toggle is None:
             toggle = False
         if toggle is False:
-            await ctx.send("Lock is disabled.")
-            return
+            return await ctx.send("Lock is disabled.")
 
-        try:
-            mod = get(ctx.guild.roles, id=data["moderator"]).name
-        except:
+        mod = get(ctx.guild.roles, id=data["moderator"]).name
+        if mod is None:
             mod = None
 
         everyone = data["everyone"]
@@ -399,9 +348,7 @@ class AdvancedLock(Cog):
         except TypeError:
             ig_desc = "Not specified"
         except AttributeError:
-            ig_desc = "Something went wrong. `{0}setlock refresh` might fix it".format(
-                ctx.clean_prefix
-            )
+            ig_desc = f"Something went wrong. `{ctx.clean_prefix}setlock refresh` might fix it"
         if ig_list == []:
             ig_desc = "Not specified"
 
@@ -415,9 +362,7 @@ class AdvancedLock(Cog):
         except TypeError:
             c_desc = "Not specified"
         except AttributeError:
-            c_desc = "Something went wrong. `{0}setlock refresh` might fix it".format(
-                ctx.clean_prefix
-            )
+            c_desc = f"Something went wrong. `{ctx.clean_prefix}setlock refresh` might fix it"
         if c_list == []:
             c_desc = "Not specified"
 
@@ -444,9 +389,7 @@ class AdvancedLock(Cog):
                 )
             embed.add_field(
                 name=(
-                    "Channels with special settings (to see the settings, type `{0}setlock channel <channel>`):".format(
-                        ctx.clean_prefix
-                    )
+                    f"Channels with special settings (to see the settings, type `{ctx.clean_prefix}setlock channel <channel>`):"
                 ),
                 value=c_desc,
                 inline=False,
@@ -462,12 +405,13 @@ class AdvancedLock(Cog):
         """ List channel's settings. """
         has_been_set = await self.config.guild(ctx.guild).has_been_set()
         if has_been_set is False:
-            await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
-            return
+            return await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
         try:
             is_already_channel = await self.config.guild(ctx.guild).channels.get_raw(
                 channel.id
             )
+            if is_already_channel is None:
+                return await ctx.send("That channel has no extra permissions.")
             if is_already_channel:
                 c = await self.config.guild(ctx.guild).channels.get_raw(channel.id)
                 ro_list = []
@@ -479,13 +423,9 @@ class AdvancedLock(Cog):
                         f"The following roles may access {channel.mention}: "
                         + humanize_list(ro_list)
                     )
-                except:
+                except Exception:
                     ro_desc = "Not specified"
                 await ctx.send(ro_desc)
-                return
-        except:
-            await ctx.send("That channel has no extra permissions.")
-            return
 
     @checks.admin_or_permissions(manage_guild=True)
     @commands.guild_only()
@@ -494,8 +434,7 @@ class AdvancedLock(Cog):
         """ Refresh settings (deleted channels will be removed from ignored and special channel lists). """
         has_been_set = await self.config.guild(ctx.guild).has_been_set()
         if has_been_set is False:
-            await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
-            return
+            return await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
         async with ctx.typing():
             for ignore_id in await self.config.guild(ctx.guild).ignore():
                 ig = get(ctx.guild.text_channels, id=ignore_id)
@@ -515,16 +454,12 @@ class AdvancedLock(Cog):
         """ Reset all settings to default values. """
         has_been_set = await self.config.guild(ctx.guild).has_been_set()
         if has_been_set is False:
-            await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
-            return
+            return await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
         if confirmation is False:
-            await ctx.send(
+            return await ctx.send(
                 "This will delete **all** settings. This action **cannot** be undone.\n"
-                "If you're sure, type `{0}setlock reset yes`.".format(ctx.clean_prefix)
+                f"If you're sure, type `{ctx.clean_prefix}setlock reset yes`."
             )
-            return
-        else:
-            pass
 
         await self.config.guild(ctx.guild).moderator.set(None)
         await self.config.guild(ctx.guild).everyone.set(True)
@@ -539,9 +474,7 @@ class AdvancedLock(Cog):
         for channel in await self.config.guild(ctx.guild).channels.get_raw():
             await self.config.guild(ctx.guild).channels.clear_raw(channel)
         await ctx.send(
-            "All settings have been set to default values. Run `{0}setlock setup` to set them again!".format(
-                ctx.clean_prefix
-            )
+            f"All settings have been set to default values. Run `{ctx.clean_prefix}setlock setup` to set them again!"
         )
 
     @checks.admin_or_permissions(manage_guild=True)
@@ -551,12 +484,10 @@ class AdvancedLock(Cog):
         """Check if all channels are set."""
         has_been_set = await self.config.guild(ctx.guild).has_been_set()
         if has_been_set is False:
-            await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
-            return
+            return await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
         defa = await self.config.guild(ctx.guild).defa()
         if defa is True:
-            await ctx.send("You don't need to know this though.")
-            return
+            return await ctx.send("You don't need to know this though.")
         ignore = await self.config.guild(ctx.guild).ignore()
         config_channels = await self.config.guild(ctx.guild).channels.get_raw()
         check_channels = []
@@ -584,15 +515,13 @@ class AdvancedLock(Cog):
         Optionally, you can set how many seconds the channel should stay locked for."""
         has_been_set = await self.config.guild(ctx.guild).has_been_set()
         if has_been_set is False:
-            await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
-            return
+            return await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
         async with ctx.typing():
             toggle = await self.config.guild(ctx.guild).toggle()
             if toggle is False:
-                await ctx.send(
+                return await ctx.send(
                     "Uh oh. Lock isn't enabled in this server. Ask your Admins to enable it."
                 )
-                return
 
             everyone = get(ctx.guild.roles, name="@everyone")
             mods_id = await self.config.guild(ctx.guild).moderator()
@@ -603,12 +532,10 @@ class AdvancedLock(Cog):
             ignore = await self.config.guild(ctx.guild).ignore()
 
             if mods is None:
-                await ctx.send("Uh oh. Looks like your Admins haven't setup this yet.")
-                return
+                return await ctx.send("Uh oh. Looks like your Admins haven't setup this yet.")
 
             if ctx.channel.id in ignore:
-                await ctx.send("Uh oh. This channel is in the ignored list.")
-                return
+                return await ctx.send("Uh oh. This channel is in the ignored list.")
 
             if which is True:  # if everyone can see the channels
                 await ctx.channel.set_permissions(
@@ -629,35 +556,12 @@ class AdvancedLock(Cog):
                         )
                 else:  # if True, some roles can see some channels
                     c_ctx = ctx.channel.id
-                    try:
-                        c = await self.config.guild(ctx.guild).channels.get_raw(c_ctx)
-                        if c is None:
-                            if defa is False:
-                                await ctx.send(
-                                    "Uh oh. This channel has no settings. Ask your Admins to add it."
-                                )
-                                return
-                            else:
-                                def_roles = await self.config.guild(
-                                    ctx.guild
-                                ).def_roles()
-                                for def_role_id in def_roles:
-                                    def_ro = get(ctx.guild.roles, id=def_role_id)
-                                    await ctx.channel.set_permissions(
-                                        def_ro, read_messages=True, send_messages=False
-                                    )
-                        else:
-                            for role_id in c["roles"]:
-                                ro = get(ctx.guild.roles, id=role_id)
-                                await ctx.channel.set_permissions(
-                                    ro, read_messages=True, send_messages=False
-                                )
-                    except:
+                    c = await self.config.guild(ctx.guild).channels.get_raw(c_ctx)
+                    if c is None:
                         if defa is False:
-                            await ctx.send(
+                            return await ctx.send(
                                 "Uh oh. This channel has no settings. Ask your Admins to add it."
                             )
-                            return
                         else:
                             def_roles = await self.config.guild(ctx.guild).def_roles()
                             for def_role_id in def_roles:
@@ -665,6 +569,12 @@ class AdvancedLock(Cog):
                                 await ctx.channel.set_permissions(
                                     def_ro, read_messages=True, send_messages=False
                                 )
+                    else:
+                        for role_id in c["roles"]:
+                            ro = get(ctx.guild.roles, id=role_id)
+                            await ctx.channel.set_permissions(
+                                ro, read_messages=True, send_messages=False
+                            )
             await ctx.channel.set_permissions(
                 mods, read_messages=True, send_messages=True
             )
@@ -686,15 +596,13 @@ class AdvancedLock(Cog):
         """ Unlock the channel for `@everyone`. """
         has_been_set = await self.config.guild(ctx.guild).has_been_set()
         if has_been_set is False:
-            await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
-            return
+            return await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
         async with ctx.typing():
             toggle = await self.config.guild(ctx.guild).toggle()
             if toggle is False:
-                await ctx.send(
+                return await ctx.send(
                     "Uh oh. Lock isn't enabled in this server. Ask your Admins to enable it."
                 )
-                return
 
             everyone = get(ctx.guild.roles, name="@everyone")
             mods_id = await self.config.guild(ctx.guild).moderator()
@@ -705,12 +613,10 @@ class AdvancedLock(Cog):
             ignore = await self.config.guild(ctx.guild).ignore()
 
             if mods is None:
-                await ctx.send("Uh oh. Looks like your Admins haven't setup this yet.")
-                return
+                return await ctx.send("Uh oh. Looks like your Admins haven't setup this yet.")
 
             if ctx.channel.id in ignore:
-                await ctx.send("Uh oh. This channel is in the ignored list.")
-                return
+                return await ctx.send("Uh oh. This channel is in the ignored list.")
 
             if which is True:  # if everyone can see the channels
                 await ctx.channel.set_permissions(
@@ -728,35 +634,12 @@ class AdvancedLock(Cog):
                         )
                 else:  # if True, some roles can see some channels
                     c_ctx = ctx.channel.id
-                    try:
-                        c = await self.config.guild(ctx.guild).channels.get_raw(c_ctx)
-                        if c is None:
-                            if defa is False:
-                                await ctx.send(
-                                    "Uh oh. This channel has no settings. Ask your Admins to add it."
-                                )
-                                return
-                            else:
-                                def_roles = await self.config.guild(
-                                    ctx.guild
-                                ).def_roles()
-                                for def_role_id in def_roles:
-                                    def_ro = get(ctx.guild.roles, id=def_role_id)
-                                    await ctx.channel.set_permissions(
-                                        def_ro, read_messages=True, send_messages=True
-                                    )
-                        else:
-                            for role_id in c["roles"]:
-                                ro = get(ctx.guild.roles, id=role_id)
-                                await ctx.channel.set_permissions(
-                                    ro, read_messages=True, send_messages=True
-                                )
-                    except:
+                    c = await self.config.guild(ctx.guild).channels.get_raw(c_ctx)
+                    if c is None:
                         if defa is False:
-                            await ctx.send(
+                            return await ctx.send(
                                 "Uh oh. This channel has no settings. Ask your Admins to add it."
                             )
-                            return
                         else:
                             def_roles = await self.config.guild(ctx.guild).def_roles()
                             for def_role_id in def_roles:
@@ -764,6 +647,12 @@ class AdvancedLock(Cog):
                                 await ctx.channel.set_permissions(
                                     def_ro, read_messages=True, send_messages=True
                                 )
+                    else:
+                        for role_id in c["roles"]:
+                            ro = get(ctx.guild.roles, id=role_id)
+                            await ctx.channel.set_permissions(
+                                ro, read_messages=True, send_messages=True
+                            )
 
             await ctx.channel.set_permissions(
                 mods, read_messages=True, send_messages=True
@@ -779,26 +668,21 @@ class AdvancedLock(Cog):
         """ Lock `@everyone` from sending messages in the entire server."""
         has_been_set = await self.config.guild(ctx.guild).has_been_set()
         if has_been_set is False:
-            await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
-            return
+            return await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
         if confirmation is False:
-            await ctx.send(
+            return await ctx.send(
                 "This will overwrite every channel's permissions.\n"
-                "If you're sure, type `{0}lockserver yes` (you can set an alias for this so I don't ask you every time).".format(
-                    ctx.clean_prefix
-                )
+                f"If you're sure, type `{ctx.clean_prefix}lockserver yes` (you can set an alias for this so I don't ask you every time)."
             )
-            return
         else:
             pass
 
         async with ctx.typing():
             toggle = await self.config.guild(ctx.guild).toggle()
             if toggle is False:
-                await ctx.send(
+                return await ctx.send(
                     "Uh oh. Lock isn't enabled in this server. Ask your Admins to enable it."
                 )
-                return
 
             everyone = get(ctx.guild.roles, name="@everyone")
             mods_id = await self.config.guild(ctx.guild).moderator()
@@ -809,14 +693,11 @@ class AdvancedLock(Cog):
             ignore = await self.config.guild(ctx.guild).ignore()
 
             if mods is None:
-                await ctx.send("Uh oh. Looks like your Admins haven't setup this yet.")
-                return
+                return await ctx.send("Uh oh. Looks like your Admins haven't setup this yet.")
 
             for channel in ctx.guild.text_channels:
                 if channel.id in ignore:
                     continue
-                else:
-                    pass
                 if which is True:  # if everyone can see the channels
                     await channel.set_permissions(
                         everyone, read_messages=True, send_messages=False
@@ -848,35 +729,24 @@ class AdvancedLock(Cog):
                                 channel.id in check_channels
                                 for channel in ctx.guild.text_channels
                             ):
-                                await ctx.send(
+                                return await ctx.send(
                                     "Uh oh. I cannot let you do this. Ask your Admins to add remaining channels."
                                 )
-                                return
-                        try:
-                            c = await self.config.guild(ctx.guild).channels.get_raw(
-                                channel.id
-                            )
-                            if c is None:
-                                def_roles = await self.config.guild(
-                                    ctx.guild
-                                ).def_roles()
-                                for def_role_id in def_roles:
-                                    def_ro = get(ctx.guild.roles, id=def_role_id)
-                                    await channel.set_permissions(
-                                        def_ro, read_messages=True, send_messages=False
-                                    )
-                            else:
-                                for role_id in c["roles"]:
-                                    ro = get(ctx.guild.roles, id=role_id)
-                                    await channel.set_permissions(
-                                        ro, read_messages=True, send_messages=False
-                                    )
-                        except:
+                        c = await self.config.guild(ctx.guild).channels.get_raw(
+                            channel.id
+                        )
+                        if c is None:
                             def_roles = await self.config.guild(ctx.guild).def_roles()
                             for def_role_id in def_roles:
                                 def_ro = get(ctx.guild.roles, id=def_role_id)
                                 await channel.set_permissions(
                                     def_ro, read_messages=True, send_messages=False
+                                )
+                        else:
+                            for role_id in c["roles"]:
+                                ro = get(ctx.guild.roles, id=role_id)
+                                await channel.set_permissions(
+                                    ro, read_messages=True, send_messages=False
                                 )
                 await channel.set_permissions(
                     mods, read_messages=True, send_messages=True
@@ -892,15 +762,13 @@ class AdvancedLock(Cog):
         """ Unlock the entire server for `@everyone` """
         has_been_set = await self.config.guild(ctx.guild).has_been_set()
         if has_been_set is False:
-            await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
-            return
+            return await ctx.send(f"You have to do `{ctx.clean_prefix}setlock setup` first!")
         async with ctx.typing():
             toggle = await self.config.guild(ctx.guild).toggle()
             if toggle is False:
-                await ctx.send(
+                return await ctx.send(
                     "Uh oh. Lock isn't enabled in this server. Ask your Admins to enable it."
                 )
-                return
 
             everyone = get(ctx.guild.roles, name="@everyone")
             mods_id = await self.config.guild(ctx.guild).moderator()
@@ -911,14 +779,11 @@ class AdvancedLock(Cog):
             ignore = await self.config.guild(ctx.guild).ignore()
 
             if mods is None:
-                await ctx.send("Uh oh. Looks like your Admins haven't setup this yet.")
-                return
+                return await ctx.send("Uh oh. Looks like your Admins haven't setup this yet.")
 
             for channel in ctx.guild.text_channels:
                 if channel.id in ignore:
                     continue
-                else:
-                    pass
                 if which is True:  # if everyone can see the channels
                     await channel.set_permissions(
                         everyone, read_messages=True, send_messages=True
@@ -947,35 +812,22 @@ class AdvancedLock(Cog):
                                 channel.id in check_channels
                                 for channel in ctx.guild.text_channels
                             ):
-                                await ctx.send(
+                                return await ctx.send(
                                     "Uh oh. I cannot let you do this. Ask your Admins to add remaining channels."
                                 )
-                                return
-                        try:
-                            c = await self.config.guild(ctx.guild).channels.get_raw(
-                                channel.id
-                            )
-                            if c is None:
-                                def_roles = await self.config.guild(
-                                    ctx.guild
-                                ).def_roles()
-                                for def_role_id in def_roles:
-                                    def_ro = get(ctx.guild.roles, id=def_role_id)
-                                    await channel.set_permissions(
-                                        def_ro, read_messages=True, send_messages=True
-                                    )
-                            else:
-                                for role_id in c["roles"]:
-                                    ro = get(ctx.guild.roles, id=role_id)
-                                    await channel.set_permissions(
-                                        ro, read_messages=True, send_messages=True
-                                    )
-                        except:
+                        c = await self.config.guild(ctx.guild).channels.get_raw(channel.id)
+                        if c is None:
                             def_roles = await self.config.guild(ctx.guild).def_roles()
                             for def_role_id in def_roles:
                                 def_ro = get(ctx.guild.roles, id=def_role_id)
                                 await channel.set_permissions(
                                     def_ro, read_messages=True, send_messages=True
+                                )
+                        else:
+                            for role_id in c["roles"]:
+                                ro = get(ctx.guild.roles, id=role_id)
+                                await channel.set_permissions(
+                                    ro, read_messages=True, send_messages=True
                                 )
                 await channel.set_permissions(
                     mods, read_messages=True, send_messages=True
@@ -990,7 +842,7 @@ class AdvancedLock(Cog):
                 discord.utils.get(ctx.guild.roles, name=role.strip(" ")).id
                 for role in content_list
             ]
-        except:
+        except Exception:
             return None
         else:
             return role_list

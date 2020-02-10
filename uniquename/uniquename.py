@@ -90,17 +90,15 @@ class UniqueName(Cog):
         if len(guilds) == 0:
             return
         for gid in guilds:
-            try:
-                guild = self.bot.get_guild(gid)
+            guild = self.bot.get_guild(gid)
+            if guild is not None:
                 member = guild.get_member(before.id)
                 if await self.config.guild(guild).toggle() is False:
                     return
                 config_roles = await self.config.guild(guild).roles()
                 if len(config_roles) == 0:
                     return
-                if len(member.roles) == 0:
-                    pass
-                else:
+                if len(member.roles) != 0:
                     for role in member.roles:
                         if role.id in config_roles:
                             return
@@ -110,17 +108,13 @@ class UniqueName(Cog):
                     return
                 if after.name in names:
                     await member.edit(nick=name, reason="UniqueName cog")
-            except:
-                continue
 
     async def _build_name_list(self, guild):
         names = []
         for rid in await self.config.guild(guild).roles():
-            try:
-                role = guild.get_role(rid)
+            role = guild.get_role(rid)
+            if role is not None:
                 for member in role.members:
                     names.append(member.nick)
                     names.append(member.name)
-            except:
-                continue
         return names

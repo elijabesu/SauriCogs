@@ -106,12 +106,11 @@ class Marriage(Cog):
         if currency != 0:
             if currency != 1:
                 return await ctx.send("Uh oh, currency can only be 0 or 1.")
-            else:
-                loaded = self.bot.get_cog("Cookies")
-                if loaded is None:
-                    return await ctx.send(
-                        f"Uh oh, Cookies isn't loaded. Load it using `{ctx.clean_prefix}load cookies`"
-                    )
+            loaded = self.bot.get_cog("Cookies")
+            if loaded is None:
+                return await ctx.send(
+                    f"Uh oh, Cookies isn't loaded. Load it using `{ctx.clean_prefix}load cookies`"
+                )
         await self.config.guild(ctx.guild).currency.set(currency)
         await ctx.tick()
 
@@ -215,9 +214,8 @@ class Marriage(Cog):
 
         if len(about) > 1000:
             return await ctx.send("Uh oh, this is not an essay.")
-        else:
-            await self.config.member(ctx.author).about.set(about)
-            await ctx.tick()
+        await self.config.member(ctx.author).about.set(about)
+        await ctx.tick()
 
     @commands.guild_only()
     @commands.command()
@@ -242,15 +240,11 @@ class Marriage(Cog):
             spouse_ids = await conf.current()
             spouses = []
             for spouse_id in spouse_ids:
-                try:
-                    spouse = ctx.guild.get_member(spouse_id)
-                    if spouse is None:
-                        continue
-                    else:
-                        spouse = spouse.name
-                    spouses.append(spouse)
-                except:
+                spouse = ctx.guild.get_member(spouse_id)
+                if spouse is None:
                     continue
+                spouse = spouse.name
+                spouses.append(spouse)
             if spouses == []:
                 spouse_header = "Spouse:"
                 spouse_text = "None"
@@ -273,15 +267,11 @@ class Marriage(Cog):
             else:
                 exes = []
                 for ex_id in exes_ids:
-                    try:
-                        ex = ctx.guild.get_member(ex_id)
-                        if ex is None:
-                            continue
-                        else:
-                            ex = ex.name
-                        exes.append(ex)
-                    except:
+                    ex = ctx.guild.get_member(ex_id)
+                    if ex is None:
                         continue
+                    ex = ex.name
+                    exes.append(ex)
                 if exes == []:
                     ex_text = "None"
                 else:
@@ -319,10 +309,10 @@ class Marriage(Cog):
 
         e = discord.Embed(colour=member.color)
         e.set_author(
-            name="{0}'s Profile".format(member.name), icon_url=member.avatar_url
+            name=f"{member.name}'s Profile", icon_url=member.avatar_url
         )
         e.set_footer(
-            text="{0}#{1} ({2})".format(member.name, member.discriminator, member.id)
+            text=f"{member.name}#{member.discriminator} ({member.id})"
         )
         e.set_thumbnail(url=member.avatar_url)
         e.add_field(name="About:", value=await conf.about(), inline=False)
@@ -351,15 +341,11 @@ class Marriage(Cog):
         exes_ids = await self.config.member(member).exes()
         exes = []
         for ex_id in exes_ids:
-            try:
-                ex = ctx.guild.get_member(ex_id)
-                if ex is None:
-                    continue
-                else:
-                    ex = ex.name
-                exes.append(ex)
-            except:
+            ex = ctx.guild.get_member(ex_id)
+            if ex is None:
                 continue
+            ex = ex.name
+            exes.append(ex)
         if exes == []:
             ex_text = "unknown"
         else:
@@ -405,8 +391,6 @@ class Marriage(Cog):
         await self.bot.wait_for("message", check=pred)
         if pred.result is False:
             return await ctx.send("Oh no... I was looking forward to the cerenomy...")
-        else:
-            pass
 
         default_amount = await self.config.guild(ctx.guild).marprice()
         author_marcount = await self.config.member(ctx.author).marcount()

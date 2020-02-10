@@ -99,7 +99,7 @@ class Counting(Cog):
         if confirmation is False:
             return await ctx.send(
                 "This will reset the ongoing counting. This action **cannot** be undone.\n"
-                "If you're sure, type `{0}setcount reset yes`.".format(ctx.clean_prefix)
+                f"If you're sure, type `{ctx.clean_prefix}setcount reset yes`."
             )
 
         p = await self.config.guild(ctx.guild).previous()
@@ -211,15 +211,14 @@ class Counting(Cog):
                     if role is not None:
                         if role in message.author.roles:
                             return
-                        else:
-                            if warning is True:
-                                warn_msg = await message.channel.send(
-                                    f"The next message in this channel must be {next_number}"
-                                )
-                                if seconds != 0:
-                                    await asyncio.sleep(seconds)
-                                    await warn_msg.delete()
-                            await message.delete()
+                        if warning is True:
+                            warn_msg = await message.channel.send(
+                                f"The next message in this channel must be {next_number}"
+                            )
+                            if seconds != 0:
+                                await asyncio.sleep(seconds)
+                                await warn_msg.delete()
+                        await message.delete()
                     else:
                         if warning is True:
                             warn_msg = await message.channel.send(
@@ -261,11 +260,7 @@ class Counting(Cog):
                     p = deleted - 1
                     await self.config.guild(message.guild).previous.set(p)
                     await message.channel.send(deleted)
-                else:
-                    return
-            else:
-                return
-        except:
+        except TypeError:
             return
 
     async def _set_topic(self, now, goal, n, channel):

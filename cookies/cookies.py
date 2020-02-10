@@ -136,9 +136,7 @@ class Cookies(commands.Cog):
             return await ctx.send("Uh oh, amount has to be more than 0.")
         if target.id == ctx.author.id:
             return await ctx.send("Why would you do that?")
-        if amount <= author_cookies:
-            pass
-        else:
+        if amount > author_cookies:
             return await ctx.send("You don't have enough cookies yourself!")
         target_cookies = int(await self.config.member(target).cookies())
         target_cookies += amount
@@ -151,9 +149,7 @@ class Cookies(commands.Cog):
         await self.config.member(ctx.author).cookies.set(author_cookies)
         await self.config.member(target).cookies.set(target_cookies)
         await ctx.send(
-            "{0} has gifted {1} :cookie: to {2}".format(
-                ctx.author.mention, amount, target.mention
-            )
+            f"{ctx.author.mention} has gifted {amount} :cookie: to {target.mention}"
         )
 
     @commands.command(aliases=["jar"])
@@ -162,10 +158,10 @@ class Cookies(commands.Cog):
         """Check how many cookies you have."""
         if not target:
             cookies = int(await self.config.member(ctx.author).cookies())
-            await ctx.send("You have {0} :cookie:".format(cookies))
+            await ctx.send(f"You have {cookies} :cookie:")
         else:
             cookies = int(await self.config.member(target).cookies())
-            await ctx.send("{0} has {1} :cookie:".format(target.display_name, cookies))
+            await ctx.send(f"{target.display_name} has {cookies} :cookie:")
 
     @commands.command(aliases=["cookieleaderboard"])
     @commands.guild_only()
@@ -237,7 +233,7 @@ class Cookies(commands.Cog):
 
         await self.config.guild(ctx.guild).amount.set(amount)
         if amount != 0:
-            await ctx.send("Members will receive {0} cookies.".format(amount))
+            await ctx.send(f"Members will receive {amount} cookies.")
         else:
             pred = MessagePredicate.valid_int(ctx)
             await ctx.send("What's the minimum amount of cookies members can obtain?")
@@ -257,9 +253,7 @@ class Cookies(commands.Cog):
             await self.config.guild(ctx.guild).maximum.set(maximum)
 
             await ctx.send(
-                "Members will receive a random amount of cookies between {0} and {1}.".format(
-                    minimum, maximum
-                )
+                f"Members will receive a random amount of cookies between {minimum} and {maximum}."
             )
 
     @setcookies.command(name="cooldown", aliases=["cd"])
@@ -309,7 +303,7 @@ class Cookies(commands.Cog):
             return await ctx.send(f"Uh oh, amount can't be greater than {_MAX_BALANCE:,}.")
         await self.config.member(target).cookies.set(amount)
         await ctx.send(
-            "Set {0}'s balance to {1} :cookie:".format(target.mention, amount)
+            f"Set {target.mention}'s balance to {amount} :cookie:"
         )
 
     @setcookies.command(name="add")
@@ -325,7 +319,7 @@ class Cookies(commands.Cog):
             return await ctx.send(f"Uh oh, {target.display_name} has reached the maximum amount of cookies.")
         await self.config.member(target).cookies.set(target_cookies)
         await ctx.send(
-            "Added {0} :cookie: to {1}'s balance.".format(amount, target.mention)
+            f"Added {amount} :cookie: to {target.mention}'s balance."
         )
 
     @setcookies.command(name="take")
@@ -340,12 +334,10 @@ class Cookies(commands.Cog):
             target_cookies -= amount
             await self.config.member(target).cookies.set(target_cookies)
             await ctx.send(
-                "Took away {0} :cookie: from {1}'s balance.".format(
-                    amount, target.mention
-                )
+                f"Took away {amount} :cookie: from {target.mention}'s balance."
             )
         else:
-            await ctx.send("{0} doesn't have enough :cookies:".format(target.mention))
+            await ctx.send(f"{target.mention} doesn't have enough :cookies:")
 
     @setcookies.command(name="reset")
     async def setcookies_reset(self, ctx: commands.Context, confirmation: bool = False):
@@ -353,9 +345,7 @@ class Cookies(commands.Cog):
         if confirmation is False:
             return await ctx.send(
                 "This will delete **all** cookies from all members. This action **cannot** be undone.\n"
-                "If you're sure, type `{0}setcookies reset yes`.".format(
-                    ctx.clean_prefix
-                )
+                f"If you're sure, type `{ctx.clean_prefix}setcookies reset yes`."
             )
 
         for member in ctx.guild.members:
@@ -440,7 +430,7 @@ class Cookies(commands.Cog):
                 seconds -= value * count
                 if value == 1:
                     name = name.rstrip("s")
-                result.append("{} {}".format(value, name))
+                result.append(f"{value} {name}")
         return ", ".join(result[:granularity])
 
     @staticmethod

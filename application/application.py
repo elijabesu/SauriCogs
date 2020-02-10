@@ -66,7 +66,7 @@ class Application(Cog):
                 "I don't seem to be able to DM you. Do you have closed DMs?"
             )
 
-        await ctx.send("Okay, {0}, I've sent you a DM.".format(author.mention))
+        await ctx.send(f"Okay, {author.mention}, I've sent you a DM.")
 
         def check(m):
             return m.author == author and m.channel == author.dm_channel
@@ -123,11 +123,9 @@ class Application(Cog):
         embed = discord.Embed(color=await ctx.embed_colour(), timestamp=datetime.now())
         embed.set_author(name="New application!", icon_url=author.avatar_url)
         embed.set_footer(
-            text="{0}#{1} ({2})".format(author.name, author.discriminator, author.id)
+            text=f"{author.name}#{author.discriminator} ({author.id})"
         )
-        embed.title = "User: {0}#{1} ({2})".format(
-            author.name, author.discriminator, author.id
-        )
+        embed.title = f"User: {author.name}#{author.discriminator} ({author.id})"
         embed.add_field(name="Name:", value=name.content, inline=True)
         embed.add_field(name="Age:", value=age.content, inline=True)
         embed.add_field(name="Timezone:", value=timezone.content, inline=True)
@@ -229,7 +227,7 @@ class Application(Cog):
         role = MessagePredicate.valid_role(ctx)
         if applicant in target.roles:
             await ctx.send(
-                "What role do you want to accept {0} as?".format(target.name)
+                f"What role do you want to accept {target.name} as?"
             )
             try:
                 await bot.wait_for("message", timeout=30, check=role)
@@ -238,15 +236,13 @@ class Application(Cog):
             role_add = role.result
             await target.add_roles(role_add)
             await target.remove_roles(applicant)
-            await ctx.send("Accepted {0} as {1}.".format(target.mention, role_add))
+            await ctx.send(f"Accepted {target.mention} as {role_add}.")
             await target.send(
-                "You have been accepted as {0} in {1}.".format(role_add, guild.name)
+                f"You have been accepted as {role_add} in {guild.name}."
             )
         else:
             await ctx.send(
-                "Uh oh. Looks like {0} hasn't applied for anything.".format(
-                    target.mention
-                )
+                f"Uh oh. Looks like {target.mention} hasn't applied for anything."
             )
 
     @checks.admin_or_permissions(administrator=True)
@@ -279,19 +275,15 @@ class Application(Cog):
                 except asyncio.TimeoutError:
                     return await ctx.send("You took too long. Try again, please.")
                 await target.send(
-                    "Your application in {0} has been denied.\n*Reason:* {1}".format(
-                        guild.name, reason.content
-                    )
+                    f"Your application in {guild.name} has been denied.\n*Reason:* {reason.content}"
                 )
             else:
                 await target.send(
-                    "Your application in {0} has been denied.".format(guild.name)
+                    f"Your application in {guild.name} has been denied."
                 )
             await target.remove_roles(applicant)
-            await ctx.send("Denied {0}'s application.".format(target.mention))
+            await ctx.send(f"Denied {target.mention}'s application.")
         else:
             await ctx.send(
-                "Uh oh. Looks like {0} hasn't applied for anything.".format(
-                    target.mention
-                )
+                f"Uh oh. Looks like {target.mention} hasn't applied for anything."
             )

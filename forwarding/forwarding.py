@@ -29,26 +29,22 @@ class Forwarding(commands.Cog):
         owner = self.bot.get_user(self.bot.owner_id)
         guild = self.bot.get_guild(await self.config.guild_id())
         if guild is None:
-            await owner.send(embed=embed)
+            return await owner.send(embed=embed)
+        channel = guild.get_channel(await self.config.channel_id())
+        if channel is None:
+            return await owner.send(embed=embed)
+        ping_role = guild.get_role(await self.config.ping_role_id())
+        ping_user = guild.get_member(await self.config.ping_user_id())
+        if ping_role is None:
+            if ping_user is None:
+                return await channel.send(embed=embed)
+            return await channel.send(content=f"{ping_user.mention}", embed=embed)
+        if not ping_role.mentionable:
+            await ping_role.edit(mentionable=True)
+            await channel.send(content=f"{ping_role.mention}", embed=embed)
+            await ping_role.edit(mentionable=False)
         else:
-            channel = guild.get_channel(await self.config.channel_id())
-            if channel is None:
-                await owner.send(embed=embed)
-            else:
-                ping_role = guild.get_role(await self.config.ping_role_id())
-                ping_user = guild.get_member(await self.config.ping_user_id())
-                if ping_role is None:
-                    if ping_user is None:
-                        await channel.send(embed=embed)
-                    else:
-                        await channel.send(content=f"{ping_user.mention}", embed=embed)
-                else:
-                    if not ping_role.mentionable:
-                        await ping_role.edit(mentionable=True)
-                        await channel.send(content=f"{ping_role.mention}", embed=embed)
-                        await ping_role.edit(mentionable=False)
-                    else:
-                        await channel.send(content=f"{ping_role.mention}", embed=embed)
+            await channel.send(content=f"{ping_role.mention}", embed=embed)
 
     @commands.Cog.listener()
     async def on_message_without_command(self, message):
@@ -56,49 +52,46 @@ class Forwarding(commands.Cog):
             return
         if message.channel.recipient.id == self.bot.owner_id:
             return
-        sender = message.author
         if message.author == self.bot.user:
             return
+        if not message.attachments:
+            embed = discord.Embed(
+                colour=discord.Colour.red(),
+                description=message.content,
+                timestamp=message.created_at,
+            )
+            embed.set_author(
+                name=message.author, icon_url=message.author.avatar_url
+            )
+            embed.set_footer(text=f"User ID: {message.author.id}")
+            await message.author.send("Message has been delivered.")
         else:
-            if not message.attachments:
-                embed = discord.Embed(
-                    colour=discord.Colour.red(),
-                    description=message.content,
-                    timestamp=message.created_at,
-                )
-                embed.set_author(
-                    name=message.author, icon_url=message.author.avatar_url
-                )
-                embed.set_footer(text=f"User ID: {message.author.id}")
-                await sender.send("Message has been delivered.")
-            else:
-                embed = discord.Embed(
-                    colour=discord.Colour.red(),
-                    description=message.content,
-                    timestamp=message.created_at,
-                )
-                embed.set_author(
-                    name=message.author, icon_url=message.author.avatar_url
-                )
-                embed.set_image(url=message.attachments[0].url)
-                embed.set_footer(text=f"User ID: {message.author.id}")
-                await sender.send(
-                    "Message has been delivered. Note that if you've added multiple attachments, I've sent only the first one."
-                )
-            await self._send_to(embed)
+            embed = discord.Embed(
+                colour=discord.Colour.red(),
+                description=message.content,
+                timestamp=message.created_at,
+            )
+            embed.set_author(
+                name=message.author, icon_url=message.author.avatar_url
+            )
+            embed.set_image(url=message.attachments[0].url)
+            embed.set_footer(text=f"User ID: {message.author.id}")
+            await message.author.send(
+                "Message has been delivered. Note that if you've added multiple attachments, I've sent only the first one."
+            )
+        await self._send_to(embed)
 
     @commands.command()
     @checks.admin()
     async def pm(self, ctx: commands.Context, user_id: int, *, message: str):
         """PMs a person."""
-        destination = discord.utils.get(ctx.bot.get_all_members(), id=user_id)
+        destination = get(ctx.bot.get_all_members(), id=user_id)
         if destination is None:
-            await ctx.send(
+            return await ctx.send(
                 "Invalid ID or user not found. You can only send messages to people I share a server with."
             )
-            return
         await destination.send(message)
-        await ctx.send("Sent message to {}.".format(destination))
+        await ctx.send(f"Sent message to {destination}.")
 
     @checks.admin()
     @commands.command()
@@ -127,12 +120,10 @@ class Forwarding(commands.Cog):
                 await self.config.guild_id.set(0)
                 await self.config.channel_id.set(0)
                 return await ctx.send("I will forward all DMs to you.")
-            else:
-                return await ctx.send("Invalid value.")
-        else:
-            await self.config.guild_id.set(ctx.guild.id)
-            await self.config.channel_id.set(channel.id)
-            await ctx.send(f"I will forward all DMs to {channel.mention}.")
+            return await ctx.send("Invalid value.")
+        await self.config.guild_id.set(ctx.guild.id)
+        await self.config.channel_id.set(channel.id)
+        await ctx.send(f"I will forward all DMs to {channel.mention}.")
 
     @setforward.command(name="role")
     async def setforward_role(self, ctx: commands.Context, *, role: Union[discord.Role, int]):
@@ -143,11 +134,9 @@ class Forwarding(commands.Cog):
             if role == 0:
                 await self.config.ping_role_id.set(0)
                 return await ctx.send("I will not ping any role.")
-            else:
-                return await ctx.send("Invalid value.")
-        else:
-            await self.config.ping_role_id.set(role.id)
-            await ctx.send(f"I will ping {role.mention}.")
+            return await ctx.send("Invalid value.")
+        await self.config.ping_role_id.set(role.id)
+        await ctx.send(f"I will ping {role.mention}.")
 
     @setforward.command(name="user")
     async def setforward_user(self, ctx: commands.Context, *, member: Union[discord.Member, int]):
@@ -158,8 +147,6 @@ class Forwarding(commands.Cog):
             if member == 0:
                 await self.config.ping_user_id.set(0)
                 return await ctx.send("I will not ping anyone.")
-            else:
-                return await ctx.send("Invalid value.")
-        else:
-            await self.config.ping_user_id.set(member.id)
-            await ctx.send(f"I will ping {member.mention}.")
+            return await ctx.send("Invalid value.")
+        await self.config.ping_user_id.set(member.id)
+        await ctx.send(f"I will ping {member.mention}.")

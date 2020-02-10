@@ -82,13 +82,12 @@ class LevelUpCookies(Cog):
                 timestamp=datetime.now(),
             )
             embed.set_author(
-                name="Cookie rewards for {0}".format(ctx.guild.name),
+                name=f"Cookie rewards for {ctx.guild.name}",
                 icon_url=ctx.guild.icon_url,
             )
             page_list.append(embed)
 
         await menu(ctx, page_list, DEFAULT_CONTROLS)
-        return
 
     @commands.Cog.listener()
     async def on_leveler_levelup(self, user, new_level):

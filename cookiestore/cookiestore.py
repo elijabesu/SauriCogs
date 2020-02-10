@@ -127,7 +127,7 @@ class CookieStore(Cog):
                         "redeemable": redeemable,
                     },
                 )
-                await ctx.send("{0} added.".format(item_name))
+                await ctx.send(f"{item_name} added.")
         elif pred.result == 1:
             await ctx.send("What is the role?")
             try:
@@ -163,7 +163,7 @@ class CookieStore(Cog):
                 await self.config.guild(ctx.guild).roles.set_raw(
                     role.name, value={"price": price, "quantity": quantity}
                 )
-                await ctx.send("{0} added.".format(role.name))
+                await ctx.send(f"{role.name} added.")
         elif pred.result == 2:
             await ctx.send(
                 "What is the name of the game? Note that you cannot include `@` in the name."
@@ -213,7 +213,7 @@ class CookieStore(Cog):
                         "redeemable": redeemable,
                     },
                 )
-                await ctx.send("{0} added.".format(game_name))
+                await ctx.send(f"{game_name} added.")
         else:
             await ctx.send("This answer is not supported. Try again, please.")
 
@@ -225,13 +225,13 @@ class CookieStore(Cog):
             is_already_item = await self.config.guild(ctx.guild).items.get_raw(item)
             if is_already_item:
                 await self.config.guild(ctx.guild).items.clear_raw(item)
-                return await ctx.send("{0} removed.".format(item))
+                return await ctx.send(f"{item} removed.")
         except KeyError:
             try:
                 is_already_game = await self.config.guild(ctx.guild).games.get_raw(item)
                 if is_already_game:
                     await self.config.guild(ctx.guild).games.clear_raw(item)
-                    return await ctx.send("{0} removed.".format(item))
+                    return await ctx.send(f"{item} removed.")
             except KeyError:
                 try:
                     is_already_role = await self.config.guild(ctx.guild).roles.get_raw(
@@ -239,7 +239,7 @@ class CookieStore(Cog):
                     )
                     if is_already_role:
                         await self.config.guild(ctx.guild).roles.clear_raw(item)
-                        await ctx.send("{0} removed.".format(item))
+                        await ctx.send(f"{item} removed.")
                 except KeyError:
                     await ctx.send("That item isn't buyable.")
 
@@ -359,7 +359,7 @@ class CookieStore(Cog):
         if confirmation is False:
             return await ctx.send(
                 "This will delete **all** items. This action **cannot** be undone.\n"
-                "If you're sure, type `{0}store reset yes`.".format(ctx.clean_prefix)
+                f"If you're sure, type `{ctx.clean_prefix}store reset yes`."
             )
 
         for i in await self.config.guild(ctx.guild).items.get_raw():
@@ -405,9 +405,7 @@ class CookieStore(Cog):
         if confirmation is False:
             return await ctx.send(
                 "This will delete **all** items from all members' inventories. This action **cannot** be undone.\n"
-                "If you're sure, type `{0}store resetinventories yes`.".format(
-                    ctx.clean_prefix
-                )
+                f"If you're sure, type `{ctx.clean_prefix}store resetinventories yes`."
             )
 
         for member in ctx.guild.members:
@@ -487,16 +485,15 @@ class CookieStore(Cog):
                 await self.config.guild(ctx.guild).roles.set_raw(
                     item, "quantity", value=quantity
                 )
-                await ctx.send("You have bought {0}.".format(item))
+                await ctx.send(f"You have bought {item}.")
             else:
                 await ctx.send("Uh oh, can't find the role.")
         elif item in items:
             item_info = await self.config.guild(ctx.guild).items.get_raw(item)
             price = int(item_info.get("price"))
             quantity = int(item_info.get("quantity"))
-            try:
-                redeemable = item_info.get("redeemable")
-            except:
+            redeemable = item_info.get("redeemable")
+            if redeemable is None:
                 redeemable = False
             if quantity == 0:
                 return await ctx.send("Uh oh, this item is out of stock.")
@@ -523,7 +520,7 @@ class CookieStore(Cog):
                         "redeemed": True,
                     },
                 )
-                await ctx.send("You have bought {0}.".format(item))
+                await ctx.send(f"You have bought {item}.")
             else:
                 await self.config.member(ctx.author).inventory.set_raw(
                     item,
@@ -536,17 +533,14 @@ class CookieStore(Cog):
                     },
                 )
                 await ctx.send(
-                    "You have bought {0}. You may now redeem it with `{1}redeem {0}`".format(
-                        item, ctx.clean_prefix
-                    )
+                    f"You have bought {item}. You may now redeem it with `{ctx.clean_prefix}redeem {item}`"
                 )
         elif item in games:
             game_info = await self.config.guild(ctx.guild).games.get_raw(item)
             price = int(game_info.get("price"))
             quantity = int(game_info.get("quantity"))
-            try:
-                redeemable = game_info.get("redeemable")
-            except:
+            redeemable = game_info.get("redeemable")
+            if redeemable is None:
                 redeemable = False
             if quantity == 0:
                 return await ctx.send("Uh oh, this item is out of stock.")
@@ -573,7 +567,7 @@ class CookieStore(Cog):
                         "redeemed": True,
                     },
                 )
-                await ctx.send("You have bought {0}.".format(item))
+                await ctx.send(f"You have bought {item}.")
             else:
                 await self.config.member(ctx.author).inventory.set_raw(
                     item,
@@ -586,9 +580,7 @@ class CookieStore(Cog):
                     },
                 )
                 await ctx.send(
-                    "You have bought {0}. You may now redeem it with `{1}redeem {0}`".format(
-                        item, ctx.clean_prefix
-                    )
+                    f"You have bought {item}. You may now redeem it with `{ctx.clean_prefix}redeem {item}`"
                 )
         else:
             page_list = await self._show_store(ctx)
@@ -626,9 +618,8 @@ class CookieStore(Cog):
             if role_obj is not None:
                 await ctx.author.remove_roles(role_obj)
 
-        try:
-            redeemed = info.get("redeemed")
-        except:
+        redeemed = info.get("redeemed")
+        if redeemed is None:
             redeemed = False
         if redeemed is True:
             return await ctx.send("You can't return an item you have redeemed.")
@@ -639,9 +630,7 @@ class CookieStore(Cog):
         await self.config.member(ctx.author).inventory.clear_raw(item)
         await self.bot.get_cog("Cookies").config.member(ctx.author).cookies.set(cookies)
         await ctx.send(
-            "You have returned {0} and got {1} :cookie: back.".format(
-                item, return_price
-            )
+            f"You have returned {item} and got {return_price} :cookie: back."
         )
 
     @commands.command(aliases=["backpack"])
@@ -666,7 +655,7 @@ class CookieStore(Cog):
             description=desc, colour=ctx.author.colour, timestamp=datetime.now()
         )
         embed.set_author(
-            name="{0}'s inventory".format(ctx.author.display_name),
+            name=f"{ctx.author.display_name}'s inventory",
             icon_url=ctx.author.avatar_url,
         )
 
@@ -680,7 +669,7 @@ class CookieStore(Cog):
         if item not in inventory:
             return await ctx.send("You don't own this item.")
         await self.config.member(ctx.author).inventory.clear_raw(item)
-        await ctx.send("{0} removed.".format(item))
+        await ctx.send(f"{item} removed.")
 
     @commands.command()
     @commands.guild_only()
@@ -741,30 +730,23 @@ class CookieStore(Cog):
             item = await self.config.guild(ctx.guild).items.get_raw(i)
             price = int(item.get("price"))
             quantity = int(item.get("quantity"))
-            item_text = "__Item:__ **{0}** | __Price:__ {1} :cookie: | __Quantity:__ {2}".format(
-                i, price, quantity
-            )
+            item_text = f"__Item:__ **{i}** | __Price:__ {price} :cookie: | __Quantity:__ {quantity}"
             stuff.append(item_text)
         for g in games:
             game = await self.config.guild(ctx.guild).games.get_raw(g)
             price = int(game.get("price"))
             quantity = int(game.get("quantity"))
-            game_text = "__Item:__ **{0}** | __Price:__ {1} :cookie: | __Quantity:__ {2}".format(
-                g, price, quantity
-            )
+            game_text = f"__Item:__ **{g}** | __Price:__ {price} :cookie: | __Quantity:__ {quantity}"
             stuff.append(game_text)
         for r in roles:
             role_obj = get(ctx.guild.roles, name=r)
-            if role_obj is not None:
-                role = await self.config.guild(ctx.guild).roles.get_raw(r)
-                price = int(role.get("price"))
-                quantity = int(role.get("quantity"))
-                role_text = "__Role:__ **{0}** | __Price:__ {1} :cookie: | __Quantity:__ {2}".format(
-                    role_obj.mention, price, quantity
-                )
-                stuff.append(role_text)
-            else:
+            if role_obj is None:
                 continue
+            role = await self.config.guild(ctx.guild).roles.get_raw(r)
+            price = int(role.get("price"))
+            quantity = int(role.get("quantity"))
+            role_text = f"__Role:__ **{role_obj.mention}** | __Price:__ {price} :cookie: | __Quantity:__ {quantity}"
+            stuff.append(role_text)
 
         if stuff == []:
             desc = "Nothing to see here."
@@ -779,7 +761,7 @@ class CookieStore(Cog):
                 timestamp=datetime.now(),
             )
             embed.set_author(
-                name="{0}'s cookie store".format(ctx.guild.name),
+                name=f"{ctx.guild.name}'s cookie store",
                 icon_url=ctx.guild.icon_url,
             )
             page_list.append(embed)

@@ -113,15 +113,6 @@ class Gallery(Cog):
                 if role is not None:
                     if role in message.author.roles:
                         return
-                    else:
-                        if time != 0:
-                            await asyncio.sleep(time)
-                        await message.delete()
-                else:
-                    if time != 0:
-                        await asyncio.sleep(time)
-                    await message.delete()
-            else:
-                if time != 0:
-                    await asyncio.sleep(time)
-                await message.delete()
+            if time != 0:
+                await asyncio.sleep(time)
+            await message.delete()

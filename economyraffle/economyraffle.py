@@ -37,42 +37,33 @@ class EconomyRaffle(Cog):
     @commands.guild_only()
     async def economysetup(self, ctx: commands.Context):
         """ Go through the initial setup process. """
-        bot = self.bot
-        guild = ctx.guild
-        author = ctx.author
-        channel = ctx.channel
-        currency = await bank.get_currency_name(guild)
+        currency = await bank.get_currency_name(ctx.guild)
         pred = MessagePredicate.yes_or_no(ctx)
         await ctx.send("Do you want the winner to have a specific role? (yes/no)")
         try:
-            await bot.wait_for("message", timeout=30, check=pred)
+            await self.bot.wait_for("message", timeout=30, check=pred)
         except asyncio.TimeoutError:
-            await ctx.send("You took too long. Try again, please.")
-            return
+            return await ctx.send("You took too long. Try again, please.")
         if pred.result is True:
             await ctx.send("What role should it be?")
             role = MessagePredicate.valid_role(ctx)
             try:
-                await bot.wait_for("message", timeout=30, check=role)
+                await self.bot.wait_for("message", timeout=30, check=role)
             except asyncio.TimeoutError:
-                await ctx.send("You took too long. Try again, please.")
-                return
+                return await ctx.send("You took too long. Try again, please.")
             required = role.result
-            await self.config.guild(guild).required.set(str(required))
+            await self.config.guild(ctx.guild).required.set(str(required))
 
         await ctx.send(
-            "What amount of {0} do you want me to give away? (whole number)".format(
-                currency
-            )
+            f"What amount of {currency} do you want me to give away? (whole number)"
         )
         predi = MessagePredicate.valid_int(ctx)
         try:
-            await bot.wait_for("message", timeout=30, check=predi)
+            await self.bot.wait_for("message", timeout=30, check=predi)
         except asyncio.TimeoutError:
-            await ctx.send("You took too long. Try again, please.")
-            return
+            return await ctx.send("You took too long. Try again, please.")
         amount = predi.result
-        await self.config.guild(guild).amount.set(amount)
+        await self.config.guild(ctx.guild).amount.set(amount)
 
         await ctx.send(
             "I will send a few options of the raffle message. Please, choose number of the one you like the most."
@@ -84,32 +75,28 @@ class EconomyRaffle(Cog):
         msg_list = ["1", "2", "3", "4"]
         predic = MessagePredicate.contained_in(msg_list, ctx)
         try:
-            await bot.wait_for("message", timeout=30, check=predic)
+            await self.bot.wait_for("message", timeout=30, check=predic)
         except asyncio.TimeoutError:
-            await ctx.send("You took too long. Try again, please.")
-            return
+            return await ctx.send("You took too long. Try again, please.")
         msg = msg_list[predic.result]
-        await self.config.guild(guild).msg.set(int(msg))
+        await self.config.guild(ctx.guild).msg.set(int(msg))
         if int(msg) == 4:
             await ctx.send(
                 "What's your message? Available parametres are: `{winner}`, `{amount}`, `{currency}`, `{server}`"
             )
 
             def check(m):
-                return m.author == author and m.channel == channel
+                return m.author == ctx.author and m.channel == ctx.channel
 
             try:
-                answer = await bot.wait_for("message", timeout=120, check=check)
+                answer = await self.bot.wait_for("message", timeout=120, check=check)
             except asyncio.TimeoutError:
-                await ctx.send("You took too long. Try again, please.")
-                return
+                return await ctx.send("You took too long. Try again, please.")
             custom = answer.content
-            await self.config.guild(guild).custom.set(custom)
+            await self.config.guild(ctx.guild).custom.set(custom)
 
         await ctx.send(
-            """You have finished the setup! Command `{0}economyraffle` is ready to be used. *Please note that scheduler isn't part of this cog.*""".format(
-                ctx.clean_prefix
-            )
+            f"You have finished the setup! Command `{ctx.clean_prefix}economyraffle` is ready to be used. *Please note that scheduler isn't part of this cog.*"
         )
 
     @checks.admin_or_permissions(administrator=True)
@@ -117,32 +104,25 @@ class EconomyRaffle(Cog):
     @commands.guild_only()
     async def economyraffle(self, ctx: commands.Context):
         """ Give a a pre-set amount of economy to a random user in the guild/role."""
-        guild = ctx.guild
-        currency = await bank.get_currency_name(guild)
-        name_required = await self.config.guild(guild).required()
-        required = get(guild.roles, name=name_required)
-        amount = await self.config.guild(guild).amount()
-        which = await self.config.guild(guild).msg()
+        currency = await bank.get_currency_name(ctx.guild)
+        name_required = await self.config.guild(ctx.guild).required()
+        required = get(ctx.guild.roles, name=name_required)
+        amount = await self.config.guild(ctx.guild).amount()
+        which = await self.config.guild(ctx.guild).msg()
 
         if required is None:
-            winner = random.choice(guild.members)
+            winner = random.choice(ctx.guild.members)
         else:
             winner = random.choice(required.members)
 
         if which == 1:
-            msg = "It's time for our {0} giveaway!\n\nCongratulations {1}! :tada: You just won extra {2} {0}!".format(
-                currency, winner.mention, amount
-            )
+            msg = f"It's time for our {currency} giveaway!\n\nCongratulations {winner.mention}! :tada: You just won extra {amount} {currency}!"
         elif which == 2:
-            msg = "Congratulations {0}! :tada: You just won extra {1} {2}!".format(
-                winner.mention, amount, currency
-            )
+            msg = f"Congratulations {winner.mention}! :tada: You just won extra {amount} {currency}!"
         elif which == 3:
-            msg = "{0}! :tada: You just won extra {1} {2}!".format(
-                winner.mention, amount, currency
-            )
+            msg = f"{winner.mention}! :tada: You just won extra {amount} {currency}!"
         elif which == 4:
-            custom = await self.config.guild(guild).custom()
+            custom = await self.config.guild(ctx.guild).custom()
             msg = custom.format(
                 server=ctx.guild.name,
                 winner=winner.mention,
@@ -150,9 +130,7 @@ class EconomyRaffle(Cog):
                 currency=currency,
             )
         else:
-            await ctx.send("Uh oh. Looks like your Admins haven't setup this yet.")
-            return
+            return await ctx.send("Uh oh. Looks like your Admins haven't setup this yet.")
 
         await bank.deposit_credits(winner, amount)
-
         await ctx.send(msg)

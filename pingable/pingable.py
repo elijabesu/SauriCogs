@@ -45,15 +45,13 @@ class Pingable(Cog):
         try:
             await bot.wait_for("message", timeout=120, check=pred_yn)
         except asyncio.TimeoutError:
-            await ctx.send("You took too long. Try again, please.")
-            return
+            return await ctx.send("You took too long. Try again, please.")
         if pred_yn.result is True:
             await ctx.send("What channel?")
             try:
                 await bot.wait_for("message", timeout=120, check=pred_c)
             except asyncio.TimeoutError:
-                await ctx.send("You took too long. Try again, please.")
-                return
+                return await ctx.send("You took too long. Try again, please.")
             channel = pred_c.result
             await self.config.role(role).channel.set(channel.id)
         await ctx.send(
@@ -91,12 +89,11 @@ class Pingable(Cog):
         if ctx.author not in self.antispam[ctx.guild]:
             self.antispam[ctx.guild][ctx.author] = AntiSpam([(timedelta(hours=1), 1)])
         if self.antispam[ctx.guild][ctx.author].spammy:
-            await ctx.send("Uh oh, you're doing this way too frequently.")
-            return
+            return await ctx.send("Uh oh, you're doing this way too frequently.")
         await ctx.message.delete()
         await role.edit(mentionable=True)
         await ctx.send(
-            "{0}\n{1}: {2}".format(role.mention, ctx.author.mention, message)
+            f"{role.mention}\n{ctx.author.mention}: {message}"
         )
         await role.edit(mentionable=False)
         self.antispam[ctx.guild][ctx.author].stamp()

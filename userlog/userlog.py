@@ -88,10 +88,7 @@ class UserLog(Cog):
         join = await self.config.guild(guild).join()
         if join is False:
             return
-        try:
-            channel = guild.get_channel(await self.config.guild(guild).channel())
-        except RuntimeError:
-            return
+        channel = guild.get_channel(await self.config.guild(guild).channel())
         if channel is None:
             return
         time = datetime.datetime.utcnow()
@@ -99,20 +96,18 @@ class UserLog(Cog):
         since_created = (time - member.created_at).days
         user_created = member.created_at.strftime("%Y-%m-%d, %H:%M")
 
-        created_on = "{0} ({1} days ago)".format(user_created, since_created)
+        created_on = f"{user_created} ({since_created} days ago)"
 
         embed = discord.Embed(
-            description="{0} ({1}#{2})".format(
-                member.mention, member.name, member.discriminator
-            ),
+            description=f"{member.mention} ({member.name}#{member.discriminator})",
             colour=discord.Colour.green(),
             timestamp=member.joined_at,
         )
         embed.add_field(name="Total Users:", value=str(users))
         embed.add_field(name="Account created on:", value=created_on)
-        embed.set_footer(text="User ID: {0}".format(member.id))
+        embed.set_footer(text=f"User ID: {member.id}")
         embed.set_author(
-            name="{0} has joined the guild".format(member.name),
+            name=f"{member.name} has joined the guild",
             url=member.avatar_url,
             icon_url=member.avatar_url,
         )
@@ -126,26 +121,21 @@ class UserLog(Cog):
         leave = await self.config.guild(guild).leave()
         if leave is False:
             return
-        try:
-            channel = guild.get_channel(await self.config.guild(guild).channel())
-        except RuntimeError:
-            return
+        channel = guild.get_channel(await self.config.guild(guild).channel())
         if channel is None:
             return
 
         time = datetime.datetime.utcnow()
         users = len(guild.members)
         embed = discord.Embed(
-            description="{0} ({1}#{2})".format(
-                member.mention, member.name, member.discriminator
-            ),
+            description=f"{member.mention} ({member.name}#{member.discriminator})",
             colour=discord.Colour.red(),
             timestamp=time,
         )
         embed.add_field(name="Total Users:", value=str(users))
-        embed.set_footer(text="User ID: {0}".format(member.id))
+        embed.set_footer(text=f"User ID: {member.id}")
         embed.set_author(
-            name="{0} has left the guild".format(member.name),
+            name=f"{member.name} has left the guild",
             url=member.avatar_url,
             icon_url=member.avatar_url,
         )
