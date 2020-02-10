@@ -15,7 +15,7 @@ class Forwarding(commands.Cog):
     You can also DM someone as the bot with `[p]pm <user_ID> <message>`."""
 
     __author__ = "saurichable"
-    __version__ = "2.0.0"
+    __version__ = "2.1.0"
 
     def __init__(self, bot):
         self.bot = bot
@@ -28,24 +28,27 @@ class Forwarding(commands.Cog):
         await self.bot.is_owner(discord.Object(id=None))
         owner = self.bot.get_user(self.bot.owner_id)
         guild = self.bot.get_guild(await self.config.guild_id())
-        ping_role = guild.get_role(await self.config.ping_role_id())
-        ping_user = guild.get_member(await self.config.ping_user_id())
         if guild is None:
             await owner.send(embed=embed)
         else:
             channel = guild.get_channel(await self.config.channel_id())
-            if ping_role is None:
-                if ping_user is None:
-                    await channel.sent(embed=embed)
-                else:
-                    await channel.sent(content=f"{ping_user.mention}", embed=embed)
+            if channel is None:
+                await owner.send(embed=embed)
             else:
-                if not role.mentionable:
-                    await role.edit(mentionable=True)
-                    await channel.sent(content=f"{ping_role.mention}", embed=embed)
-                    await role.edit(mentionable=False)
+                ping_role = guild.get_role(await self.config.ping_role_id())
+                ping_user = guild.get_member(await self.config.ping_user_id())
+                if ping_role is None:
+                    if ping_user is None:
+                        await channel.sent(embed=embed)
+                    else:
+                        await channel.sent(content=f"{ping_user.mention}", embed=embed)
                 else:
-                    await channel.sent(content=f"{ping_role.mention}", embed=embed)
+                    if not role.mentionable:
+                        await role.edit(mentionable=True)
+                        await channel.sent(content=f"{ping_role.mention}", embed=embed)
+                        await role.edit(mentionable=False)
+                    else:
+                        await channel.sent(content=f"{ping_role.mention}", embed=embed)
 
     @commands.Cog.listener()
     async def on_message_without_command(self, message):
