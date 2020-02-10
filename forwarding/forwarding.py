@@ -5,7 +5,7 @@ from discord.utils import get
 from redbot.core import commands, checks
 
 from redbot.core.bot import Red
-from typing import Any
+from typing import Any, Union
 
 Cog: Any = getattr(commands, "Cog", object)
 
