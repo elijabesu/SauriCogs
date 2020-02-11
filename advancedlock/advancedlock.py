@@ -639,13 +639,12 @@ class AdvancedLock(Cog):
                             return await ctx.send(
                                 "Uh oh. This channel has no settings. Ask your Admins to add it."
                             )
-                        else:
-                            def_roles = await self.config.guild(ctx.guild).def_roles()
-                            for def_role_id in def_roles:
-                                def_ro = get(ctx.guild.roles, id=def_role_id)
-                                await ctx.channel.set_permissions(
-                                    def_ro, read_messages=True, send_messages=True
-                                )
+                        def_roles = await self.config.guild(ctx.guild).def_roles()
+                        for def_role_id in def_roles:
+                            def_ro = get(ctx.guild.roles, id=def_role_id)
+                            await ctx.channel.set_permissions(
+                                def_ro, read_messages=True, send_messages=True
+                            )
                     else:
                         for role_id in c["roles"]:
                             ro = get(ctx.guild.roles, id=role_id)
@@ -673,8 +672,6 @@ class AdvancedLock(Cog):
                 "This will overwrite every channel's permissions.\n"
                 f"If you're sure, type `{ctx.clean_prefix}lockserver yes` (you can set an alias for this so I don't ask you every time)."
             )
-        else:
-            pass
 
         async with ctx.typing():
             toggle = await self.config.guild(ctx.guild).toggle()
