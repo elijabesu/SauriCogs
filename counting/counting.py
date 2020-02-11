@@ -19,7 +19,7 @@ class Counting(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.1.3"
+    __version__ = "1.1.4"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -163,87 +163,52 @@ class Counting(Cog):
     async def on_message(self, message):
         if message.guild is None:
             return
-        channel_id = await self.config.guild(message.guild).channel()
+        if message.channel.id != await self.config.guild(message.guild).channel():
+            return
         last_id = await self.config.guild(message.guild).last()
+        previous = await self.config.guild(message.guild).previous()
+        next_number = previous + 1
+        goal = await self.config.guild(message.guild).goal()
         warning = await self.config.guild(message.guild).warning()
         seconds = await self.config.guild(message.guild).seconds()
-        if message.channel.id != channel_id:
-            return
-        if message.author.id == last_id:
-            rid = await self.config.guild(message.guild).whitelist()
-            if rid is not None:
-                role = message.guild.get_role(int(rid))
-                if role is not None:
-                    if role in message.author.roles:
-                        return
-                    else:
-                        return await message.delete()
-                else:
-                    return await message.delete()
+        if message.author.id != last_id:
+            try:
+                now = int(message.content)
+                if now - 1 == previous:
+                    await self.config.guild(message.guild).previous.set(now)
+                    if message.author.id != self.bot.user.id:
+                        await self.config.guild(message.guild).last.set(message.author.id)
+                    n = now + 1
+                    return await self._set_topic(now, goal, n, message.channel)
+            except (TypeError, ValueError):
+                if message.author.id == self.bot.user.id:
+                    return
+
+        rid = await self.config.guild(message.guild).whitelist()
+        if rid is not None:
+            role = message.guild.get_role(int(rid))
+            if role is not None:
+                if role in message.author.roles:
+                    return
+        if warning is True:
+            if message.author.id != last_id:
+                warn_msg = await message.channel.send(
+                    f"The next message in this channel must be {next_number}"
+                )
             else:
-                return await message.delete()
-        try:
-            now = int(message.content)
-            previous = await self.config.guild(message.guild).previous()
-            next_number = previous + 1
-            goal = await self.config.guild(message.guild).goal()
-            if now - 1 == previous:
-                await self.config.guild(message.guild).previous.set(now)
-                if message.author.id != self.bot.user.id:
-                    await self.config.guild(message.guild).last.set(message.author.id)
-                n = now + 1
-                await self._set_topic(now, goal, n, message.channel)
-            else:
-                if message.author.id != self.bot.user.id:
-                    if warning is True:
-                        warn_msg = await message.channel.send(
-                            f"The next message in this channel must be {next_number}"
-                        )
-                        if seconds != 0:
-                            await asyncio.sleep(seconds)
-                            await warn_msg.delete()
-                    await message.delete()
-        except TypeError:
-            if message.author.id != self.bot.user.id:
-                rid = await self.config.guild(message.guild).whitelist()
-                if rid is not None:
-                    role = message.guild.get_role(int(rid))
-                    if role is not None:
-                        if role in message.author.roles:
-                            return
-                        if warning is True:
-                            warn_msg = await message.channel.send(
-                                f"The next message in this channel must be {next_number}"
-                            )
-                            if seconds != 0:
-                                await asyncio.sleep(seconds)
-                                await warn_msg.delete()
-                        await message.delete()
-                    else:
-                        if warning is True:
-                            warn_msg = await message.channel.send(
-                                f"The next message in this channel must be {next_number}"
-                            )
-                            if seconds != 0:
-                                await asyncio.sleep(seconds)
-                                await warn_msg.delete()
-                        await message.delete()
-                else:
-                    if warning is True:
-                        warn_msg = await message.channel.send(
-                            f"The next message in this channel must be {next_number}"
-                        )
-                        if seconds != 0:
-                            await asyncio.sleep(seconds)
-                            await warn_msg.delete()
-                    await message.delete()
+                warn_msg = await message.channel.send(
+                    f"You cannot count twice in a row."
+                )
+            if seconds != 0:
+                await asyncio.sleep(seconds)
+                await warn_msg.delete()
+        await message.delete()
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
         if message.guild is None:
             return
-        channel_id = await self.config.guild(message.guild).channel()
-        if message.channel.id != channel_id:
+        if message.channel.id != await self.config.guild(message.guild).channel():
             return
         try:
             deleted = int(message.content)
@@ -260,7 +225,7 @@ class Counting(Cog):
                     p = deleted - 1
                     await self.config.guild(message.guild).previous.set(p)
                     await message.channel.send(deleted)
-        except TypeError:
+        except (TypeError, ValueError):
             return
 
     async def _set_topic(self, now, goal, n, channel):
