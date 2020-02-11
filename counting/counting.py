@@ -19,7 +19,7 @@ class Counting(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.1.4"
+    __version__ = "1.2.0"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -35,6 +35,7 @@ class Counting(Cog):
             whitelist=None,
             warning=False,
             seconds=0,
+            allow_text=False,
         )
 
     @checks.admin_or_permissions(administrator=True)
@@ -159,11 +160,27 @@ class Counting(Cog):
         else:
             await ctx.send("Warning messages are now disabled.")
 
+    @setcount.command(name="allowtext")
+    async def setcount_allowtext(self, ctx: commands.Context, on_off: bool = None):
+        """Toggle allowing text AFTER the number.
+
+        If `on_off` is not provided, the state will be flipped."""
+        target_state = (
+            on_off if on_off is not None else not (await self.config.guild(ctx.guild).warning())
+        )
+        await self.config.guild(ctx.guild).allow_text.set(target_state)
+        if target_state:
+            await ctx.send("Text in messages is now allowed.")
+        else:
+            await ctx.send("Text in messages is no longer allowed.")
+
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.guild is None:
             return
         if message.channel.id != await self.config.guild(message.guild).channel():
+            return
+        if message.author.id == self.bot.user.id:
             return
         last_id = await self.config.guild(message.guild).last()
         previous = await self.config.guild(message.guild).previous()
@@ -181,8 +198,15 @@ class Counting(Cog):
                     n = now + 1
                     return await self._set_topic(now, goal, n, message.channel)
             except (TypeError, ValueError):
-                if message.author.id == self.bot.user.id:
-                    return
+                if await self.config.guild(ctx.guild).allow_text() is True:
+                    nums = [int(i) for i in message.content.split() if i.isdigit()]
+                    now = nums[0]
+                    if now - 1 == previous:
+                        await self.config.guild(message.guild).previous.set(now)
+                        if message.author.id != self.bot.user.id:
+                            await self.config.guild(message.guild).last.set(message.author.id)
+                        n = now + 1
+                        return await self._set_topic(now, goal, n, message.channel)
 
         rid = await self.config.guild(message.guild).whitelist()
         if rid is not None:
