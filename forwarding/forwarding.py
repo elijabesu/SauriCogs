@@ -22,7 +22,9 @@ class Forwarding(commands.Cog):
         self.config = Config.get_conf(
             self, identifier=5412156465899465526156, force_registration=True
         )
-        self.config.register_global(guild_id=0, channel_id=0, ping_role_id=0, ping_user_id=0)
+        self.config.register_global(
+            guild_id=0, channel_id=0, ping_role_id=0, ping_user_id=0
+        )
 
     async def _send_to(self, embed):
         await self.bot.is_owner(discord.Object(id=None))
@@ -60,9 +62,7 @@ class Forwarding(commands.Cog):
                 description=message.content,
                 timestamp=message.created_at,
             )
-            embed.set_author(
-                name=message.author, icon_url=message.author.avatar_url
-            )
+            embed.set_author(name=message.author, icon_url=message.author.avatar_url)
             embed.set_footer(text=f"User ID: {message.author.id}")
             await message.author.send("Message has been delivered.")
         else:
@@ -71,9 +71,7 @@ class Forwarding(commands.Cog):
                 description=message.content,
                 timestamp=message.created_at,
             )
-            embed.set_author(
-                name=message.author, icon_url=message.author.avatar_url
-            )
+            embed.set_author(name=message.author, icon_url=message.author.avatar_url)
             embed.set_image(url=message.attachments[0].url)
             embed.set_footer(text=f"User ID: {message.author.id}")
             await message.author.send(
@@ -99,8 +97,7 @@ class Forwarding(commands.Cog):
     @checks.bot_has_permissions(add_reactions=True)
     async def self(self, ctx: commands.Context, *, message: str):
         """Send yourself a DM. Owner command only."""
-        author = ctx.author
-        await author.send(message)
+        await ctx.author.send(message)
         await ctx.tick()
 
     @commands.group()
@@ -111,7 +108,9 @@ class Forwarding(commands.Cog):
         pass
 
     @setforward.command(name="channel")
-    async def setforward_channel(self, ctx: commands.Context, *, channel: Union[discord.TextChannel, int]):
+    async def setforward_channel(
+        self, ctx: commands.Context, *, channel: Union[discord.TextChannel, int]
+    ):
         """Set a channel in the current guild to be used for forwarding.
         
         Use 0 to reset."""
@@ -126,7 +125,9 @@ class Forwarding(commands.Cog):
         await ctx.send(f"I will forward all DMs to {channel.mention}.")
 
     @setforward.command(name="role")
-    async def setforward_role(self, ctx: commands.Context, *, role: Union[discord.Role, int]):
+    async def setforward_role(
+        self, ctx: commands.Context, *, role: Union[discord.Role, int]
+    ):
         """Set a role to be pinged for forwarding.
         
         Use 0 to reset."""
@@ -139,7 +140,9 @@ class Forwarding(commands.Cog):
         await ctx.send(f"I will ping {role.mention}.")
 
     @setforward.command(name="user")
-    async def setforward_user(self, ctx: commands.Context, *, member: Union[discord.Member, int]):
+    async def setforward_user(
+        self, ctx: commands.Context, *, member: Union[discord.Member, int]
+    ):
         """Set a role to be pinged for forwarding.
         
         Use 0 to reset."""

@@ -60,7 +60,6 @@ class CookieStore(Cog):
     @store.command(name="add")
     async def store_add(self, ctx: commands.Context):
         """Add a buyable item/role/game key."""
-        bot = self.bot
 
         def check(m):
             return m.author == ctx.author and m.channel == ctx.channel
@@ -75,7 +74,7 @@ class CookieStore(Cog):
             "Do you want to add an item, role or game?\nItem and role = returnable, game = non returnable."
         )
         try:
-            await bot.wait_for("message", timeout=30, check=pred)
+            await self.bot.wait_for("message", timeout=30, check=pred)
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
         if pred.result == 0:
@@ -83,7 +82,7 @@ class CookieStore(Cog):
                 "What is the name of the item? Note that you cannot include `@` in the name."
             )
             try:
-                answer = await bot.wait_for("message", timeout=120, check=check)
+                answer = await self.bot.wait_for("message", timeout=120, check=check)
             except asyncio.TimeoutError:
                 return await ctx.send("You took too long. Try again, please.")
             item_name = answer.content
@@ -99,7 +98,7 @@ class CookieStore(Cog):
             except KeyError:
                 await ctx.send("How many cookies should this item be?")
                 try:
-                    await bot.wait_for("message", timeout=120, check=pred_int)
+                    await self.bot.wait_for("message", timeout=120, check=pred_int)
                 except asyncio.TimeoutError:
                     return await ctx.send("You took too long. Try again, please.")
                 price = pred_int.result
@@ -107,7 +106,7 @@ class CookieStore(Cog):
                     return await ctx.send("Uh oh, price has to be more than 0.")
                 await ctx.send("What quantity of this item should be available?")
                 try:
-                    await bot.wait_for("message", timeout=120, check=pred_int)
+                    await self.bot.wait_for("message", timeout=120, check=pred_int)
                 except asyncio.TimeoutError:
                     return await ctx.send("You took too long. Try again, please.")
                 quantity = pred_int.result
@@ -115,7 +114,7 @@ class CookieStore(Cog):
                     return await ctx.send("Uh oh, quantity has to be more than 0.")
                 await ctx.send("Is the item redeemable?")
                 try:
-                    await bot.wait_for("message", timeout=120, check=pred_yn)
+                    await self.bot.wait_for("message", timeout=120, check=pred_yn)
                 except asyncio.TimeoutError:
                     return await ctx.send("You took too long. Try again, please.")
                 redeemable = pred_yn.result
@@ -131,7 +130,7 @@ class CookieStore(Cog):
         elif pred.result == 1:
             await ctx.send("What is the role?")
             try:
-                await bot.wait_for("message", timeout=30, check=pred_role)
+                await self.bot.wait_for("message", timeout=30, check=pred_role)
             except asyncio.TimeoutError:
                 return await ctx.send("You took too long. Try again, please.")
             role = pred_role.result
@@ -146,7 +145,7 @@ class CookieStore(Cog):
             except KeyError:
                 await ctx.send("How many cookies should this role be?")
                 try:
-                    await bot.wait_for("message", timeout=120, check=pred_int)
+                    await self.bot.wait_for("message", timeout=120, check=pred_int)
                 except asyncio.TimeoutError:
                     return await ctx.send("You took too long. Try again, please.")
                 price = pred_int.result
@@ -154,7 +153,7 @@ class CookieStore(Cog):
                     return await ctx.send("Uh oh, price has to be more than 0.")
                 await ctx.send("What quantity of this item should be available?")
                 try:
-                    await bot.wait_for("message", timeout=120, check=pred_int)
+                    await self.bot.wait_for("message", timeout=120, check=pred_int)
                 except asyncio.TimeoutError:
                     return await ctx.send("You took too long. Try again, please.")
                 quantity = pred_int.result
@@ -169,7 +168,7 @@ class CookieStore(Cog):
                 "What is the name of the game? Note that you cannot include `@` in the name."
             )
             try:
-                answer = await bot.wait_for("message", timeout=120, check=check)
+                answer = await self.bot.wait_for("message", timeout=120, check=check)
             except asyncio.TimeoutError:
                 return await ctx.send("You took too long. Try again, please.")
             game_name = answer.content
@@ -185,7 +184,7 @@ class CookieStore(Cog):
             except KeyError:
                 await ctx.send("How many cookies should this game be?")
                 try:
-                    await bot.wait_for("message", timeout=120, check=pred_int)
+                    await self.bot.wait_for("message", timeout=120, check=pred_int)
                 except asyncio.TimeoutError:
                     return await ctx.send("You took too long. Try again, please.")
                 price = pred_int.result
@@ -193,7 +192,7 @@ class CookieStore(Cog):
                     return await ctx.send("Uh oh, price has to be more than 0.")
                 await ctx.send("What quantity of this item should be available?")
                 try:
-                    await bot.wait_for("message", timeout=120, check=pred_int)
+                    await self.bot.wait_for("message", timeout=120, check=pred_int)
                 except asyncio.TimeoutError:
                     return await ctx.send("You took too long. Try again, please.")
                 quantity = pred_int.result
@@ -201,7 +200,7 @@ class CookieStore(Cog):
                     return await ctx.send("Uh oh, quantity has to be more than 0.")
                 await ctx.send("Is the item redeemable?")
                 try:
-                    await bot.wait_for("message", timeout=120, check=pred_yn)
+                    await self.bot.wait_for("message", timeout=120, check=pred_yn)
                 except asyncio.TimeoutError:
                     return await ctx.send("You took too long. Try again, please.")
                 redeemable = pred_yn.result
@@ -262,13 +261,11 @@ class CookieStore(Cog):
             item_type = "game"
         else:
             return await ctx.send("This item isn't buyable.")
-
         price = info.get("price")
         quantity = info.get("quantity")
         redeemable = info.get("redeemable")
         if redeemable is None:
             redeemable = False
-
         await ctx.send(
             f"**__{item}:__**\n*Type:* {item_type}\n*Price:* {price}\n*Quantity:* {quantity}\n*Redeemable:* {redeemable}"
         )
@@ -278,7 +275,6 @@ class CookieStore(Cog):
         """Change the price of an existing buyable item."""
         if price <= 0:
             return await ctx.send("Uh oh, price has to be more than 0.")
-
         item = item.strip("@")
         items = await self.config.guild(ctx.guild).items.get_raw()
         roles = await self.config.guild(ctx.guild).roles.get_raw()
@@ -301,7 +297,6 @@ class CookieStore(Cog):
         """Change the quantity of an existing buyable item."""
         if quantity <= 0:
             return await ctx.send("Uh oh, quantity has to be more than 0.")
-
         item = item.strip("@")
         items = await self.config.guild(ctx.guild).items.get_raw()
         roles = await self.config.guild(ctx.guild).roles.get_raw()
@@ -361,16 +356,12 @@ class CookieStore(Cog):
                 "This will delete **all** items. This action **cannot** be undone.\n"
                 f"If you're sure, type `{ctx.clean_prefix}store reset yes`."
             )
-
         for i in await self.config.guild(ctx.guild).items.get_raw():
             await self.config.guild(ctx.guild).items.clear_raw(i)
-
         for r in await self.config.guild(ctx.guild).roles.get_raw():
             await self.config.guild(ctx.guild).roles.clear_raw(r)
-
         for g in await self.config.guild(ctx.guild).games.get_raw():
             await self.config.guild(ctx.guild).games.clear_raw(i)
-
         await ctx.send("All items have been deleted from the store.")
 
     @store.command(name="ping")
@@ -407,12 +398,10 @@ class CookieStore(Cog):
                 "This will delete **all** items from all members' inventories. This action **cannot** be undone.\n"
                 f"If you're sure, type `{ctx.clean_prefix}store resetinventories yes`."
             )
-
         for member in ctx.guild.members:
             inventory = await self.config.member(member).inventory.get_raw()
             for item in inventory:
                 await self.config.member(member).inventory.clear_raw(item)
-
         await ctx.send("All items have been deleted from all members' inventories.")
 
     @commands.command()
@@ -447,12 +436,10 @@ class CookieStore(Cog):
             if len(page_list) > 1:
                 return await menu(ctx, page_list, DEFAULT_CONTROLS)
             return await ctx.send(embed=page_list[0])
-
         item = item.strip("@")
         inventory = await self.config.member(ctx.author).inventory.get_raw()
         if item in inventory:
             return await ctx.send("You already own this item.")
-
         if item in roles:
             role_obj = get(ctx.guild.roles, name=item)
             if role_obj is not None:
@@ -603,25 +590,21 @@ class CookieStore(Cog):
             pass
         else:
             return await ctx.send("You don't own this item.")
-
         info = await self.config.member(ctx.author).inventory.get_raw(item)
 
         is_game = info.get("is_game")
         if is_game is True:
             return await ctx.send("This item isn't returnable.")
-
         is_role = info.get("is_role")
         if is_role is True:
             role_obj = get(ctx.guild.roles, name=item)
             if role_obj is not None:
                 await ctx.author.remove_roles(role_obj)
-
         redeemed = info.get("redeemed")
         if redeemed is None:
             redeemed = False
         if redeemed is True:
             return await ctx.send("You can't return an item you have redeemed.")
-
         price = int(info.get("price"))
         return_price = price * 0.5
         cookies += return_price
@@ -648,7 +631,6 @@ class CookieStore(Cog):
         desc = humanize_list(lst)
         if lst == []:
             desc = "Nothing to see here."
-
         embed = discord.Embed(
             description=desc, colour=ctx.author.colour, timestamp=datetime.now()
         )
@@ -676,20 +658,16 @@ class CookieStore(Cog):
         inventory = await self.config.member(ctx.author).inventory.get_raw()
         if item not in inventory:
             return await ctx.send("You don't own this item.")
-
         info = await self.config.member(ctx.author).inventory.get_raw(item)
         is_role = info.get("is_role")
         if is_role is True:
             return await ctx.send("Roles aren't redeemable.")
-
         redeemable = info.get("redeemable")
         if redeemable is False:
             return await ctx.send("This item isn't redeemable.")
-
         redeemed = info.get("redeemed")
         if redeemed is True:
             return await ctx.send("You have already redeemed this item.")
-
         ping_id = await self.config.guild(ctx.guild).ping()
         if ping_id is None:
             return await ctx.send("Uh oh, your Admins haven't set this yet.")
@@ -745,12 +723,10 @@ class CookieStore(Cog):
             quantity = int(role.get("quantity"))
             role_text = f"__Role:__ **{role_obj.mention}** | __Price:__ {price} :cookie: | __Quantity:__ {quantity}"
             stuff.append(role_text)
-
         if stuff == []:
             desc = "Nothing to see here."
         else:
             desc = "\n".join(stuff)
-
         page_list = []
         for page in pagify(desc, delims=["\n"], page_length=1000):
             embed = discord.Embed(
@@ -759,9 +735,7 @@ class CookieStore(Cog):
                 timestamp=datetime.now(),
             )
             embed.set_author(
-                name=f"{ctx.guild.name}'s cookie store",
-                icon_url=ctx.guild.icon_url,
+                name=f"{ctx.guild.name}'s cookie store", icon_url=ctx.guild.icon_url,
             )
             page_list.append(embed)
-
         return page_list

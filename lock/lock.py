@@ -36,22 +36,20 @@ class Lock(Cog):
     @commands.command()
     async def locksetup(self, ctx: commands.Context):
         """ Go through the initial setup process. """
-        bot = self.bot
         await ctx.send("Do you use roles to access channels? (yes/no)")
         pred = MessagePredicate.yes_or_no(ctx)
         try:
-            await bot.wait_for("message", timeout=30, check=pred)
+            await self.bot.wait_for("message", timeout=30, check=pred)
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
         if pred.result is False:
             await self.config.guild(ctx.guild).everyone.set(True)
         else:
             await self.config.guild(ctx.guild).everyone.set(False)
-
         await ctx.send("What is your Moderator role?")
         role = MessagePredicate.valid_role(ctx)
         try:
-            await bot.wait_for("message", timeout=30, check=role)
+            await self.bot.wait_for("message", timeout=30, check=role)
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
         mod_role = role.result
@@ -105,8 +103,9 @@ class Lock(Cog):
         which = await self.config.guild(ctx.guild).everyone()
 
         if name_moderator is None:
-            return await ctx.send("Uh oh. Looks like your Admins haven't setup this yet.")
-
+            return await ctx.send(
+                "Uh oh. Looks like your Admins haven't setup this yet."
+            )
         if which is True:
             await ctx.channel.set_permissions(
                 everyone, read_messages=True, send_messages=False
@@ -115,7 +114,6 @@ class Lock(Cog):
             await ctx.channel.set_permissions(
                 everyone, read_messages=False, send_messages=False
             )
-
         await ctx.channel.set_permissions(mods, read_messages=True, send_messages=True)
         await ctx.send(":lock: Channel locked. Only Moderators can type.")
 
@@ -130,8 +128,9 @@ class Lock(Cog):
         which = await self.config.guild(ctx.guild).everyone()
 
         if name_moderator is None:
-            return await ctx.send("Uh oh. Looks like your Admins haven't setup this yet.")
-
+            return await ctx.send(
+                "Uh oh. Looks like your Admins haven't setup this yet."
+            )
         if which is True:
             await ctx.channel.set_permissions(
                 everyone, read_messages=True, send_messages=True
@@ -140,7 +139,6 @@ class Lock(Cog):
             await ctx.channel.set_permissions(
                 everyone, read_messages=False, send_messages=True
             )
-
         await ctx.send(":unlock: Channel unlocked.")
 
     @checks.mod_or_permissions(manage_roles=True)
@@ -154,7 +152,6 @@ class Lock(Cog):
                 "This will overwrite every channel's permissions.\n"
                 f"If you're sure, type `{ctx.clean_prefix}lockserver yes` (you can set an alias for this so I don't ask you every time)."
             )
-
         async with ctx.typing():
             everyone = get(ctx.guild.roles, name="@everyone")
             name_moderator = await self.config.guild(ctx.guild).moderator()
@@ -163,8 +160,9 @@ class Lock(Cog):
             ignore = await self.config.guild(ctx.guild).ignore()
 
             if name_moderator is None:
-                return await ctx.send("Uh oh. Looks like your Admins haven't setup this yet.")
-
+                return await ctx.send(
+                    "Uh oh. Looks like your Admins haven't setup this yet."
+                )
             for channel in ctx.guild.text_channels:
                 if channel.id in ignore:
                     continue
@@ -179,7 +177,6 @@ class Lock(Cog):
                 await channel.set_permissions(
                     mods, read_messages=True, send_messages=True
                 )
-
         await ctx.send(":lock: Server locked. Only Moderators can type.")
 
     @checks.mod_or_permissions(manage_roles=True)
@@ -195,8 +192,9 @@ class Lock(Cog):
             ignore = await self.config.guild(ctx.guild).ignore()
 
             if name_moderator is None:
-                return await ctx.send("Uh oh. Looks like your Admins haven't setup this yet.")
-
+                return await ctx.send(
+                    "Uh oh. Looks like your Admins haven't setup this yet."
+                )
             for channel in ctx.guild.text_channels:
                 if channel.id in ignore:
                     continue
@@ -208,5 +206,4 @@ class Lock(Cog):
                     await channel.set_permissions(
                         everyone, read_messages=False, send_messages=True
                     )
-
         await ctx.send(":unlock: Server unlocked.")

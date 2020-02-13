@@ -58,7 +58,9 @@ class Cookies(commands.Cog):
                 amount = int(random.choice(list(range(minimum, maximum))))
                 cookies += amount
             if self._max_balance_check(cookies):
-                return await ctx.send("Uh oh, you have reached the maximum amount of cookies that you can put in your bag. :frowning:")
+                return await ctx.send(
+                    "Uh oh, you have reached the maximum amount of cookies that you can put in your bag. :frowning:"
+                )
             next_cookie = cur_time + await self.config.guild(ctx.guild).cooldown()
             await self.config.member(ctx.author).next_cookie.set(next_cookie)
             await self.config.member(ctx.author).cookies.set(cookies)
@@ -144,7 +146,6 @@ class Cookies(commands.Cog):
             return await ctx.send(
                 f"Uh oh, {target.display_name} has reached the maximum amount of cookies that they can have in their bag. :frowning:"
             )
-
         author_cookies -= amount
         await self.config.member(ctx.author).cookies.set(author_cookies)
         await self.config.member(target).cookies.set(target_cookies)
@@ -225,12 +226,12 @@ class Cookies(commands.Cog):
         """Set the amount of cookies members can obtain.
 
         If 0, members will get a random amount."""
-        bot = self.bot
         if amount < 0:
             return await ctx.send("Uh oh, the amount cannot be negative.")
         if self._max_balance_check(amount):
-            return await ctx.send(f"Uh oh, you can't set an amount of cookies greater than {_MAX_BALANCE:,}.")
-
+            return await ctx.send(
+                f"Uh oh, you can't set an amount of cookies greater than {_MAX_BALANCE:,}."
+            )
         await self.config.guild(ctx.guild).amount.set(amount)
         if amount != 0:
             await ctx.send(f"Members will receive {amount} cookies.")
@@ -238,7 +239,7 @@ class Cookies(commands.Cog):
             pred = MessagePredicate.valid_int(ctx)
             await ctx.send("What's the minimum amount of cookies members can obtain?")
             try:
-                await bot.wait_for("message", timeout=30, check=pred)
+                await self.bot.wait_for("message", timeout=30, check=pred)
             except asyncio.TimeoutError:
                 return await ctx.send("You took too long. Try again, please.")
             minimum = pred.result
@@ -246,7 +247,7 @@ class Cookies(commands.Cog):
 
             await ctx.send("What's the maximum amount of cookies members can obtain?")
             try:
-                await bot.wait_for("message", timeout=30, check=pred)
+                await self.bot.wait_for("message", timeout=30, check=pred)
             except asyncio.TimeoutError:
                 return await ctx.send("You took too long. Try again, please.")
             maximum = pred.result
@@ -300,11 +301,11 @@ class Cookies(commands.Cog):
         if amount <= 0:
             return await ctx.send("Uh oh, amount has to be more than 0.")
         if self._max_balance_check(amount):
-            return await ctx.send(f"Uh oh, amount can't be greater than {_MAX_BALANCE:,}.")
+            return await ctx.send(
+                f"Uh oh, amount can't be greater than {_MAX_BALANCE:,}."
+            )
         await self.config.member(target).cookies.set(amount)
-        await ctx.send(
-            f"Set {target.mention}'s balance to {amount} :cookie:"
-        )
+        await ctx.send(f"Set {target.mention}'s balance to {amount} :cookie:")
 
     @setcookies.command(name="add")
     async def setcookies_add(
@@ -316,11 +317,11 @@ class Cookies(commands.Cog):
         target_cookies = int(await self.config.member(target).cookies())
         target_cookies += amount
         if self._max_balance_check(target_cookies):
-            return await ctx.send(f"Uh oh, {target.display_name} has reached the maximum amount of cookies.")
+            return await ctx.send(
+                f"Uh oh, {target.display_name} has reached the maximum amount of cookies."
+            )
         await self.config.member(target).cookies.set(target_cookies)
-        await ctx.send(
-            f"Added {amount} :cookie: to {target.mention}'s balance."
-        )
+        await ctx.send(f"Added {amount} :cookie: to {target.mention}'s balance.")
 
     @setcookies.command(name="take")
     async def setcookies_take(
@@ -347,12 +348,10 @@ class Cookies(commands.Cog):
                 "This will delete **all** cookies from all members. This action **cannot** be undone.\n"
                 f"If you're sure, type `{ctx.clean_prefix}setcookies reset yes`."
             )
-
         for member in ctx.guild.members:
             cookies = int(await self.config.member(member).cookies())
             if cookies != 0:
                 await self.config.member(member).cookies.set(0)
-
         await ctx.send("All cookies have been deleted from all members.")
 
     @setcookies.group(autohelp=True)

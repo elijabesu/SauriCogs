@@ -73,14 +73,12 @@ class Suggestion(Cog):
             return await ctx.send(
                 "Uh oh, looks like your Admins haven't added the required channel."
             )
-
         if ctx.guild not in self.antispam:
             self.antispam[ctx.guild] = {}
         if ctx.author not in self.antispam[ctx.guild]:
             self.antispam[ctx.guild][ctx.author] = AntiSpam([(timedelta(days=1), 6)])
         if self.antispam[ctx.guild][ctx.author].spammy:
             return await ctx.send("Uh oh, you're doing this way too frequently.")
-
         embed = discord.Embed(color=await ctx.embed_colour(), description=suggestion)
         embed.set_author(
             name=f"Suggestion by {ctx.author.display_name}",
@@ -101,7 +99,6 @@ class Suggestion(Cog):
             await self.config.guild(ctx.guild).next_id.set(s_id + 1)
             server = ctx.guild.id
             content = f"Suggestion #{s_id}"
-
         msg = await channel.send(content=content, embed=embed)
         await msg.add_reaction("✅")
         await msg.add_reaction("❎")
@@ -154,7 +151,6 @@ class Suggestion(Cog):
                 ctx.guild.text_channels,
                 id=await self.config.guild(ctx.guild).approve_id(),
             )
-
         msg_id = await self.config.custom("SUGGESTION", server, suggestion_id).msg_id()
         if msg_id != 0:
             if (
@@ -162,7 +158,6 @@ class Suggestion(Cog):
                 is True
             ):
                 return await ctx.send("This suggestion has been finished already.")
-
         oldmsg = await oldchannel.fetch_message(id=msg_id)
         if oldmsg is None:
             return await ctx.send("Uh oh, message with this ID doesn't exist.")
@@ -177,10 +172,7 @@ class Suggestion(Cog):
         if op is None:
             op_name = str(op_info[1])
             op_avatar = ctx.guild.icon_url
-
-        embed.set_author(
-            name=f"Approved suggestion by {op_name}", icon_url=op_avatar
-        )
+        embed.set_author(name=f"Approved suggestion by {op_name}", icon_url=op_avatar)
         if is_global is True:
             await oldmsg.edit(content=content, embed=embed)
             try:
@@ -249,7 +241,6 @@ class Suggestion(Cog):
                 ctx.guild.text_channels,
                 id=await self.config.guild(ctx.guild).reject_id(),
             )
-
         msg_id = await self.config.custom("SUGGESTION", server, suggestion_id).msg_id()
         if msg_id != 0:
             if (
@@ -257,7 +248,6 @@ class Suggestion(Cog):
                 is True
             ):
                 return await ctx.send("This suggestion has been finished already.")
-
         oldmsg = await oldchannel.fetch_message(id=msg_id)
         if oldmsg is None:
             return await ctx.send("Uh oh, message with this ID doesn't exist.")
@@ -272,10 +262,7 @@ class Suggestion(Cog):
         if op is None:
             op_name = str(op_info[1])
             op_avatar = ctx.guild.icon_url
-
-        embed.set_author(
-            name=f"Rejected suggestion by {op_name}", icon_url=op_avatar
-        )
+        embed.set_author(name=f"Rejected suggestion by {op_name}", icon_url=op_avatar)
 
         if reason:
             embed.add_field(name="Reason:", value=reason, inline=False)
@@ -285,7 +272,6 @@ class Suggestion(Cog):
             await self.config.custom("SUGGESTION", server, suggestion_id).rtext.set(
                 reason
             )
-
         if is_global is True:
             await oldmsg.edit(content=content, embed=embed)
             try:
@@ -358,7 +344,6 @@ class Suggestion(Cog):
                     ctx.guild.text_channels,
                     id=await self.config.guild(ctx.guild).suggest_id(),
                 )
-
         msg_id = await self.config.custom("SUGGESTION", server, suggestion_id).msg_id()
         if msg_id != 0:
             if (
@@ -371,7 +356,6 @@ class Suggestion(Cog):
                 is True
             ):
                 return await ctx.send("This suggestion already has a reason.")
-
             content, embed = await self._build_suggestion(
                 ctx, ctx.author.id, ctx.guild.id, suggestion_id, is_global
             )
@@ -473,7 +457,6 @@ class Suggestion(Cog):
                     await msg.delete()
                 else:
                     await self.config.guild(ctx.guild).approve_id.set(approved.id)
-
                 rejected = get(ctx.guild.text_channels, name="rejected-suggestions")
                 if rejected is None:
                     msg = await ctx.send(
@@ -496,7 +479,6 @@ class Suggestion(Cog):
                     await msg.delete()
                 else:
                     await self.config.guild(ctx.guild).reject_id.set(rejected.id)
-
         else:
             await msg.delete()
             msg = await ctx.send(
@@ -573,7 +555,6 @@ class Suggestion(Cog):
                     rejected = predchan.result
                     await self.config.guild(ctx.guild).reject_id.set(rejected.id)
                 await msg.delete()
-
         await ctx.send(
             "You have finished the setup! Please, move your channels to the category you want them in."
         )
@@ -628,9 +609,7 @@ class Suggestion(Cog):
         if server.id not in await self.config.ignore():
             async with self.config.ignore() as ignore:
                 ignore.append(server.id)
-            await ctx.send(
-                f"{server.name} has been added into the ignored list."
-            )
+            await ctx.send(f"{server.name} has been added into the ignored list.")
         else:
             await ctx.send(f"{server.name} is already in the ignored list.")
 
@@ -644,9 +623,7 @@ class Suggestion(Cog):
         if server.id in await self.config.ignore():
             async with self.config.ignore() as ignore:
                 ignore.remove(server.id)
-            await ctx.send(
-                f"{server.name} has been removed from the ignored list."
-            )
+            await ctx.send(f"{server.name} has been removed from the ignored list.")
         else:
             await ctx.send(f"{server.name} already isn't in the ignored list.")
 
@@ -680,7 +657,6 @@ class Suggestion(Cog):
                 content = f"Suggestion #{suggestion_id}"
             else:
                 return await ctx.send("Uh oh, that suggestion doesn't seem to exist.")
-
         op_info = await self.config.custom("SUGGESTION", server, suggestion_id).author()
         op_id = int(op_info[0])
         op = await self.bot.fetch_user(op_id)
@@ -692,7 +668,6 @@ class Suggestion(Cog):
             op_name = str(op_info[1])
             op_discriminator = int(op_info[2])
             op_avatar = ctx.guild.icon_url
-
         if (
             await self.config.custom("SUGGESTION", server, suggestion_id).finished()
             is False
@@ -712,7 +687,6 @@ class Suggestion(Cog):
                     is True
                 ):
                     atext = f"Rejected suggestion by {op_name}"
-
         embed = discord.Embed(
             color=await ctx.embed_colour(),
             description=await self.config.custom(
@@ -733,5 +707,4 @@ class Suggestion(Cog):
                 ).rtext(),
                 inline=False,
             )
-
         return content, embed

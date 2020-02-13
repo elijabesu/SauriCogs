@@ -35,97 +35,84 @@ class Application(Cog):
     @checks.bot_has_permissions(manage_roles=True)
     async def apply(self, ctx: commands.Context):
         """Apply to be a staff member."""
-        author = ctx.author
-        guild = ctx.guild
-        bot = self.bot
-        role_add = get(guild.roles, name="Staff Applicant")
-        channel = get(guild.text_channels, name="applications")
+        role_add = get(ctx.guild.roles, name="Staff Applicant")
+        channel = get(ctx.guild.text_channels, name="applications")
         if ctx.guild not in self.antispam:
             self.antispam[ctx.guild] = {}
         if ctx.author not in self.antispam[ctx.guild]:
             self.antispam[ctx.guild][ctx.author] = AntiSpam([(timedelta(days=2), 1)])
         if self.antispam[ctx.guild][ctx.author].spammy:
             return await ctx.send("Uh oh, you're doing this way too frequently.")
-
         if role_add is None:
             return await ctx.send(
                 "Uh oh. Looks like your Admins haven't added the required role."
             )
-
         if channel is None:
             return await ctx.send(
                 "Uh oh. Looks like your Admins haven't added the required channel."
             )
-
         try:
-            await author.send(
+            await ctx.author.send(
                 "Let's start right away! You have maximum of 2 minutes for each question.\nWhat position are you applying for?"
             )
         except discord.Forbidden:
             return await ctx.send(
                 "I don't seem to be able to DM you. Do you have closed DMs?"
             )
-
-        await ctx.send(f"Okay, {author.mention}, I've sent you a DM.")
+        await ctx.send(f"Okay, {ctx.author.mention}, I've sent you a DM.")
 
         def check(m):
-            return m.author == author and m.channel == author.dm_channel
+            return m.author == ctx.author and m.channel == ctx.author.dm_channel
 
         try:
             position = await bot.wait_for("message", timeout=120, check=check)
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
-
-        await author.send("What is your name?")
+        await ctx.author.send("What is your name?")
         try:
             name = await bot.wait_for("message", timeout=120, check=check)
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
-
-        await author.send("How old are you?")
+        await ctx.author.send("How old are you?")
         try:
             age = await bot.wait_for("message", timeout=120, check=check)
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
-
-        await author.send("What timezone are you in? (Google is your friend.)")
+        await ctx.author.send("What timezone are you in? (Google is your friend.)")
         try:
             timezone = await bot.wait_for("message", timeout=120, check=check)
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
-
-        await author.send("How many days per week can you be active?")
+        await ctx.author.send("How many days per week can you be active?")
         try:
             days = await bot.wait_for("message", timeout=120, check=check)
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
-
-        await author.send("How many hours per day can you be active?")
+        await ctx.author.send("How many hours per day can you be active?")
         try:
             hours = await bot.wait_for("message", timeout=120, check=check)
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
-
-        await author.send(
+        await ctx.author.send(
             "Do you have any previous experience? If so, please describe."
         )
         try:
             experience = await bot.wait_for("message", timeout=120, check=check)
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
-
-        await author.send("Why do you want to be a member of our staff?")
+        await ctx.author.send("Why do you want to be a member of our staff?")
         try:
             reason = await bot.wait_for("message", timeout=120, check=check)
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
-
         embed = discord.Embed(color=await ctx.embed_colour(), timestamp=datetime.now())
         embed.set_author(name="New application!", icon_url=author.avatar_url)
         embed.set_footer(
-            text=f"{author.name}#{author.discriminator} ({author.id})"
+            text=f"{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})"
         )
-        embed.title = f"User: {author.name}#{author.discriminator} ({author.id})"
+        embed.title = (
+            f"User: {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})"
+        )
         embed.add_field(name="Name:", value=name.content, inline=True)
         embed.add_field(name="Age:", value=age.content, inline=True)
         embed.add_field(name="Timezone:", value=timezone.content, inline=True)
@@ -139,9 +126,11 @@ class Application(Cog):
 
         await channel.send(embed=embed)
 
-        await author.add_roles(role_add)
+        await ctx.author.add_roles(role_add)
 
-        await author.send("Your application has been sent to the Admins, thank you!")
+        await ctx.author.send(
+            "Your application has been sent to the Admins, thank you!"
+        )
         self.antispam[ctx.guild][ctx.author].stamp()
 
     @checks.admin_or_permissions(administrator=True)
@@ -150,11 +139,9 @@ class Application(Cog):
     @checks.bot_has_permissions(manage_channels=True, manage_roles=True)
     async def applysetup(self, ctx: commands.Context):
         """Go through the initial setup process."""
-        bot = self.bot
-        guild = ctx.guild
         pred = MessagePredicate.yes_or_no(ctx)
-        applicant = get(guild.roles, name="Staff Applicant")
-        channel = get(guild.text_channels, name="applications")
+        applicant = get(ctx.guild.roles, name="Staff Applicant")
+        channel = get(ctx.guild.text_channels, name="applications")
 
         await ctx.send(
             "This will create required channel and role. Do you wish to continue? (yes/no)"
@@ -165,17 +152,15 @@ class Application(Cog):
             return await ctx.send("You took too long. Try again, please.")
         if pred.result is False:
             return await ctx.send("Setup cancelled.")
-
         if applicant is None:
             try:
-                await guild.create_role(
+                await ctx.guild.create_role(
                     name="Staff Applicant", reason="Application cog setup"
                 )
             except discord.Forbidden:
                 return await ctx.send(
                     "Uh oh. Looks like I don't have permissions to manage roles."
                 )
-
         if channel is None:
             await ctx.send(
                 "Do you want everyone to see the applications channel? (yes/no)"
@@ -186,20 +171,20 @@ class Application(Cog):
                 return await ctx.send("You took too long. Try again, please.")
             if pred.result is True:
                 overwrites = {
-                    guild.default_role: discord.PermissionOverwrite(
+                    ctx.guild.default_role: discord.PermissionOverwrite(
                         send_messages=False
                     ),
-                    guild.me: discord.PermissionOverwrite(send_messages=True),
+                    ctx.guild.me: discord.PermissionOverwrite(send_messages=True),
                 }
             else:
                 overwrites = {
-                    guild.default_role: discord.PermissionOverwrite(
+                    ctx.guild.default_role: discord.PermissionOverwrite(
                         read_messages=False
                     ),
-                    guild.me: discord.PermissionOverwrite(read_messages=True),
+                    ctx.guild.me: discord.PermissionOverwrite(read_messages=True),
                 }
             try:
-                await guild.create_text_channel(
+                await ctx.guild.create_text_channel(
                     "applications",
                     overwrites=overwrites,
                     reason="Application cog setup",
@@ -208,7 +193,6 @@ class Application(Cog):
                 return await ctx.send(
                     "Uh oh. Looks like I don't have permissions to manage channels."
                 )
-
         await ctx.send(
             "You have finished the setup! Please, move your new channel to the category you want it in."
         )
@@ -221,16 +205,12 @@ class Application(Cog):
         """Accept a staff applicant.
 
         <target> can be a mention or an ID."""
-        bot = self.bot
-        guild = ctx.guild
-        applicant = get(guild.roles, name="Staff Applicant")
+        applicant = get(ctx.guild.roles, name="Staff Applicant")
         role = MessagePredicate.valid_role(ctx)
         if applicant in target.roles:
-            await ctx.send(
-                f"What role do you want to accept {target.name} as?"
-            )
+            await ctx.send(f"What role do you want to accept {target.name} as?")
             try:
-                await bot.wait_for("message", timeout=30, check=role)
+                await self.bot.wait_for("message", timeout=30, check=role)
             except asyncio.TimeoutError:
                 return await ctx.send("You took too long. Try again, please.")
             role_add = role.result
@@ -238,7 +218,7 @@ class Application(Cog):
             await target.remove_roles(applicant)
             await ctx.send(f"Accepted {target.mention} as {role_add}.")
             await target.send(
-                f"You have been accepted as {role_add} in {guild.name}."
+                f"You have been accepted as {role_add} in {ctx.guild.name}."
             )
         else:
             await ctx.send(
@@ -253,15 +233,12 @@ class Application(Cog):
         """Deny a staff applicant.
 
         <target> can be a mention or an ID"""
-        bot = self.bot
-        guild = ctx.guild
-        author = ctx.author
-        applicant = get(guild.roles, name="Staff Applicant")
+        applicant = get(ctx.guild.roles, name="Staff Applicant")
         if applicant in target.roles:
             await ctx.send("Would you like to specify a reason? (yes/no)")
             pred = MessagePredicate.yes_or_no(ctx)
             try:
-                await bot.wait_for("message", timeout=30, check=pred)
+                await self.bot.wait_for("message", timeout=30, check=pred)
             except asyncio.TimeoutError:
                 return await ctx.send("You took too long. Try again, please.")
             if pred.result is True:
@@ -271,15 +248,17 @@ class Application(Cog):
                     return m.author == author
 
                 try:
-                    reason = await bot.wait_for("message", timeout=120, check=check)
+                    reason = await self.bot.wait_for(
+                        "message", timeout=120, check=check
+                    )
                 except asyncio.TimeoutError:
                     return await ctx.send("You took too long. Try again, please.")
                 await target.send(
-                    f"Your application in {guild.name} has been denied.\n*Reason:* {reason.content}"
+                    f"Your application in {ctx.guild.name} has been denied.\n*Reason:* {reason.content}"
                 )
             else:
                 await target.send(
-                    f"Your application in {guild.name} has been denied."
+                    f"Your application in {ctx.guild.name} has been denied."
                 )
             await target.remove_roles(applicant)
             await ctx.send(f"Denied {target.mention}'s application.")

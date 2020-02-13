@@ -86,7 +86,6 @@ class LevelUpCookies(Cog):
                 icon_url=ctx.guild.icon_url,
             )
             page_list.append(embed)
-
         await menu(ctx, page_list, DEFAULT_CONTROLS)
 
     @commands.Cog.listener()

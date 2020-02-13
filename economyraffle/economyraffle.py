@@ -53,7 +53,6 @@ class EconomyRaffle(Cog):
                 return await ctx.send("You took too long. Try again, please.")
             required = role.result
             await self.config.guild(ctx.guild).required.set(str(required))
-
         await ctx.send(
             f"What amount of {currency} do you want me to give away? (whole number)"
         )
@@ -94,7 +93,6 @@ class EconomyRaffle(Cog):
                 return await ctx.send("You took too long. Try again, please.")
             custom = answer.content
             await self.config.guild(ctx.guild).custom.set(custom)
-
         await ctx.send(
             f"You have finished the setup! Command `{ctx.clean_prefix}economyraffle` is ready to be used. *Please note that scheduler isn't part of this cog.*"
         )
@@ -114,7 +112,6 @@ class EconomyRaffle(Cog):
             winner = random.choice(ctx.guild.members)
         else:
             winner = random.choice(required.members)
-
         if which == 1:
             msg = f"It's time for our {currency} giveaway!\n\nCongratulations {winner.mention}! :tada: You just won extra {amount} {currency}!"
         elif which == 2:
@@ -130,7 +127,8 @@ class EconomyRaffle(Cog):
                 currency=currency,
             )
         else:
-            return await ctx.send("Uh oh. Looks like your Admins haven't setup this yet.")
-
+            return await ctx.send(
+                "Uh oh. Looks like your Admins haven't setup this yet."
+            )
         await bank.deposit_credits(winner, amount)
         await ctx.send(msg)

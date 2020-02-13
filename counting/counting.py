@@ -19,7 +19,7 @@ class Counting(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.2.1-revert"
+    __version__ = "1.2.2"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -35,7 +35,7 @@ class Counting(Cog):
             whitelist=None,
             warning=False,
             seconds=0,
-#            allow_text=False,
+            #            allow_text=False,
         )
 
     @checks.admin_or_permissions(administrator=True)
@@ -102,11 +102,9 @@ class Counting(Cog):
                 "This will reset the ongoing counting. This action **cannot** be undone.\n"
                 f"If you're sure, type `{ctx.clean_prefix}setcount reset yes`."
             )
-
         p = await self.config.guild(ctx.guild).previous()
         if p == 0:
             return await ctx.send("The counting hasn't even started.")
-
         c_id = await self.config.guild(ctx.guild).channel()
         if c_id == 0:
             return await ctx.send(
@@ -144,7 +142,9 @@ class Counting(Cog):
         If `on_off` is not provided, the state will be flipped.
         Optionally add how many seconds the bot should wait before deleting the message (0 for not deleting)."""
         target_state = (
-            on_off if on_off is not None else not (await self.config.guild(ctx.guild).warning())
+            on_off
+            if on_off is not None
+            else not (await self.config.guild(ctx.guild).warning())
         )
         await self.config.guild(ctx.guild).warning.set(target_state)
         if target_state:
@@ -160,25 +160,29 @@ class Counting(Cog):
         else:
             await ctx.send("Warning messages are now disabled.")
 
-#    @setcount.command(name="allowtext")
-#    async def setcount_allowtext(self, ctx: commands.Context, on_off: bool = None):
-#        """Toggle allowing text AFTER the number.
-#
-#        If `on_off` is not provided, the state will be flipped."""
-#        target_state = (
-#            on_off if on_off is not None else not (await self.config.guild(ctx.guild).allow_text())
-#        )
-#        await self.config.guild(ctx.guild).allow_text.set(target_state)
-#        if target_state:
-#            await ctx.send("Text in messages is now allowed.")
-#        else:
-#            await ctx.send("Text in messages is no longer allowed.")
+    @setcount.command(name="allowtext")
+    async def setcount_allowtext(self, ctx: commands.Context, on_off: bool = None):
+        """Toggle allowing text AFTER the number.
+
+        If `on_off` is not provided, the state will be flipped."""
+        target_state = (
+            on_off
+            if on_off is not None
+            else not (await self.config.guild(ctx.guild).allow_text())
+        )
+        await self.config.guild(ctx.guild).allow_text.set(target_state)
+        if target_state:
+            await ctx.send("Text in messages is now allowed.")
+        else:
+            await ctx.send("Text in messages is no longer allowed.")
 
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.guild is None:
             return
         if message.channel.id != await self.config.guild(message.guild).channel():
+            return
+        if message.author.id == self.bot.user.id:
             return
         last_id = await self.config.guild(message.guild).last()
         previous = await self.config.guild(message.guild).previous()
@@ -191,25 +195,21 @@ class Counting(Cog):
                 now = int(message.content)
                 if now - 1 == previous:
                     await self.config.guild(message.guild).previous.set(now)
-                    if message.author.id != self.bot.user.id:
-                        await self.config.guild(message.guild).last.set(message.author.id)
+                    await self.config.guild(message.guild).last.set(message.author.id)
                     n = now + 1
                     return await self._set_topic(now, goal, n, message.channel)
             except (TypeError, ValueError):
-                if message.author.id == self.bot.user.id:
-                    return
-#                if await self.config.guild(ctx.guild).allow_text() is False:
-#                    pass
-#                else:
-#                    nums = [int(i) for i in message.content.split() if i.isdigit()]
-#                    now = nums[0]
-#                    if now - 1 == previous:
-#                        await self.config.guild(message.guild).previous.set(now)
-#                        if message.author.id != self.bot.user.id:
-#                            await self.config.guild(message.guild).last.set(message.author.id)
-#                        n = now + 1
-#                        return await self._set_topic(now, goal, n, message.channel)
-
+                if await self.config.guild(ctx.guild).allow_text() is True:
+                    nums = [int(i) for i in message.content.split() if i.isdigit()]
+                    if now != []:
+                        now = nums[0]
+                        if now - 1 == previous:
+                            await self.config.guild(message.guild).previous.set(now)
+                            await self.config.guild(message.guild).last.set(
+                                message.author.id
+                            )
+                            n = now + 1
+                            return await self._set_topic(now, goal, n, message.channel)
         rid = await self.config.guild(message.guild).whitelist()
         if rid is not None:
             role = message.guild.get_role(int(rid))

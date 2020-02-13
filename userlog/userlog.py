@@ -83,16 +83,14 @@ class UserLog(Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
-        guild = member.guild
-
-        join = await self.config.guild(guild).join()
+        join = await self.config.guild(member.guild).join()
         if join is False:
             return
-        channel = guild.get_channel(await self.config.guild(guild).channel())
+        channel = member.guild.get_channel(await self.config.guild(guild).channel())
         if channel is None:
             return
         time = datetime.datetime.utcnow()
-        users = len(guild.members)
+        users = len(member.guild.members)
         since_created = (time - member.created_at).days
         user_created = member.created_at.strftime("%Y-%m-%d, %H:%M")
 
@@ -116,17 +114,14 @@ class UserLog(Cog):
 
     @commands.Cog.listener()
     async def on_member_remove(self, member):
-        guild = member.guild
-
         leave = await self.config.guild(guild).leave()
         if leave is False:
             return
-        channel = guild.get_channel(await self.config.guild(guild).channel())
+        channel = member.guild.get_channel(await self.config.guild(guild).channel())
         if channel is None:
             return
-
         time = datetime.datetime.utcnow()
-        users = len(guild.members)
+        users = len(member.guild.members)
         embed = discord.Embed(
             description=f"{member.mention} ({member.name}#{member.discriminator})",
             colour=discord.Colour.red(),

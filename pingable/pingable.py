@@ -36,26 +36,26 @@ class Pingable(Cog):
     @checks.bot_has_permissions(manage_roles=True)
     async def setpingable(self, ctx: commands.Context, *, role: discord.Role):
         """Make a role pingable"""
-        bot = self.bot
         pred_yn = MessagePredicate.yes_or_no(ctx)
         pred_c = MessagePredicate.valid_text_channel(ctx)
 
         await self.config.role(role).pingable.set(True)
         await ctx.send("Do you want it to work only in one channel?")
         try:
-            await bot.wait_for("message", timeout=120, check=pred_yn)
+            await self.bot.wait_for("message", timeout=120, check=pred_yn)
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
         if pred_yn.result is True:
             await ctx.send("What channel?")
             try:
-                await bot.wait_for("message", timeout=120, check=pred_c)
+                await self.bot.wait_for("message", timeout=120, check=pred_c)
             except asyncio.TimeoutError:
                 return await ctx.send("You took too long. Try again, please.")
             channel = pred_c.result
             await self.config.role(role).channel.set(channel.id)
         await ctx.send(
-            f'{role.name} set as pingable. You can now set an alias for `{ctx.clean_prefix}pingable "{role.name}"` for users to use.'
+            f"{role.name} set as pingable. You can now set an alias for "
+            f'`{ctx.clean_prefix}pingable "{role.name}"` for users to use.'
         )
 
     @checks.admin_or_permissions(manage_roles=True)
@@ -69,7 +69,8 @@ class Pingable(Cog):
         await self.config.role(role).pingable.set(False)
         await self.config.role(role).channel.set(None)
         await ctx.send(
-            f'{role.name} removed from the pingable roles. Don\'t forget to delete the alias for `{ctx.clean_prefix}pingable "{role.name}"`.'
+            f"{role.name} removed from the pingable roles. Don't forget to delete the alias for "
+            f'`{ctx.clean_prefix}pingable "{role.name}"`.'
         )
 
     @commands.command()
@@ -92,8 +93,6 @@ class Pingable(Cog):
             return await ctx.send("Uh oh, you're doing this way too frequently.")
         await ctx.message.delete()
         await role.edit(mentionable=True)
-        await ctx.send(
-            f"{role.mention}\n{ctx.author.mention}: {message}"
-        )
+        await ctx.send(f"{role.mention}\n{ctx.author.mention}: {message}")
         await role.edit(mentionable=False)
         self.antispam[ctx.guild][ctx.author].stamp()
