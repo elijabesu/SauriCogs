@@ -4,7 +4,7 @@ import discord
 from typing import Any
 from datetime import datetime, timedelta
 
-from redbot.core import VersionInfo, version_info
+from redbot import VersionInfo, version_info
 from redbot.core import Config, checks, commands
 from redbot.core.utils.predicates import MessagePredicate
 from redbot.core.utils.antispam import AntiSpam
