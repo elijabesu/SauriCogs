@@ -4,6 +4,7 @@ import discord
 from typing import Any
 from datetime import datetime, timedelta
 
+from redbot.core import VersionInfo, version_info
 from redbot.core import Config, checks, commands
 from redbot.core.utils.predicates import MessagePredicate
 from redbot.core.utils.antispam import AntiSpam
@@ -12,6 +13,10 @@ from redbot.core.bot import Red
 
 Cog: Any = getattr(commands, "Cog", object)
 
+if version_info < VersionInfo.from_str("3.3.2"):
+    SANITIZE_ROLES_KWARG = {}
+else:
+    SANITIZE_ROLES_KWARG = {"sanitize_roles": False}
 
 class Pingable(Cog):
     """
@@ -90,7 +95,7 @@ class Pingable(Cog):
         if ctx.author not in self.antispam[ctx.guild]:
             self.antispam[ctx.guild][ctx.author] = AntiSpam([(timedelta(hours=1), 1)])
         if self.antispam[ctx.guild][ctx.author].spammy:
-            return await ctx.send("Uh oh, you're doing this way too frequently.")
+            return await ctx.send("Uh oh, you're doing this way too frequently.", **SANITIZE_ROLES_KWARG)
         await ctx.message.delete()
         await role.edit(mentionable=True)
         await ctx.send(f"{role.mention}\n{ctx.author.mention}: {message}")
