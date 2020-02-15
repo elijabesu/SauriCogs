@@ -6,6 +6,7 @@ from typing import Any, Union, Optional
 from discord.utils import get
 from datetime import datetime
 
+from redbot import VersionInfo, version_info
 from redbot.core import Config, checks, commands
 from redbot.core.utils.chat_formatting import pagify, box, humanize_list
 from redbot.core.utils.predicates import MessagePredicate
@@ -15,6 +16,10 @@ from redbot.core.bot import Red
 
 Cog: Any = getattr(commands, "Cog", object)
 
+if version_info < VersionInfo.from_str("3.3.2"):
+    SANITIZE_ROLES_KWARG = {}
+else:
+    SANITIZE_ROLES_KWARG = {"sanitize_roles": False}
 
 class CookieStore(Cog):
     """
@@ -679,12 +684,12 @@ class CookieStore(Cog):
             if not ping.mentionable:
                 await ping.edit(mentionable=True)
                 await ctx.send(
-                    f"{ping.mention}, {ctx.author.mention} would like to redeem {item}."
+                    f"{ping.mention}, {ctx.author.mention} would like to redeem {item}.", **SANITIZE_ROLES_KWARG
                 )
                 await ping.edit(mentionable=False)
             else:
                 await ctx.send(
-                    f"{ping.mention}, {ctx.author.mention} would like to redeem {item}."
+                    f"{ping.mention}, {ctx.author.mention} would like to redeem {item}.", **SANITIZE_ROLES_KWARG
                 )
             await self.config.member(ctx.author).inventory.set_raw(
                 item, "redeemed", value=True
