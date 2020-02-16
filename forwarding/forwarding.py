@@ -2,6 +2,7 @@ import discord
 
 from discord.utils import get
 
+from redbot import VersionInfo, version_info
 from redbot.core import Config, commands, checks
 
 from redbot.core.bot import Red
@@ -9,6 +10,10 @@ from typing import Any, Union
 
 Cog: Any = getattr(commands, "Cog", object)
 
+if version_info < VersionInfo.from_str("3.3.2"):
+    SANITIZE_ROLES_KWARG = {}
+else:
+    SANITIZE_ROLES_KWARG = {"sanitize_roles": False}
 
 class Forwarding(commands.Cog):
     """Forward messages to the bot owner, incl. pictures (max one per message).
@@ -43,10 +48,10 @@ class Forwarding(commands.Cog):
             return await channel.send(content=f"{ping_user.mention}", embed=embed)
         if not ping_role.mentionable:
             await ping_role.edit(mentionable=True)
-            await channel.send(content=f"{ping_role.mention}", embed=embed)
+            await channel.send(content=f"{ping_role.mention}", embed=embed, **SANITIZE_ROLES_KWARG)
             await ping_role.edit(mentionable=False)
         else:
-            await channel.send(content=f"{ping_role.mention}", embed=embed)
+            await channel.send(content=f"{ping_role.mention}", embed=embed, **SANITIZE_ROLES_KWARG)
 
     @commands.Cog.listener()
     async def on_message_without_command(self, message):
