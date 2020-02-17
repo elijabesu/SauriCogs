@@ -21,7 +21,7 @@ class Application(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -65,44 +65,44 @@ class Application(Cog):
             return m.author == ctx.author and m.channel == ctx.author.dm_channel
 
         try:
-            position = await bot.wait_for("message", timeout=120, check=check)
+            position = await self.bot.wait_for("message", timeout=120, check=check)
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
         await ctx.author.send("What is your name?")
         try:
-            name = await bot.wait_for("message", timeout=120, check=check)
+            name = await self.bot.wait_for("message", timeout=120, check=check)
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
         await ctx.author.send("How old are you?")
         try:
-            age = await bot.wait_for("message", timeout=120, check=check)
+            age = await self.bot.wait_for("message", timeout=120, check=check)
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
         await ctx.author.send("What timezone are you in? (Google is your friend.)")
         try:
-            timezone = await bot.wait_for("message", timeout=120, check=check)
+            timezone = await self.bot.wait_for("message", timeout=120, check=check)
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
         await ctx.author.send("How many days per week can you be active?")
         try:
-            days = await bot.wait_for("message", timeout=120, check=check)
+            days = await self.bot.wait_for("message", timeout=120, check=check)
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
         await ctx.author.send("How many hours per day can you be active?")
         try:
-            hours = await bot.wait_for("message", timeout=120, check=check)
+            hours = await self.bot.wait_for("message", timeout=120, check=check)
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
         await ctx.author.send(
             "Do you have any previous experience? If so, please describe."
         )
         try:
-            experience = await bot.wait_for("message", timeout=120, check=check)
+            experience = await self.bot.wait_for("message", timeout=120, check=check)
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
         await ctx.author.send("Why do you want to be a member of our staff?")
         try:
-            reason = await bot.wait_for("message", timeout=120, check=check)
+            reason = await self.bot.wait_for("message", timeout=120, check=check)
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
         embed = discord.Embed(color=await ctx.embed_colour(), timestamp=datetime.now())
@@ -147,7 +147,7 @@ class Application(Cog):
             "This will create required channel and role. Do you wish to continue? (yes/no)"
         )
         try:
-            await bot.wait_for("message", timeout=30, check=pred)
+            await self.bot.wait_for("message", timeout=30, check=pred)
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
         if pred.result is False:
@@ -166,7 +166,7 @@ class Application(Cog):
                 "Do you want everyone to see the applications channel? (yes/no)"
             )
             try:
-                await bot.wait_for("message", timeout=30, check=pred)
+                await self.bot.wait_for("message", timeout=30, check=pred)
             except asyncio.TimeoutError:
                 return await ctx.send("You took too long. Try again, please.")
             if pred.result is True:
