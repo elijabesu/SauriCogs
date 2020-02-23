@@ -16,7 +16,7 @@ from redbot.core.bot import Red
 
 Cog: Any = getattr(commands, "Cog", object)
 
-if version_info < VersionInfo.from_str("3.3.2"):
+if version_info < VersionInfo.from_str("3.4.0"):
     SANITIZE_ROLES_KWARG = {}
 else:
     SANITIZE_ROLES_KWARG = {"sanitize_roles": False}
