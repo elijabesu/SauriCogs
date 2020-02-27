@@ -21,7 +21,7 @@ class Application(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.1"
+    __version__ = "1.0.2"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -106,7 +106,7 @@ class Application(Cog):
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
         embed = discord.Embed(color=await ctx.embed_colour(), timestamp=datetime.now())
-        embed.set_author(name="New application!", icon_url=author.avatar_url)
+        embed.set_author(name="New application!", icon_url=ctx.author.avatar_url)
         embed.set_footer(
             text=f"{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})"
         )
@@ -245,7 +245,7 @@ class Application(Cog):
                 await ctx.send("Please, specify your reason now.")
 
                 def check(m):
-                    return m.author == author
+                    return m.author == ctx.author
 
                 try:
                     reason = await self.bot.wait_for(
