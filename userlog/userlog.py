@@ -16,7 +16,7 @@ class UserLog(Cog):
     """Log when users join/leave into your specified channel."""
 
     __author__ = "saurichable"
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -24,9 +24,7 @@ class UserLog(Cog):
             self, identifier=56546565165465456, force_registration=True
         )
 
-        default_guild = {"channel": None, "join": True, "leave": True}
-
-        self.config.register_guild(**default_guild)
+        self.config.register_guild(channel=None, join=True, leave=True)
 
     @commands.group(autohelp=True)
     @checks.admin_or_permissions(manage_guild=True)
@@ -86,7 +84,7 @@ class UserLog(Cog):
         join = await self.config.guild(member.guild).join()
         if join is False:
             return
-        channel = member.guild.get_channel(await self.config.guild(guild).channel())
+        channel = member.guild.get_channel(await self.config.guild(member.guild).channel())
         if channel is None:
             return
         time = datetime.datetime.utcnow()
@@ -114,10 +112,10 @@ class UserLog(Cog):
 
     @commands.Cog.listener()
     async def on_member_remove(self, member):
-        leave = await self.config.guild(guild).leave()
+        leave = await self.config.guild(member.guild).leave()
         if leave is False:
             return
-        channel = member.guild.get_channel(await self.config.guild(guild).channel())
+        channel = member.guild.get_channel(await self.config.guild(member.guild).channel())
         if channel is None:
             return
         time = datetime.datetime.utcnow()
