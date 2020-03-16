@@ -14,7 +14,7 @@ class UniqueName(Cog):
     """Deny members' names to be the same as your Moderators'."""
 
     __author__ = "saurichable"
-    __version__ = "1.0.0"
+    __version__ = "1.1.0"
 
     def __init__(self, bot):
         self.bot = bot
@@ -22,7 +22,7 @@ class UniqueName(Cog):
             self, identifier=58462132145646132, force_registration=True
         )
 
-        self.config.register_guild(toggle=False, roles=[], name="username")
+        self.config.register_guild(toggle=False, roles=[], name="username", channel=None)
         self.config.register_global(guilds=[])
 
     @commands.group(autohelp=True)
@@ -38,6 +38,17 @@ class UniqueName(Cog):
         """Add a role to the original list (f.e. Moderator or Admin role)."""
         async with self.config.guild(ctx.guild).roles() as roles:
             roles.append(role.id)
+        await ctx.tick()
+
+    @unset.command(name="channel")
+    async def unset_channel(self, ctx, channel: discord.TextChannel = None):
+        """Set the channel for warnings.
+
+        If the channel is not provided, logging will be disabled."""
+        if channel:
+            await self.config.guild(ctx.guild).channel.set(channel.id)
+        else:
+            await self.config.guild(ctx.guild).channel.set(None)
         await ctx.tick()
 
     @unset.command(name="name")
@@ -83,6 +94,14 @@ class UniqueName(Cog):
             return
         if after.nick in names:
             await after.edit(nick=name, reason="UniqueName cog")
+        channel = before.guild.get_channel(await self.config.guild(before.guild).channel())
+        if channel is None:
+            return
+        warning_text = """**UniqueName warning:**
+        
+        Discovered a forbidden name: '{after.display_name}'. 
+        User: {after.mention} - `{after.name}#{after.discriminator} ({after.id})`"""
+        await channel.send(warning_text)
 
     @commands.Cog.listener()
     async def on_user_update(self, before, after):
@@ -108,6 +127,14 @@ class UniqueName(Cog):
                     return
                 if after.name in names:
                     await member.edit(nick=name, reason="UniqueName cog")
+                channel = guild.get_channel(await self.config.guild(guild).channel())
+                if channel is None:
+                    return
+                warning_text = """**UniqueName warning:**
+                
+                Discovered a forbidden name: '{after.name}'. 
+                User: {after.mention} - `{after.name}#{after.discriminator} ({after.id})`"""
+                await channel.send(warning_text)
 
     async def _build_name_list(self, guild):
         names = []
