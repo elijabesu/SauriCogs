@@ -7,7 +7,7 @@ from typing import Any, Union
 from discord.utils import get
 from datetime import datetime
 
-from redbot.core import Config, checks, commands
+from redbot.core import Config, checks, commands, bank
 from redbot.core.utils.chat_formatting import pagify, box
 from redbot.core.utils.predicates import MessagePredicate
 from redbot.core.utils.menus import menu, DEFAULT_CONTROLS
@@ -23,7 +23,7 @@ class Cookies(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.2"
+    __version__ = "1.1.0"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -37,9 +37,10 @@ class Cookies(commands.Cog):
             cooldown=86400,
             stealing=False,
             stealcd=43200,
+            rate=0.5,
         )
         self.config.register_member(cookies=0, next_cookie=0, next_steal=0)
-        self.config.register_role(cookies=0)
+        self.config.register_role(cookies=0, multiplier=1)
 
     @commands.command()
     @commands.guild_only()
@@ -51,7 +52,13 @@ class Cookies(commands.Cog):
         next_cookie = await self.config.member(ctx.author).next_cookie()
         if cur_time >= next_cookie:
             if amount != 0:
-                cookies += amount
+                multipliers = []
+                for role in ctx.author.roles:
+                    role_multiplier = await self.config.role(role).multiplier()
+                    if role_multiplier is None:
+                        role_multiplier = 1
+                    multipliers.append(role_multiplier)
+                cookies += (amount * max(multipliers)) 
             else:
                 minimum = int(await self.config.guild(ctx.guild).minimum())
                 maximum = int(await self.config.guild(ctx.guild).maximum())
@@ -163,6 +170,26 @@ class Cookies(commands.Cog):
         else:
             cookies = int(await self.config.member(target).cookies())
             await ctx.send(f"{target.display_name} has {cookies} :cookie:")
+
+    @commands.command()
+    @commands.guild_only()
+    async def cookieexchange(self, ctx: commands.Context, amount: int):
+        """Exchange currency into cookies."""
+        if amount <= 0:
+            return await ctx.send("Uh oh, amount has to be more than 0.")
+
+        if await bank.can_spend(ctx.author, amount) is False:
+            return await ctx.send(f"Uh oh, you cannot afford this.")
+        await bank.withdraw_credits(ctx.author, amount)
+
+        rate = await self.config.guild(ctx.guild).rate()
+        new_cookies = amount * rate
+
+        cookies = await self.config.member(ctx.author).cookies()
+        cookies += new_cookies
+        await self.config.member(ctx.author).cookies.set(cookies)
+        currency = await bank.get_currency_name(ctx.guild)
+        await ctx.send(f"You have exchanged {amount} {currency} and got {new_cookies} :cookie:\nYou now have {cookies} :cookie:")
 
     @commands.command(aliases=["cookieleaderboard"])
     @commands.guild_only()
@@ -354,6 +381,16 @@ class Cookies(commands.Cog):
                 await self.config.member(member).cookies.set(0)
         await ctx.send("All cookies have been deleted from all members.")
 
+    @setcookies.command(name="rate")
+    async def setcookies_rate(self, ctx: commands.Context, rate: int):
+        """Set the exchange rate for `[p]cookieexchange`."""
+        if rate <= 0:
+            return await ctx.send("Uh oh, rate has to be more than 0.")
+        await self.config.guild(ctx.guild).rate.set(rate)
+        currency = await bank.get_currency_name(ctx.guild)
+        test_amount = 100*rate
+        await ctx.send(f"Set the exchange rate {seconds}. This means that 100 {currency} will give you {test_amount} :cookie:")
+
     @setcookies.group(autohelp=True)
     async def role(self, ctx):
         """Cookie rewards for roles."""
@@ -381,15 +418,17 @@ class Cookies(commands.Cog):
         cookies = int(await self.config.role(role).cookies())
         await ctx.send(f"Gaining {role.name} gives {cookies} :cookie:")
 
-    @commands.command()
-    @checks.admin_or_permissions(manage_guild=True)
-    @commands.guild_only()
-    async def nostore(self, ctx):
-        """Cookie store."""
-        await ctx.send(
-            f"Uh oh. Cookie store had to be made into a separate cog... You can install it by `{ctx.clean_prefix}cog install SauriCogs cookiestore`. Note that you will have to readd all items again.\n"
-            f"*Replace `SauriCogs` with the name you gave when adding the repo.*"
-        )
+    @role.command(name="multiplier")
+    async def setcookies_role_multiplier(
+        self, ctx: commands.Context, role: discord.Role, multiplier: int
+    ):
+        """Set cookies multipler for role. Disabled when random amount is enabled.
+        
+        Default is 1 (aka the same amount)."""
+        if amount <= 0:
+            return await ctx.send("Uh oh, multiplier has to be more than 0.")
+        await self.config.role(role).multiplier.set(multiplier)
+        await ctx.send(f"Users with {role.name} will now get {amount} times more :cookie:")
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
