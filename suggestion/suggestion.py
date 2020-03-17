@@ -24,7 +24,7 @@ class Suggestion(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.1.1"
+    __version__ = "1.2.0"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -33,7 +33,13 @@ class Suggestion(Cog):
         )
         self.antispam = {}
         self.config.register_guild(
-            same=False, suggest_id=None, approve_id=None, reject_id=None, next_id=1
+            same=False,
+            suggest_id=None,
+            approve_id=None,
+            reject_id=None,
+            next_id=1,
+            up_emoji=None,
+            down_emoji=None,
         )
         self.config.register_global(
             toggle=False, server_id=None, channel_id=None, next_id=1, ignore=[]
@@ -100,8 +106,15 @@ class Suggestion(Cog):
             server = ctx.guild.id
             content = f"Suggestion #{s_id}"
         msg = await channel.send(content=content, embed=embed)
-        await msg.add_reaction("✅")
-        await msg.add_reaction("❎")
+
+        up_emoji = self.bot.get_emoji(await self.config.guild(ctx.guild).up_emoji())
+        if up_emoji is None:
+            up_emoji = "✅"
+        down_emoji = self.bot.get_emoji(await self.config.guild(ctx.guild).down_emoji())
+        if down_emoji is None:
+            down_emoji = "❎"
+        await msg.add_reaction(up_emoji)
+        await msg.add_reaction(down_emoji)
 
         async with self.config.custom("SUGGESTION", server, s_id).author() as author:
             author.append(ctx.author.id)
@@ -393,7 +406,6 @@ class Suggestion(Cog):
     @setsuggest.command(name="setup")
     async def setsuggest_setup(self, ctx: commands.Context):
         """ Go through the initial setup process. """
-        bot = self.bot
         await self.config.guild(ctx.guild).same.set(False)
         await self.config.guild(ctx.guild).suggest_id.set(None)
         await self.config.guild(ctx.guild).approve_id.set(None)
@@ -407,7 +419,7 @@ class Suggestion(Cog):
         start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
         pred = ReactionPredicate.yes_or_no(msg, ctx.author)
         try:
-            await bot.wait_for("reaction_add", timeout=30, check=pred)
+            await self.bot.wait_for("reaction_add", timeout=30, check=pred)
         except asyncio.TimeoutError:
             await msg.delete()
             return await ctx.send("You took too long. Try again, please.")
@@ -426,7 +438,7 @@ class Suggestion(Cog):
             start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
             pred = ReactionPredicate.yes_or_no(msg, ctx.author)
             try:
-                await bot.wait_for("reaction_add", timeout=30, check=pred)
+                await self.bot.wait_for("reaction_add", timeout=30, check=pred)
             except asyncio.TimeoutError:
                 await msg.delete()
                 return await ctx.send("You took too long. Try again, please.")
@@ -443,7 +455,7 @@ class Suggestion(Cog):
                     start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
                     pred = ReactionPredicate.yes_or_no(msg, ctx.author)
                     try:
-                        await bot.wait_for("reaction_add", timeout=30, check=pred)
+                        await self.bot.wait_for("reaction_add", timeout=30, check=pred)
                     except asyncio.TimeoutError:
                         await msg.delete()
                         return await ctx.send("You took too long. Try again, please.")
@@ -465,7 +477,7 @@ class Suggestion(Cog):
                     start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
                     pred = ReactionPredicate.yes_or_no(msg, ctx.author)
                     try:
-                        await bot.wait_for("reaction_add", timeout=30, check=pred)
+                        await self.bot.wait_for("reaction_add", timeout=30, check=pred)
                     except asyncio.TimeoutError:
                         await msg.delete()
                         return await ctx.send("You took too long. Try again, please.")
@@ -485,7 +497,7 @@ class Suggestion(Cog):
                 "Mention the channel where you want me to post new suggestions."
             )
             try:
-                await bot.wait_for("message", timeout=30, check=predchan)
+                await self.bot.wait_for("message", timeout=30, check=predchan)
             except asyncio.TimeoutError:
                 await msg.delete()
                 return await ctx.send("You took too long. Try again, please.")
@@ -499,7 +511,7 @@ class Suggestion(Cog):
             start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
             pred = ReactionPredicate.yes_or_no(msg, ctx.author)
             try:
-                await bot.wait_for("reaction_add", timeout=30, check=pred)
+                await self.bot.wait_for("reaction_add", timeout=30, check=pred)
             except asyncio.TimeoutError:
                 await msg.delete()
                 return await ctx.send("You took too long. Try again, please.")
@@ -514,7 +526,7 @@ class Suggestion(Cog):
                 start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
                 pred = ReactionPredicate.yes_or_no(msg, ctx.author)
                 try:
-                    await bot.wait_for("reaction_add", timeout=30, check=pred)
+                    await self.bot.wait_for("reaction_add", timeout=30, check=pred)
                 except asyncio.TimeoutError:
                     await msg.delete()
                     return await ctx.send("You took too long. Try again, please.")
@@ -524,7 +536,7 @@ class Suggestion(Cog):
                         "Mention the channel where you want me to post approved suggestions."
                     )
                     try:
-                        await bot.wait_for("message", timeout=30, check=predchan)
+                        await self.bot.wait_for("message", timeout=30, check=predchan)
                     except asyncio.TimeoutError:
                         await msg.delete()
                         return await ctx.send("You took too long. Try again, please.")
@@ -538,7 +550,7 @@ class Suggestion(Cog):
                 start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
                 pred = ReactionPredicate.yes_or_no(msg, ctx.author)
                 try:
-                    await bot.wait_for("reaction_add", timeout=30, check=pred)
+                    await self.bot.wait_for("reaction_add", timeout=30, check=pred)
                 except asyncio.TimeoutError:
                     await msg.delete()
                     return await ctx.send("You took too long. Try again, please.")
@@ -548,7 +560,7 @@ class Suggestion(Cog):
                         "Mention the channel where you want me to post rejected suggestions."
                     )
                     try:
-                        await bot.wait_for("message", timeout=30, check=predchan)
+                        await self.bot.wait_for("message", timeout=30, check=predchan)
                     except asyncio.TimeoutError:
                         await msg.delete()
                         return await ctx.send("You took too long. Try again, please.")
@@ -558,6 +570,34 @@ class Suggestion(Cog):
         await ctx.send(
             "You have finished the setup! Please, move your channels to the category you want them in."
         )
+
+    @checks.bot_has_permissions(add_reactions=True)
+    @setsuggest.command(name="upemoji")
+    async def setsuggest_upemoji(self, ctx: commands.Context, up_emoji: discord.Emoji = None):
+        """ Set custom reactions emoji instead of ✅. """
+        if up_emoji is None:
+            await self.config.guild(ctx.guild).up_emoji.set(None)
+        else:
+            try:
+                await ctx.message.add_reaction(up_emoji)
+            except discord.HTTPException:
+                return await ctx.send("Uh oh, I cannot use that emoji.")
+            await self.config.guild(ctx.guild).up_emoji.set(up_emoji.id)
+        await ctx.tick()
+
+    @checks.bot_has_permissions(add_reactions=True)
+    @setsuggest.command(name="downemoji")
+    async def setsuggest_downemoji(self, ctx: commands.Context, down_emoji: discord.Emoji = None):
+        """ Set custom reactions emoji instead of ❎. """
+        if down_emoji is None:
+            await self.config.guild(ctx.guild).up_emoji.set(None)
+        else:
+            try:
+                await ctx.message.add_reaction(down_emoji)
+            except discord.HTTPException:
+                return await ctx.send("Uh oh, I cannot use that emoji.")
+            await self.config.guild(ctx.guild).down_emoji.set(down_emoji.id)
+        await ctx.tick()
 
     @setsuggest.group(autohelp=True)
     @checks.is_owner()
