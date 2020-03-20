@@ -23,7 +23,7 @@ class Cookies(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.1.0"
+    __version__ = "1.1.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -389,7 +389,7 @@ class Cookies(commands.Cog):
         await self.config.guild(ctx.guild).rate.set(rate)
         currency = await bank.get_currency_name(ctx.guild)
         test_amount = 100*rate
-        await ctx.send(f"Set the exchange rate {seconds}. This means that 100 {currency} will give you {test_amount} :cookie:")
+        await ctx.send(f"Set the exchange rate {rate}. This means that 100 {currency} will give you {test_amount} :cookie:")
 
     @setcookies.group(autohelp=True)
     async def role(self, ctx):
@@ -428,7 +428,7 @@ class Cookies(commands.Cog):
         if amount <= 0:
             return await ctx.send("Uh oh, multiplier has to be more than 0.")
         await self.config.role(role).multiplier.set(multiplier)
-        await ctx.send(f"Users with {role.name} will now get {amount} times more :cookie:")
+        await ctx.send(f"Users with {role.name} will now get {multiplier} times more :cookie:")
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
