@@ -27,7 +27,7 @@ class CookieStore(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.3"
+    __version__ = "1.0.4"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -619,7 +619,7 @@ class CookieStore(Cog):
             f"You have returned {item} and got {return_price} :cookie: back."
         )
 
-    @commands.command(aliases=["backpack"])
+    @commands.command()
     @commands.guild_only()
     async def inventory(self, ctx: commands.Context):
         """See all items you own."""
@@ -646,7 +646,7 @@ class CookieStore(Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=["rminventory"])
+    @commands.command()
     @commands.guild_only()
     async def removeinventory(self, ctx: commands.Context, *, item: str):
         """Remove an item from your inventory."""
