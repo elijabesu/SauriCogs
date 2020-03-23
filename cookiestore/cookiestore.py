@@ -27,7 +27,7 @@ class CookieStore(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.3"
+    __version__ = "1.0.4"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -633,9 +633,10 @@ class CookieStore(Cog):
             else:
                 role_obj = get(ctx.guild.roles, name=i)
                 lst.append(role_obj.mention)
-        desc = humanize_list(lst)
         if lst == []:
             desc = "Nothing to see here."
+        else:
+            desc = humanize_list(lst)
         embed = discord.Embed(
             description=desc, colour=ctx.author.colour, timestamp=datetime.now()
         )
