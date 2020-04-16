@@ -14,7 +14,7 @@ class UniqueName(Cog):
     """Deny members' names to be the same as your Moderators'."""
 
     __author__ = "saurichable"
-    __version__ = "1.1.0"
+    __version__ = "1.1.1"
 
     def __init__(self, bot):
         self.bot = bot
@@ -97,7 +97,7 @@ class UniqueName(Cog):
         channel = before.guild.get_channel(await self.config.guild(before.guild).channel())
         if channel is None:
             return
-        warning_text = """**UniqueName warning:**
+        warning_text = f"""**UniqueName warning:**
         
         Discovered a forbidden name: '{after.display_name}'. 
         User: {after.mention} - `{after.name}#{after.discriminator} ({after.id})`"""
@@ -130,7 +130,7 @@ class UniqueName(Cog):
                 channel = guild.get_channel(await self.config.guild(guild).channel())
                 if channel is None:
                     return
-                warning_text = """**UniqueName warning:**
+                warning_text = f"""**UniqueName warning:**
                 
                 Discovered a forbidden name: '{after.name}'. 
                 User: {after.mention} - `{after.name}#{after.discriminator} ({after.id})`"""
