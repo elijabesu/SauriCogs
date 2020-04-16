@@ -90,18 +90,18 @@ class UniqueName(Cog):
                     return
         names = await self._build_name_list(before.guild)
         name = await self.config.guild(before.guild).name()
-        if after.nick is None:
-            return
-        if after.nick in names:
-            await after.edit(nick=name, reason="UniqueName cog")
         channel = before.guild.get_channel(await self.config.guild(before.guild).channel())
         if channel is None:
             return
-        warning_text = f"""**UniqueName warning:**
-        
-        Discovered a forbidden name: '{after.display_name}'. 
-        User: {after.mention} - `{after.name}#{after.discriminator} ({after.id})`"""
-        await channel.send(warning_text)
+        if after.nick is None:
+            return
+        if after.nick in names:
+            warning_text = f"""**UniqueName warning:**
+            
+            Discovered a forbidden name: '{after.display_name}'. 
+            User: {after.mention} - `{after.name}#{after.discriminator} ({after.id})`"""
+            await after.edit(nick=name, reason="UniqueName cog")
+            await channel.send(warning_text)
 
     @commands.Cog.listener()
     async def on_user_update(self, before, after):
@@ -123,18 +123,18 @@ class UniqueName(Cog):
                             return
                 names = await self._build_name_list(guild)
                 name = await self.config.guild(guild).name()
-                if after.name is None:
-                    return
-                if after.name in names:
-                    await member.edit(nick=name, reason="UniqueName cog")
                 channel = guild.get_channel(await self.config.guild(guild).channel())
                 if channel is None:
                     return
-                warning_text = f"""**UniqueName warning:**
-                
-                Discovered a forbidden name: '{after.name}'. 
-                User: {after.mention} - `{after.name}#{after.discriminator} ({after.id})`"""
-                await channel.send(warning_text)
+                if after.name is None:
+                    return
+                if after.name in names: 
+                    warning_text = f"""**Unique Name warning:**
+                                    
+                    Discovered a forbidden name: '{before.name}'. 
+                    User: {after.mention} - `{after.name}#{after.discriminator} ({after.id})`"""
+                    await member.edit(nick=name, reason="UniqueName cog")
+                    await channel.send(warning_text)
 
     async def _build_name_list(self, guild):
         names = []
