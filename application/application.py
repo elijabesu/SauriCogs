@@ -21,7 +21,7 @@ class Application(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.2"
+    __version__ = "1.0.3"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -214,7 +214,10 @@ class Application(Cog):
             except asyncio.TimeoutError:
                 return await ctx.send("You took too long. Try again, please.")
             role_add = role.result
-            await target.add_roles(role_add)
+            try:
+                await target.add_roles(role_add)
+            except discord.Forbidden:
+                return await ctx.send("Uh oh, I cannot give them the role. It might be above all of my roles.")
             await target.remove_roles(applicant)
             await ctx.send(f"Accepted {target.mention} as {role_add}.")
             await target.send(
