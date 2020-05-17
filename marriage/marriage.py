@@ -202,8 +202,7 @@ class Marriage(Cog):
         if price < 0:
             return await ctx.send("Uh oh, price has to be 0 or more.")
         action = await self.config.guild(ctx.guild).shit.get_raw(action)
-        action[1] = price
-        await self.config.guild(ctx.guild).shit.set(action)
+        await self.config.guild(ctx.guild).shit.set_raw(action, value=[action[0], price])
         await ctx.tick()
 
     @commands.guild_only()
