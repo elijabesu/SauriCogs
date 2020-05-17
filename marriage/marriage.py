@@ -21,7 +21,7 @@ class Marriage(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.4.2"
+    __version__ = "1.4.3"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -203,7 +203,6 @@ class Marriage(Cog):
             return await ctx.send("Uh oh, price has to be 0 or more.")
         action = await self.config.guild(ctx.guild).shit.get_raw(action)
         action[1] = price
-        await self.config.guild(ctx.guild).shit.get_raw(action)
 
     @commands.guild_only()
     @commands.command()
