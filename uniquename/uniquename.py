@@ -14,7 +14,7 @@ class UniqueName(Cog):
     """Deny members' names to be the same as your Moderators'."""
 
     __author__ = "saurichable"
-    __version__ = "1.1.1"
+    __version__ = "1.1.2"
 
     def __init__(self, bot):
         self.bot = bot
@@ -112,6 +112,8 @@ class UniqueName(Cog):
             guild = self.bot.get_guild(gid)
             if guild is not None:
                 member = guild.get_member(before.id)
+                if member is None:
+                    return
                 if await self.config.guild(guild).toggle() is False:
                     return
                 config_roles = await self.config.guild(guild).roles()
