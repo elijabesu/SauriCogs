@@ -25,10 +25,6 @@ Welcome to SauriCogs' documentation!
 
 .. Badges and artwork
 
-.. image:: https://discordapp.com/api/guilds/482560976307355658/embed.png
-    :target: https://discord.gg/Q5KX6kS
-    :alt: SauriCord
-
 .. image:: https://img.shields.io/badge/Red%20DiscordBot-V3-red.svg
     :target: https://github.com/Cog-Creators/Red-DiscordBot
     :alt: Red-DiscordBot
@@ -37,14 +33,6 @@ Welcome to SauriCogs' documentation!
     :target: https://github.com/python/black
     :alt: Black formatting
 
-.. image:: https://www.codefactor.io/repository/github/elijabesu/sauricogs/badge
-    :target: https://www.codefactor.io/repository/github/elijabesu/sauricogs
-    :alt: CodeFactor
-
-.. image:: https://img.shields.io/badge/Support%20me%20on-Patreon-orange.svg?logo=patreon
-    :target: https://www.patreon.com/saurichable
-    :alt: Patreon
-
 .. important:: These cogs are made to work only with 
     `Red DiscordBot V3 <https://red-discordbot.readthedocs.io/en/v3-develop/>`_.
 
@@ -52,17 +40,11 @@ Welcome to SauriCogs' documentation!
 Contact me
 ------------
 
-There's multiple ways to contact me. The best and fastest way is to
-`join my own Discord server (SauriCord) <https://discord.gg/Q5KX6kS>`__,
-assign yourself a role in ``#unlock-me`` and then head over to ``#sauricogs`` channel
-in the Social category. I have notifications turned on for that channel so you
-don't need to ping me.
+If you have any issues with any of the cogs, `open an issue on GitHub`__,
+I have notifications turned on for it, unlike Discord. 
 
-Other ways (slower) are: `emailing me <http://saurich.com/contact-me/>`__, 
-`opening an issue on my GitHub <https://github.com/elijabesu/SauriCogs/issues>`__,
-or `joining Red - Cog Support <https://discord.gg/GET4DVk>`__ and pinging me there.
-
-If you have any suggestions to my cogs, feel free to contact me, I'm very open to ideas.
+Please, *do not message me on Discord*, I have no time to be there and 
+it is always muted and open in the background.
 
 ------------
 How to install

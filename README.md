@@ -1,16 +1,8 @@
-[![](https://img.shields.io/badge/SauriCogs-by_elijabesu-ffb8d7.svg?style=popout-square&logo=python&logoColor=ffb8d7)](https://cogs.saurich.com/)
-
-[![](https://discordapp.com/api/guilds/482560976307355658/embed.png)](https://discord.gg/Q5KX6kS) [![](https://img.shields.io/badge/Red%20DiscordBot-V3-red.svg)](https://github.com/Cog-Creators/Red-DiscordBot) [![](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black) [![](https://www.codefactor.io/repository/github/elijabesu/sauricogs/badge)](https://www.codefactor.io/repository/github/elijabesu/sauricogs) [![](https://img.shields.io/badge/Support%20me%20on-Patreon-orange.svg?logo=patreon)](https://www.patreon.com/saurichable)
-
-SauriCogs are cogs made by me for [Red Discord Bot (V3)](https://github.com/Cog-Creators/Red-DiscordBot/).
+[![](https://img.shields.io/badge/SauriCogs-by_elijabesu-ffb8d7.svg?style=popout-square&logo=python&logoColor=ffb8d7)](https://cogs.saurich.com/) [![](https://img.shields.io/badge/Red%20DiscordBot-V3-red.svg)](https://github.com/Cog-Creators/Red-DiscordBot) [![](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
 
 ## Contact me
 
-There’s multiple ways to contact me. The best and fastest way is to join [my own Discord server (SauriCord)](https://discord.gg/Q5KX6kS), assign yourself a role in #unlock-me and then head over to #sauricogs channel in the Social category. I have notifications turned on for that channel so you don’t need to ping me.
-
-Other ways (slower) are: <a href="mailto:ellie@saurich.com?subject=SauriCogs">emailing me</a>, <a href="https://github.com/elijabesu/SauriCogs/issues">opening an issue on my GitHub</a>, or joining <a href="https://discord.gg/GET4DVk">Red - Cog Support</a> and pinging me there (Ellie~♡#0001).
-
-If you have any suggestions to my cogs, feel free to ping me, I'm very open to ideas.
+If you have any issues with any of the cogs, <a href="https://github.com/elijabesu/SauriCogs/issues">open an issue on GitHub</a>! I have notifications turned on for it, unlike Discord. Please, *do not message me on Discord*, I have no time to be there and it is always muted and open in the background.
 
 ## How to install
 
@@ -22,9 +14,7 @@ Type `[p]cog install SauriCogs <cog>` to install your desired cog.
 
 Click on the cog names to get to my wiki page and learn about them.
 
-***I highly suggest reading through the guides as some cogs may be a bit complicated*** *(yes, I'm talking about Advanced Lock because not even I understand that shit)****!***
-
-### *If you're considering downloading and using AdvancedLock, you NEED to read the Wiki page!* It will break your entire server if you use it incorrectly and I do not take any responsibility in that.
+***I highly suggest reading through the guides as some cogs may be a bit complicated!*** I take no responsibility in misuse of my cogs.
 
 | Name | Description | 
 | --- | --- | 
