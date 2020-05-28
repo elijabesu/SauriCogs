@@ -217,7 +217,7 @@ class Counting(Cog):
                     await self.config.guild(message.guild).previous.set(now)
                     await self.config.guild(message.guild).last.set(message.author.id)
                     n = now + 1
-                    if await self.config.guild(ctx.guild).topic() is True:
+                    if await self.config.guild(message.guild).topic() is True:
                         return await self._set_topic(now, goal, n, message.channel)
                     return
             except (TypeError, ValueError):
