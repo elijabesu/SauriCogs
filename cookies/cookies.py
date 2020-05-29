@@ -425,7 +425,7 @@ class Cookies(commands.Cog):
         """Set cookies multipler for role. Disabled when random amount is enabled.
         
         Default is 1 (aka the same amount)."""
-        if amount <= 0:
+        if multiplier <= 0:
             return await ctx.send("Uh oh, multiplier has to be more than 0.")
         await self.config.role(role).multiplier.set(multiplier)
         await ctx.send(f"Users with {role.name} will now get {multiplier} times more :cookie:")
