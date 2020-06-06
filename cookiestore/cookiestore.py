@@ -27,7 +27,7 @@ class CookieStore(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.4"
+    __version__ = "1.0.5"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -53,7 +53,7 @@ class CookieStore(Cog):
         If `on_off` is not provided, the state will be flipped."""
         target_state = (
             on_off
-            if on_off is not None
+            if on_off
             else not (await self.config.guild(ctx.guild).enabled())
         )
         await self.config.guild(ctx.guild).enabled.set(target_state)
@@ -269,7 +269,7 @@ class CookieStore(Cog):
         price = info.get("price")
         quantity = info.get("quantity")
         redeemable = info.get("redeemable")
-        if redeemable is None:
+        if not redeemable:
             redeemable = False
         await ctx.send(
             f"**__{item}:__**\n*Type:* {item_type}\n*Price:* {price}\n*Quantity:* {quantity}\n*Redeemable:* {redeemable}"
@@ -356,7 +356,7 @@ class CookieStore(Cog):
     @store.command(name="reset")
     async def store_reset(self, ctx: commands.Context, confirmation: bool = False):
         """Delete all items from the store."""
-        if confirmation is False:
+        if not confirmation:
             return await ctx.send(
                 "This will delete **all** items. This action **cannot** be undone.\n"
                 f"If you're sure, type `{ctx.clean_prefix}store reset yes`."
@@ -378,12 +378,12 @@ class CookieStore(Cog):
         If who isn't provided, it will show the current ping set."""
         if not who:
             ping_id = await self.config.guild(ctx.guild).ping()
-            if ping_id is None:
+            if not ping_id:
                 return await ctx.send("No ping is set.")
             ping = get(ctx.guild.members, id=ping_id)
-            if ping is None:
+            if not ping:
                 ping = get(ctx.guild.roles, id=ping_id)
-                if ping is None:
+                if not ping:
                     return await ctx.send(
                         "The role must have been deleted or user must have left."
                     )
@@ -398,7 +398,7 @@ class CookieStore(Cog):
         self, ctx: commands.Context, confirmation: bool = False
     ):
         """Delete all items from all members' inventories."""
-        if confirmation is False:
+        if not confirmation:
             return await ctx.send(
                 "This will delete **all** items from all members' inventories. This action **cannot** be undone.\n"
                 f"If you're sure, type `{ctx.clean_prefix}store resetinventories yes`."
@@ -414,7 +414,7 @@ class CookieStore(Cog):
     async def shop(self, ctx: commands.Context):
         """Display the cookie store."""
         enabled = await self.config.guild(ctx.guild).enabled()
-        if enabled is False:
+        if not enabled:
             return await ctx.send("Uh oh, store is disabled.")
         page_list = await self._show_store(ctx)
         if len(page_list) > 1:
@@ -427,7 +427,7 @@ class CookieStore(Cog):
     async def buy(self, ctx: commands.Context, *, item: str = ""):
         """Buy an item from the cookie store."""
         enabled = await self.config.guild(ctx.guild).enabled()
-        if enabled is False:
+        if not enabled:
             return await ctx.send("Uh oh, store is disabled.")
         cookies = int(
             await self.bot.get_cog("Cookies").config.member(ctx.author).cookies()
@@ -447,7 +447,7 @@ class CookieStore(Cog):
             return await ctx.send("You already own this item.")
         if item in roles:
             role_obj = get(ctx.guild.roles, name=item)
-            if role_obj is not None:
+            if role_obj:
                 role = await self.config.guild(ctx.guild).roles.get_raw(item)
                 price = int(role.get("price"))
                 quantity = int(role.get("quantity"))
@@ -484,7 +484,7 @@ class CookieStore(Cog):
             price = int(item_info.get("price"))
             quantity = int(item_info.get("quantity"))
             redeemable = item_info.get("redeemable")
-            if redeemable is None:
+            if not redeemable:
                 redeemable = False
             if quantity == 0:
                 return await ctx.send("Uh oh, this item is out of stock.")
@@ -500,7 +500,7 @@ class CookieStore(Cog):
             await self.config.guild(ctx.guild).items.set_raw(
                 item, "quantity", value=quantity
             )
-            if redeemable is False:
+            if not redeemable:
                 await self.config.member(ctx.author).inventory.set_raw(
                     item,
                     value={
@@ -531,7 +531,7 @@ class CookieStore(Cog):
             price = int(game_info.get("price"))
             quantity = int(game_info.get("quantity"))
             redeemable = game_info.get("redeemable")
-            if redeemable is None:
+            if not redeemable:
                 redeemable = False
             if quantity == 0:
                 return await ctx.send("Uh oh, this item is out of stock.")
@@ -547,7 +547,7 @@ class CookieStore(Cog):
             await self.config.guild(ctx.guild).games.set_raw(
                 item, "quantity", value=quantity
             )
-            if redeemable is False:
+            if not redeemable:
                 await self.config.member(ctx.author).inventory.set_raw(
                     item,
                     value={
@@ -584,7 +584,7 @@ class CookieStore(Cog):
     async def store_return(self, ctx: commands.Context, *, item: str):
         """Return an item, you will only get 50% of the price."""
         enabled = await self.config.guild(ctx.guild).enabled()
-        if enabled is False:
+        if not enabled:
             return await ctx.send("Uh oh, store is disabled.")
         cookies = int(
             await self.bot.get_cog("Cookies").config.member(ctx.author).cookies()
@@ -598,17 +598,17 @@ class CookieStore(Cog):
         info = await self.config.member(ctx.author).inventory.get_raw(item)
 
         is_game = info.get("is_game")
-        if is_game is True:
+        if is_game:
             return await ctx.send("This item isn't returnable.")
         is_role = info.get("is_role")
-        if is_role is True:
+        if is_role:
             role_obj = get(ctx.guild.roles, name=item)
-            if role_obj is not None:
+            if role_obj:
                 await ctx.author.remove_roles(role_obj)
         redeemed = info.get("redeemed")
-        if redeemed is None:
+        if not redeemed:
             redeemed = False
-        if redeemed is True:
+        if redeemed:
             return await ctx.send("You can't return an item you have redeemed.")
         price = int(info.get("price"))
         return_price = price * 0.5
@@ -628,7 +628,7 @@ class CookieStore(Cog):
         lst = []
         for i in inventory:
             info = await self.config.member(ctx.author).inventory.get_raw(i)
-            if info.get("is_role") is False:
+            if not info.get("is_role"):
                 lst.append(i)
             else:
                 role_obj = get(ctx.guild.roles, name=i)
@@ -666,21 +666,21 @@ class CookieStore(Cog):
             return await ctx.send("You don't own this item.")
         info = await self.config.member(ctx.author).inventory.get_raw(item)
         is_role = info.get("is_role")
-        if is_role is True:
+        if is_role:
             return await ctx.send("Roles aren't redeemable.")
         redeemable = info.get("redeemable")
-        if redeemable is False:
+        if not redeemable:
             return await ctx.send("This item isn't redeemable.")
         redeemed = info.get("redeemed")
-        if redeemed is True:
+        if redeemed:
             return await ctx.send("You have already redeemed this item.")
         ping_id = await self.config.guild(ctx.guild).ping()
-        if ping_id is None:
+        if not ping_id:
             return await ctx.send("Uh oh, your Admins haven't set this yet.")
         ping = get(ctx.guild.members, id=ping_id)
-        if ping is None:
+        if not ping:
             ping = get(ctx.guild.roles, id=ping_id)
-            if ping is None:
+            if not ping:
                 return await ctx.send("Uh oh, your Admins haven't set this yet.")
             if not ping.mentionable:
                 await ping.edit(mentionable=True)
@@ -722,7 +722,7 @@ class CookieStore(Cog):
             stuff.append(game_text)
         for r in roles:
             role_obj = get(ctx.guild.roles, name=r)
-            if role_obj is None:
+            if not role_obj:
                 continue
             role = await self.config.guild(ctx.guild).roles.get_raw(r)
             price = int(role.get("price"))

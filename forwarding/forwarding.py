@@ -20,7 +20,7 @@ class Forwarding(commands.Cog):
     You can also DM someone as the bot with `[p]pm <user_ID> <message>`."""
 
     __author__ = "saurichable"
-    __version__ = "2.2.4"
+    __version__ = "2.2.5"
 
     def __init__(self, bot):
         self.bot = bot
@@ -35,15 +35,15 @@ class Forwarding(commands.Cog):
         await self.bot.is_owner(discord.Object(id=None))
         owner = self.bot.get_user(self.bot.owner_id)
         guild = self.bot.get_guild(await self.config.guild_id())
-        if guild is None:
+        if not guild:
             return await owner.send(embed=embed)
         channel = guild.get_channel(await self.config.channel_id())
-        if channel is None:
+        if not channel:
             return await owner.send(embed=embed)
         ping_role = guild.get_role(await self.config.ping_role_id())
         ping_user = guild.get_member(await self.config.ping_user_id())
-        if ping_role is None:
-            if ping_user is None:
+        if not ping_role:
+            if not ping_user:
                 return await channel.send(embed=embed)
             return await channel.send(content=f"{ping_user.mention}", embed=embed)
         if not ping_role.mentionable:
@@ -55,7 +55,7 @@ class Forwarding(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message_without_command(self, message):
-        if message.guild is not None:
+        if message.guild:
             return
         if message.channel.recipient.id == self.bot.owner_id:
             return
@@ -89,7 +89,7 @@ class Forwarding(commands.Cog):
     async def pm(self, ctx: commands.Context, user_id: int, *, message: str):
         """PMs a person."""
         destination = get(ctx.bot.get_all_members(), id=user_id)
-        if destination is None:
+        if not destination:
             return await ctx.send(
                 "Invalid ID or user not found. You can only send messages to people I share a server with."
             )

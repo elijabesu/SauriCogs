@@ -24,7 +24,7 @@ class Pingable(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -50,7 +50,7 @@ class Pingable(Cog):
             await self.bot.wait_for("message", timeout=120, check=pred_yn)
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
-        if pred_yn.result is True:
+        if pred_yn.result:
             await ctx.send("What channel?")
             try:
                 await self.bot.wait_for("message", timeout=120, check=pred_c)
@@ -85,9 +85,9 @@ class Pingable(Cog):
         self, ctx: commands.Context, role: discord.Role, *, message: str
     ):
         """Ping a role."""
-        if await self.config.role(role).pingable() is False:
+        if not await self.config.role(role).pingable():
             return
-        if await self.config.role(role).channel() is not None:
+        if await self.config.role(role).channel():
             if await self.config.role(role).channel() != ctx.channel.id:
                 return
         if ctx.guild not in self.antispam:

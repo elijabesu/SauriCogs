@@ -21,7 +21,7 @@ class EconomyRaffle(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -44,7 +44,7 @@ class EconomyRaffle(Cog):
             await self.bot.wait_for("message", timeout=30, check=pred)
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
-        if pred.result is True:
+        if pred.result:
             await ctx.send("What role should it be?")
             role = MessagePredicate.valid_role(ctx)
             try:
@@ -108,7 +108,7 @@ class EconomyRaffle(Cog):
         amount = await self.config.guild(ctx.guild).amount()
         which = await self.config.guild(ctx.guild).msg()
 
-        if required is None:
+        if not required:
             winner = random.choice(ctx.guild.members)
         else:
             winner = random.choice(required.members)

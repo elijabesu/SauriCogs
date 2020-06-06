@@ -16,7 +16,7 @@ class UserLog(Cog):
     """Log when users join/leave into your specified channel."""
 
     __author__ = "saurichable"
-    __version__ = "1.0.2"
+    __version__ = "1.0.3"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -51,7 +51,7 @@ class UserLog(Cog):
         If `on_off` is not provided, the state will be flipped."""
         target_state = (
             on_off
-            if on_off is not None
+            if on_off
             else not (await self.config.guild(ctx.guild).join())
         )
         await self.config.guild(ctx.guild).join.set(target_state)
@@ -67,7 +67,7 @@ class UserLog(Cog):
         If `on_off` is not provided, the state will be flipped."""
         target_state = (
             on_off
-            if on_off is not None
+            if on_off
             else not (await self.config.guild(ctx.guild).leave())
         )
         await self.config.guild(ctx.guild).leave.set(target_state)
@@ -79,10 +79,10 @@ class UserLog(Cog):
     @commands.Cog.listener()
     async def on_member_join(self, member):
         join = await self.config.guild(member.guild).join()
-        if join is False:
+        if not join:
             return
         channel = member.guild.get_channel(await self.config.guild(member.guild).channel())
-        if channel is None:
+        if not channel:
             return
         time = datetime.datetime.utcnow()
         users = len(member.guild.members)
@@ -110,10 +110,10 @@ class UserLog(Cog):
     @commands.Cog.listener()
     async def on_member_remove(self, member):
         leave = await self.config.guild(member.guild).leave()
-        if leave is False:
+        if not leave:
             return
         channel = member.guild.get_channel(await self.config.guild(member.guild).channel())
-        if channel is None:
+        if not channel:
             return
         time = datetime.datetime.utcnow()
         users = len(member.guild.members)

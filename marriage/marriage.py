@@ -21,7 +21,7 @@ class Marriage(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.4.3"
+    __version__ = "1.4.4"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -90,7 +90,7 @@ class Marriage(Cog):
         If `on_off` is not provided, the state will be flipped."""
         target_state = (
             on_off
-            if on_off is not None
+            if on_off
             else not (await self.config.guild(ctx.guild).toggle())
         )
         await self.config.guild(ctx.guild).toggle.set(target_state)
@@ -107,7 +107,7 @@ class Marriage(Cog):
             if currency != 1:
                 return await ctx.send("Uh oh, currency can only be 0 or 1.")
             loaded = self.bot.get_cog("Cookies")
-            if loaded is None:
+            if not loaded:
                 return await ctx.send(
                     f"Uh oh, Cookies isn't loaded. Load it using `{ctx.clean_prefix}load cookies`"
                 )
@@ -117,7 +117,7 @@ class Marriage(Cog):
     @marriage.command(name="multiple")
     async def marriage_multiple(self, ctx: commands.Context, state: bool):
         """Enable/disable whether members can be married to multiple people at once."""
-        if state is False:
+        if not state:
             text = "Members cannot marry multiple people."
         else:
             text = "Members can marry multiple people."
@@ -209,7 +209,7 @@ class Marriage(Cog):
     @commands.command()
     async def addabout(self, ctx: commands.Context, *, about: str):
         """Add your about text"""
-        if await self.config.guild(ctx.guild).toggle() is False:
+        if not await self.config.guild(ctx.guild).toggle():
             return await ctx.send("Marriage is not enabled!")
         if len(about) > 1000:
             return await ctx.send("Uh oh, this is not an essay.")
@@ -220,16 +220,16 @@ class Marriage(Cog):
     @commands.command()
     async def about(self, ctx: commands.Context, member: discord.Member = None):
         """Display your or someone else's about"""
-        if await self.config.guild(ctx.guild).toggle() is False:
+        if not await self.config.guild(ctx.guild).toggle():
             return await ctx.send("Marriage is not enabled!")
         if not member:
             member = ctx.author
         conf = self.config.member(member)
 
         is_married = await conf.married()
-        if is_married is False:
+        if not is_married:
             is_divorced = await conf.married()
-            if is_divorced is False:
+            if not is_divorced:
                 rs_status = "Single"
             else:
                 rs_status = "Divorced"
@@ -239,7 +239,7 @@ class Marriage(Cog):
             spouses = []
             for spouse_id in spouse_ids:
                 spouse = ctx.guild.get_member(spouse_id)
-                if spouse is None:
+                if not spouse:
                     continue
                 spouse = spouse.name
                 spouses.append(spouse)
@@ -265,7 +265,7 @@ class Marriage(Cog):
                 exes = []
                 for ex_id in exes_ids:
                     ex = ctx.guild.get_member(ex_id)
-                    if ex is None:
+                    if not ex:
                         continue
                     ex = ex.name
                     exes.append(ex)
@@ -274,7 +274,7 @@ class Marriage(Cog):
                 else:
                     ex_text = humanize_list(exes)
         crush = ctx.guild.get_member(await conf.crush())
-        if crush is None:
+        if not crush:
             crush = "None"
         else:
             crush = crush.name
@@ -306,7 +306,7 @@ class Marriage(Cog):
         e.set_thumbnail(url=member.avatar_url)
         e.add_field(name="About:", value=await conf.about(), inline=False)
         e.add_field(name="Status:", value=rs_status)
-        if is_married is True:
+        if is_married:
             e.add_field(name=spouse_header, value=spouse_text)
         e.add_field(name="Crush:", value=crush)
         e.add_field(name="Temper:", value=await conf.temper())
@@ -322,7 +322,7 @@ class Marriage(Cog):
     @commands.command()
     async def exes(self, ctx: commands.Context, member: discord.Member = None):
         """Display your or someone else's exes"""
-        if await self.config.guild(ctx.guild).toggle() is False:
+        if not await self.config.guild(ctx.guild).toggle():
             return await ctx.send("Marriage is not enabled!")
         if not member:
             member = ctx.author
@@ -330,7 +330,7 @@ class Marriage(Cog):
         exes = []
         for ex_id in exes_ids:
             ex = ctx.guild.get_member(ex_id)
-            if ex is None:
+            if not ex:
                 continue
             ex = ex.name
             exes.append(ex)
@@ -344,7 +344,7 @@ class Marriage(Cog):
     @commands.command()
     async def crush(self, ctx: commands.Context, member: discord.Member = None):
         """Tell us who you have a crush on"""
-        if await self.config.guild(ctx.guild).toggle() is False:
+        if not await self.config.guild(ctx.guild).toggle():
             return await ctx.send("Marriage is not enabled!")
         if not member:
             await self.config.member(ctx.author).crush.set(None)
@@ -358,16 +358,16 @@ class Marriage(Cog):
     @commands.command()
     async def marry(self, ctx: commands.Context, member: discord.Member):
         """Marry the love of your life!"""
-        if await self.config.guild(ctx.guild).toggle() is False:
+        if not await self.config.guild(ctx.guild).toggle():
             return await ctx.send("Marriage is not enabled!")
         if member.id == ctx.author.id:
             return await ctx.send("You cannot marry yourself!")
         if member.id in await self.config.member(ctx.author).current():
             return await ctx.send("You two are already married!")
-        if await self.config.guild(ctx.guild).multi() is False:
-            if await self.config.member(ctx.author).married() is True:
+        if not await self.config.guild(ctx.guild).multi():
+            if await self.config.member(ctx.author).married():
                 return await ctx.send("You're already married!")
-            if await self.config.member(member).married() is True:
+            if await self.config.member(member).married():
                 return await ctx.send("They're already married!")
         await ctx.send(
             f"{ctx.author.mention} has asked {member.mention} to marry them!\n"
@@ -375,7 +375,7 @@ class Marriage(Cog):
         )
         pred = MessagePredicate.yes_or_no(ctx, ctx.channel, member)
         await self.bot.wait_for("message", check=pred)
-        if pred.result is False:
+        if not pred.result:
             return await ctx.send("Oh no... I was looking forward to the cerenomy...")
         default_amount = await self.config.guild(ctx.guild).marprice()
         author_marcount = await self.config.member(ctx.author).marcount()
@@ -396,8 +396,8 @@ class Marriage(Cog):
         if await self.config.guild(ctx.guild).currency() == 0:
             currency = await bank.get_currency_name(ctx.guild)
             end_amount = f"{amount} {currency}"
-            if await bank.can_spend(ctx.author, amount) is True:
-                if await bank.can_spend(member, amount) is True:
+            if await bank.can_spend(ctx.author, amount):
+                if await bank.can_spend(member, amount):
                     await bank.withdraw_credits(ctx.author, amount)
                     await bank.withdraw_credits(member, amount)
                 else:
@@ -451,20 +451,20 @@ class Marriage(Cog):
         self, ctx: commands.Context, member: discord.Member, court: bool = False
     ):
         """Divorce your current spouse"""
-        if await self.config.guild(ctx.guild).toggle() is False:
+        if not await self.config.guild(ctx.guild).toggle():
             return await ctx.send("Marriage is not enabled!")
         if member.id == ctx.author.id:
             return await ctx.send("You cannot divorce yourself!")
         if member.id not in await self.config.member(ctx.author).current():
             return await ctx.send("You two aren't married!")
-        if court is False:
+        if not court:
             await ctx.send(
                 f"{ctx.author.mention} wants to divorce you, {member.mention}, do you accept?\n"
                 "If you say no, you will go to the court."
             )
             pred = MessagePredicate.yes_or_no(ctx, ctx.channel, member)
             await self.bot.wait_for("message", check=pred)
-            if pred.result is True:
+            if pred.result:
                 default_amount = await self.config.guild(ctx.guild).marprice()
                 default_multiplier = await self.config.guild(ctx.guild).divprice()
                 author_marcount = await self.config.member(ctx.author).marcount()
@@ -485,8 +485,8 @@ class Marriage(Cog):
                 if await self.config.guild(ctx.guild).currency() == 0:
                     currency = await bank.get_currency_name(ctx.guild)
                     end_amount = f"You both paid {amount} {currency}"
-                    if await bank.can_spend(ctx.author, amount) is True:
-                        if await bank.can_spend(member, amount) is True:
+                    if await bank.can_spend(ctx.author, amount):
+                        if await bank.can_spend(member, amount):
                             await bank.withdraw_credits(ctx.author, amount)
                             await bank.withdraw_credits(member, amount)
                         else:
@@ -531,7 +531,7 @@ class Marriage(Cog):
                         )
             else:
                 court = True
-        if court is True:
+        if court:
             court = random.randint(1, 100)
             court_multiplier = court / 100
             if await self.config.guild(ctx.guild).currency() == 0:
@@ -591,7 +591,7 @@ class Marriage(Cog):
         """Do something with someone"""
         gc = self.config.guild
         mc = self.config.member
-        if await gc(ctx.guild).toggle() is False:
+        if not await gc(ctx.guild).toggle():
             return await ctx.send("Marriage is not enabled!")
         consent = 1
         if action == "flirt":
@@ -644,7 +644,7 @@ class Marriage(Cog):
         if author_gift == 0:
             price = int(round(price))
             if await self.config.guild(ctx.guild).currency() == 0:
-                if await bank.can_spend(ctx.author, price) is True:
+                if await bank.can_spend(ctx.author, price):
                     await bank.withdraw_credits(ctx.author, price)
                     member_gift += 1
                     author_gift -= 1
@@ -682,7 +682,7 @@ class Marriage(Cog):
                 return await ctx.send(
                     "They took too long. Try again later, please. (You didn't lose any temper.)"
                 )
-            if pred.result is True:
+            if pred.result:
                 t_temp = await mc(member).temper()
                 t_missing = 100 - t_temp
                 if t_missing != 0:
@@ -724,7 +724,7 @@ class Marriage(Cog):
         if member.id in spouses:
             pass
         else:
-            if await mc(ctx.author).married() is True:
+            if await mc(ctx.author).married():
                 for sid in spouses:
                     spouse = ctx.guild.get_member(sid)
                     s_temp = await mc(spouse).temper()

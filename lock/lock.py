@@ -19,7 +19,7 @@ class Lock(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -42,7 +42,7 @@ class Lock(Cog):
             await self.bot.wait_for("message", timeout=30, check=pred)
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
-        if pred.result is False:
+        if not pred.result:
             await self.config.guild(ctx.guild).everyone.set(True)
         else:
             await self.config.guild(ctx.guild).everyone.set(False)
@@ -102,11 +102,11 @@ class Lock(Cog):
         mods = get(ctx.guild.roles, name=name_moderator)
         which = await self.config.guild(ctx.guild).everyone()
 
-        if name_moderator is None:
+        if not name_moderator:
             return await ctx.send(
                 "Uh oh. Looks like your Admins haven't setup this yet."
             )
-        if which is True:
+        if which:
             await ctx.channel.set_permissions(
                 everyone, read_messages=True, send_messages=False
             )
@@ -127,11 +127,11 @@ class Lock(Cog):
         name_moderator = await self.config.guild(ctx.guild).moderator()
         which = await self.config.guild(ctx.guild).everyone()
 
-        if name_moderator is None:
+        if not name_moderator:
             return await ctx.send(
                 "Uh oh. Looks like your Admins haven't setup this yet."
             )
-        if which is True:
+        if which:
             await ctx.channel.set_permissions(
                 everyone, read_messages=True, send_messages=True
             )
@@ -147,7 +147,7 @@ class Lock(Cog):
     @checks.bot_has_permissions(manage_channels=True)
     async def lockserver(self, ctx: commands.Context, confirmation: bool = False):
         """ Lock `@everyone` from sending messages in the entire server."""
-        if confirmation is False:
+        if not confirmation:
             return await ctx.send(
                 "This will overwrite every channel's permissions.\n"
                 f"If you're sure, type `{ctx.clean_prefix}lockserver yes` (you can set an alias for this so I don't ask you every time)."
@@ -159,14 +159,14 @@ class Lock(Cog):
             which = await self.config.guild(ctx.guild).everyone()
             ignore = await self.config.guild(ctx.guild).ignore()
 
-            if name_moderator is None:
+            if not name_moderator:
                 return await ctx.send(
                     "Uh oh. Looks like your Admins haven't setup this yet."
                 )
             for channel in ctx.guild.text_channels:
                 if channel.id in ignore:
                     continue
-                if which is True:
+                if which:
                     await channel.set_permissions(
                         everyone, read_messages=True, send_messages=False
                     )
@@ -191,14 +191,14 @@ class Lock(Cog):
             which = await self.config.guild(ctx.guild).everyone()
             ignore = await self.config.guild(ctx.guild).ignore()
 
-            if name_moderator is None:
+            if not name_moderator:
                 return await ctx.send(
                     "Uh oh. Looks like your Admins haven't setup this yet."
                 )
             for channel in ctx.guild.text_channels:
                 if channel.id in ignore:
                     continue
-                if which is True:
+                if which:
                     await channel.set_permissions(
                         everyone, read_messages=True, send_messages=True
                     )

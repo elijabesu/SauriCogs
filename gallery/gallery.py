@@ -17,7 +17,7 @@ class Gallery(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.2.0"
+    __version__ = "1.2.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -89,7 +89,7 @@ class Gallery(Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.guild is None:
+        if not message.guild:
             return
         if message.channel.id not in await self.config.guild(message.guild).channels():
             return
@@ -108,9 +108,9 @@ class Gallery(Cog):
                     return
             rid = await self.config.guild(message.guild).whitelist()
             time = await self.config.guild(message.guild).time()
-            if rid is not None:
+            if rid:
                 role = message.guild.get_role(int(rid))
-                if role is not None:
+                if role:
                     if role in message.author.roles:
                         return
             if time != 0:

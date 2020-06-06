@@ -23,7 +23,7 @@ class Cookies(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.1.1"
+    __version__ = "1.1.2"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -55,7 +55,7 @@ class Cookies(commands.Cog):
                 multipliers = []
                 for role in ctx.author.roles:
                     role_multiplier = await self.config.role(role).multiplier()
-                    if role_multiplier is None:
+                    if not role_multiplier:
                         role_multiplier = 1
                     multipliers.append(role_multiplier)
                 cookies += (amount * max(multipliers)) 
@@ -84,14 +84,14 @@ class Cookies(commands.Cog):
         next_steal = await self.config.member(ctx.author).next_steal()
         enabled = await self.config.guild(ctx.guild).stealing()
         author_cookies = int(await self.config.member(ctx.author).cookies())
-        if enabled is False:
+        if not enabled:
             return await ctx.send("Uh oh, stealing is disabled.")
         if cur_time < next_steal:
             dtime = self.display_time(next_steal - cur_time)
             return await ctx.send(f"Uh oh, you have to wait {dtime}.")
         if not target:
             ids = await self._get_ids(ctx)
-            while target is None:
+            while not target:
                 target_id = random.choice(ids)
                 target = ctx.guild.get_member(target_id)
         if target.id == ctx.author.id:
@@ -178,7 +178,7 @@ class Cookies(commands.Cog):
         if amount <= 0:
             return await ctx.send("Uh oh, amount has to be more than 0.")
 
-        if await bank.can_spend(ctx.author, amount) is False:
+        if not await bank.can_spend(ctx.author, amount):
             return await ctx.send(f"Uh oh, you cannot afford this.")
         await bank.withdraw_credits(ctx.author, amount)
 
@@ -209,7 +209,7 @@ class Cookies(commands.Cog):
         temp_msg = header
         for a_id in ids:
             a = get(ctx.guild.members, id=int(a_id))
-            if a is None:
+            if not a:
                 continue
             name = a.display_name
             cookies = await self.config.member(a).cookies()
@@ -311,7 +311,7 @@ class Cookies(commands.Cog):
         If `on_off` is not provided, the state will be flipped."""
         target_state = (
             on_off
-            if on_off is not None
+            if on_off
             else not (await self.config.guild(ctx.guild).stealing())
         )
         await self.config.guild(ctx.guild).stealing.set(target_state)
@@ -370,7 +370,7 @@ class Cookies(commands.Cog):
     @setcookies.command(name="reset")
     async def setcookies_reset(self, ctx: commands.Context, confirmation: bool = False):
         """Delete all cookies from all members."""
-        if confirmation is False:
+        if not confirmation:
             return await ctx.send(
                 "This will delete **all** cookies from all members. This action **cannot** be undone.\n"
                 f"If you're sure, type `{ctx.clean_prefix}setcookies reset yes`."

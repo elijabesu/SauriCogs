@@ -14,7 +14,7 @@ class UniqueName(Cog):
     """Deny members' names to be the same as your Moderators'."""
 
     __author__ = "saurichable"
-    __version__ = "1.2.0"
+    __version__ = "1.2.1"
 
     def __init__(self, bot):
         self.bot = bot
@@ -64,7 +64,7 @@ class UniqueName(Cog):
         If `on_off` is not provided, the state will be flipped."""
         target_state = (
             on_off
-            if on_off is not None
+            if on_off
             else not (await self.config.guild(ctx.guild).toggle())
         )
         await self.config.guild(ctx.guild).toggle.set(target_state)
@@ -77,7 +77,7 @@ class UniqueName(Cog):
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
-        if await self.config.guild(before.guild).toggle() is False:
+        if not await self.config.guild(before.guild).toggle():
             return
         config_roles = await self.config.guild(before.guild).roles()
         if len(config_roles) == 0:
@@ -91,11 +91,11 @@ class UniqueName(Cog):
         names = await self._build_name_list(before.guild)
         name = await self.config.guild(before.guild).name()
         channel = before.guild.get_channel(await self.config.guild(before.guild).channel())
-        if after.nick is None:
+        if not after.nick:
             return
         if after.nick not in names:
             return
-        if channel is not None:
+        if channel:
             warning_text = f"""**UniqueName warning:**
         
             Discovered a forbidden name: '{after.display_name}'. 
@@ -110,11 +110,11 @@ class UniqueName(Cog):
             return
         for gid in guilds:
             guild = self.bot.get_guild(gid)
-            if guild is not None:
+            if guild:
                 member = guild.get_member(before.id)
-                if member is None:
+                if not member:
                     return
-                if await self.config.guild(guild).toggle() is False:
+                if not await self.config.guild(guild).toggle():
                     return
                 config_roles = await self.config.guild(guild).roles()
                 if len(config_roles) == 0:
@@ -126,11 +126,11 @@ class UniqueName(Cog):
                 names = await self._build_name_list(guild)
                 name = await self.config.guild(guild).name()
                 channel = guild.get_channel(await self.config.guild(guild).channel())
-                if after.name is None:
+                if not after.name:
                     return
                 if after.name not in names:
                     return
-                if channel is not None:
+                if channel:
                     warning_text = f"""**UniqueName warning:**
                 
                     Discovered a forbidden name: '{after.name}'. 
@@ -142,7 +142,7 @@ class UniqueName(Cog):
         names = []
         for rid in await self.config.guild(guild).roles():
             role = guild.get_role(rid)
-            if role is not None:
+            if role:
                 for member in role.members:
                     names.append(member.nick)
                     names.append(member.name)
