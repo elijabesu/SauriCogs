@@ -24,7 +24,7 @@ class Suggestion(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.2.0"
+    __version__ = "1.2.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -171,7 +171,10 @@ class Suggestion(Cog):
                 is True
             ):
                 return await ctx.send("This suggestion has been finished already.")
-        oldmsg = await oldchannel.fetch_message(id=msg_id)
+        try:
+            oldmsg = await oldchannel.fetch_message(id=msg_id)
+        except discord.NotFound:
+            return await ctx.send("Uh oh, message with this ID doesn't exist.")
         if oldmsg is None:
             return await ctx.send("Uh oh, message with this ID doesn't exist.")
         embed = oldmsg.embeds[0]
@@ -261,7 +264,10 @@ class Suggestion(Cog):
                 is True
             ):
                 return await ctx.send("This suggestion has been finished already.")
-        oldmsg = await oldchannel.fetch_message(id=msg_id)
+        try:
+            oldmsg = await oldchannel.fetch_message(id=msg_id)
+        except discord.NotFound:
+            return await ctx.send("Uh oh, message with this ID doesn't exist.")
         if oldmsg is None:
             return await ctx.send("Uh oh, message with this ID doesn't exist.")
         embed = oldmsg.embeds[0]
