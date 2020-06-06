@@ -21,7 +21,7 @@ class Application(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.3"
+    __version__ = "1.1.0"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -29,25 +29,38 @@ class Application(Cog):
             self, 5641654654621651651, force_registration=True
         )
         self.antispam = {}
+        self.config.register_guild(
+            applicant_id=None,
+            accepter_id=None,
+            channel_id=None,
+        )
 
     @commands.command()
     @commands.guild_only()
     @checks.bot_has_permissions(manage_roles=True)
     async def apply(self, ctx: commands.Context):
         """Apply to be a staff member."""
-        role_add = get(ctx.guild.roles, name="Staff Applicant")
-        channel = get(ctx.guild.text_channels, name="applications")
+        role_add = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).applicant_id())
+        if not role_add:
+            role_add = get(ctx.guild.roles, name = "Staff Applicant")
+            if not role_add:
+                return await ctx.send("Uh oh, the configuration is not correct. Ask the Admins to set it.")
+        channel = get(ctx.guild.text_channels, id = await self.config.guild(ctx.guild).channel.id())
+        if not channel:
+            channel = get(ctx.guild.text_channels, name = "applications")
+            if not channel:
+                return await ctx.send("Uh oh, the configuration is not correct. Ask the Admins to set it.")
         if ctx.guild not in self.antispam:
             self.antispam[ctx.guild] = {}
         if ctx.author not in self.antispam[ctx.guild]:
             self.antispam[ctx.guild][ctx.author] = AntiSpam([(timedelta(days=2), 1)])
         if self.antispam[ctx.guild][ctx.author].spammy:
             return await ctx.send("Uh oh, you're doing this way too frequently.")
-        if role_add is None:
+        if not role_add:
             return await ctx.send(
                 "Uh oh. Looks like your Admins haven't added the required role."
             )
-        if channel is None:
+        if not channel:
             return await ctx.send(
                 "Uh oh. Looks like your Admins haven't added the required channel."
             )
@@ -140,6 +153,8 @@ class Application(Cog):
     async def applysetup(self, ctx: commands.Context):
         """Go through the initial setup process."""
         pred = MessagePredicate.yes_or_no(ctx)
+        role = MessagePredicate.valid_role(ctx)
+
         applicant = get(ctx.guild.roles, name="Staff Applicant")
         channel = get(ctx.guild.text_channels, name="applications")
 
@@ -150,18 +165,18 @@ class Application(Cog):
             await self.bot.wait_for("message", timeout=30, check=pred)
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
-        if pred.result is False:
+        if not pred.result:
             return await ctx.send("Setup cancelled.")
-        if applicant is None:
+        if not applicant:
             try:
-                await ctx.guild.create_role(
+                applicant = await ctx.guild.create_role(
                     name="Staff Applicant", reason="Application cog setup"
                 )
             except discord.Forbidden:
                 return await ctx.send(
                     "Uh oh. Looks like I don't have permissions to manage roles."
                 )
-        if channel is None:
+        if not channel:
             await ctx.send(
                 "Do you want everyone to see the applications channel? (yes/no)"
             )
@@ -169,7 +184,7 @@ class Application(Cog):
                 await self.bot.wait_for("message", timeout=30, check=pred)
             except asyncio.TimeoutError:
                 return await ctx.send("You took too long. Try again, please.")
-            if pred.result is True:
+            if pred.result:
                 overwrites = {
                     ctx.guild.default_role: discord.PermissionOverwrite(
                         send_messages=False
@@ -184,7 +199,7 @@ class Application(Cog):
                     ctx.guild.me: discord.PermissionOverwrite(read_messages=True),
                 }
             try:
-                await ctx.guild.create_text_channel(
+                channel = await ctx.guild.create_text_channel(
                     "applications",
                     overwrites=overwrites,
                     reason="Application cog setup",
@@ -193,11 +208,19 @@ class Application(Cog):
                 return await ctx.send(
                     "Uh oh. Looks like I don't have permissions to manage channels."
                 )
+        await ctx.send(f"What role can accept or reject applicants?")
+        try:
+            await self.bot.wait_for("message", timeout=30, check=role)
+        except asyncio.TimeoutError:
+            return await ctx.send("You took too long. Try again, please.")
+        accepter = role.result
+        await self.config.guild(ctx.guild).applicant_id.set(applicant)
+        await self.config.guild(ctx.guild).channel_id.set(channel)
+        await self.config.guild(ctx.guild).accepter_id.set(accepter.id)
         await ctx.send(
             "You have finished the setup! Please, move your new channel to the category you want it in."
         )
 
-    @checks.admin_or_permissions(administrator=True)
     @commands.command()
     @commands.guild_only()
     @checks.bot_has_permissions(manage_roles=True)
@@ -205,7 +228,18 @@ class Application(Cog):
         """Accept a staff applicant.
 
         <target> can be a mention or an ID."""
-        applicant = get(ctx.guild.roles, name="Staff Applicant")
+        accepter = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).accepter_id())
+        if not accepter:
+            if not ctx.author.guild_permissions.administrator:
+                return await ctx.send("Uh oh, you cannot use this command.")
+        else:
+            if accepter not in ctx.author.roles:
+                return await ctx.send("Uh oh, you cannot use this command.")
+        applicant = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).applicant_id())
+        if not applicant:
+            applicant = get(ctx.guild.roles, name="Staff Applicant")
+            if not applicant:
+                return await ctx.send("Uh oh, the configuration is not correct. Ask the Admins to set it.")
         role = MessagePredicate.valid_role(ctx)
         if applicant in target.roles:
             await ctx.send(f"What role do you want to accept {target.name} as?")
@@ -228,7 +262,6 @@ class Application(Cog):
                 f"Uh oh. Looks like {target.mention} hasn't applied for anything."
             )
 
-    @checks.admin_or_permissions(administrator=True)
     @commands.command()
     @commands.guild_only()
     @checks.bot_has_permissions(manage_roles=True)
@@ -236,7 +269,18 @@ class Application(Cog):
         """Deny a staff applicant.
 
         <target> can be a mention or an ID"""
-        applicant = get(ctx.guild.roles, name="Staff Applicant")
+        accepter = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).accepter_id())
+        if not accepter:
+            if not ctx.author.guild_permissions.administrator:
+                return await ctx.send("Uh oh, you cannot use this command.")
+        else:
+            if accepter not in ctx.author.roles:
+                return await ctx.send("Uh oh, you cannot use this command.")
+        applicant = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).applicant_id())
+        if not applicant:
+            applicant = get(ctx.guild.roles, name="Staff Applicant")
+            if not applicant:
+                return await ctx.send("Uh oh, the configuration is not correct. Ask the Admins to set it.")
         if applicant in target.roles:
             await ctx.send("Would you like to specify a reason? (yes/no)")
             pred = MessagePredicate.yes_or_no(ctx)
@@ -244,7 +288,7 @@ class Application(Cog):
                 await self.bot.wait_for("message", timeout=30, check=pred)
             except asyncio.TimeoutError:
                 return await ctx.send("You took too long. Try again, please.")
-            if pred.result is True:
+            if pred.result:
                 await ctx.send("Please, specify your reason now.")
 
                 def check(m):
