@@ -16,7 +16,7 @@ class UserLog(Cog):
     """Log when users join/leave into your specified channel."""
 
     __author__ = "saurichable"
-    __version__ = "1.0.1"
+    __version__ = "1.0.2"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -27,6 +27,7 @@ class UserLog(Cog):
         self.config.register_guild(channel=None, join=True, leave=True)
 
     @commands.group(autohelp=True)
+    @commands.guild_only()
     @checks.admin_or_permissions(manage_guild=True)
     async def userlog(self, ctx):
         """Manage user log settings."""
@@ -43,8 +44,6 @@ class UserLog(Cog):
             await self.config.guild(ctx.guild).channel.set(None)
         await ctx.tick()
 
-    @checks.admin_or_permissions(manage_guild=True)
-    @commands.guild_only()
     @userlog.command(name="join")
     async def user_join_log(self, ctx: commands.Context, on_off: bool = None):
         """Toggle logging when users join the current server. 
@@ -61,8 +60,6 @@ class UserLog(Cog):
         else:
             await ctx.send("Logging users joining is now disabled.")
 
-    @checks.admin_or_permissions(manage_guild=True)
-    @commands.guild_only()
     @userlog.command(name="leave")
     async def user_leave_log(self, ctx: commands.Context, on_off: bool = None):
         """Toggle logging when users leave the current server.
