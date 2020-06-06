@@ -21,7 +21,7 @@ class AdvancedLock(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.1.0"
+    __version__ = "1.1.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -51,7 +51,6 @@ class AdvancedLock(Cog):
         """Various Lock settings."""
         pass
 
-    @checks.admin_or_permissions(manage_guild=True)
     @commands.guild_only()
     @setlock.command(name="toggle")
     async def setlock_toggle(self, ctx: commands.Context, on_off: bool = None):
@@ -73,7 +72,6 @@ class AdvancedLock(Cog):
             return await ctx.send("Lock is now enabled.")
         await ctx.send("Lock is now disabled.")
 
-    @checks.admin_or_permissions(manage_guild=True)
     @commands.guild_only()
     @setlock.command(name="setup")
     async def setlock_setup(self, ctx: commands.Context):
@@ -167,7 +165,6 @@ class AdvancedLock(Cog):
 
         await ctx.send("You have finished the setup!")
 
-    @checks.admin_or_permissions(manage_guild=True)
     @commands.guild_only()
     @setlock.command(name="add")
     async def setlock_add(self, ctx: commands.Context, channel: discord.TextChannel):
@@ -200,7 +197,6 @@ class AdvancedLock(Cog):
         )
         await ctx.send(f"{channel.mention}'s permissions set.")
 
-    @checks.admin_or_permissions(manage_guild=True)
     @commands.guild_only()
     @setlock.command(name="remove")
     async def setlock_remove(self, ctx: commands.Context, channel: discord.TextChannel):
@@ -222,7 +218,6 @@ class AdvancedLock(Cog):
             await self.config.guild(ctx.guild).channels.clear_raw(channel.id)
             await ctx.send(f"{channel.mention}'s permissions removed.")
 
-    @checks.admin_or_permissions(manage_guild=True)
     @commands.guild_only()
     @setlock.command(name="ignore")
     async def setlock_ignore(
@@ -252,7 +247,6 @@ class AdvancedLock(Cog):
                 f"{new_channel.mention} has been previously added into the active list, remove it first with `{ctx.clean_prefix}setlock remove {new_channel.mention}`."
             )
 
-    @checks.admin_or_permissions(manage_guild=True)
     @commands.guild_only()
     @setlock.command(name="unignore")
     async def setlock_unignore(
@@ -284,7 +278,6 @@ class AdvancedLock(Cog):
                 f"{new_channel.mention} has been previously added into the active list, remove it first with `{ctx.clean_prefix}setlock remove {new_channel.mention}`."
             )
 
-    @checks.admin_or_permissions(manage_guild=True)
     @commands.guild_only()
     @setlock.command(name="settings")
     async def setlock_settings(self, ctx: commands.Context):
@@ -390,7 +383,6 @@ class AdvancedLock(Cog):
             )
         await ctx.send(embed=embed)
 
-    @checks.admin_or_permissions(manage_guild=True)
     @commands.guild_only()
     @setlock.command(name="channel")
     async def setlock_channel(
@@ -422,7 +414,6 @@ class AdvancedLock(Cog):
                 ro_desc = "Not specified"
             await ctx.send(ro_desc)
 
-    @checks.admin_or_permissions(manage_guild=True)
     @commands.guild_only()
     @setlock.command(name="refresh")
     async def setlock_refresh(self, ctx: commands.Context):
@@ -444,7 +435,6 @@ class AdvancedLock(Cog):
                     await self.config.guild(ctx.guild).channels.clear_raw(c_id)
         await ctx.send("Done.")
 
-    @checks.admin_or_permissions(manage_guild=True)
     @commands.guild_only()
     @setlock.command(name="reset")
     async def setlock_reset(self, ctx: commands.Context, confirmation: bool = False):
@@ -475,7 +465,6 @@ class AdvancedLock(Cog):
             f"All settings have been set to default values. Run `{ctx.clean_prefix}setlock setup` to set them again!"
         )
 
-    @checks.admin_or_permissions(manage_guild=True)
     @commands.guild_only()
     @setlock.command(name="all")
     async def setlock_all(self, ctx: commands.Context):
