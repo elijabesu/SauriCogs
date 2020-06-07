@@ -21,7 +21,7 @@ class Application(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.1.0"
+    __version__ = "1.1.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -40,12 +40,18 @@ class Application(Cog):
     @checks.bot_has_permissions(manage_roles=True)
     async def apply(self, ctx: commands.Context):
         """Apply to be a staff member."""
-        role_add = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).applicant_id())
+        try:
+            role_add = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).applicant_id())
+        except TypeError:
+            role_add = None
         if not role_add:
             role_add = get(ctx.guild.roles, name = "Staff Applicant")
             if not role_add:
                 return await ctx.send("Uh oh, the configuration is not correct. Ask the Admins to set it.")
-        channel = get(ctx.guild.text_channels, id = await self.config.guild(ctx.guild).channel.id())
+        try:
+            channel = get(ctx.guild.text_channels, id = await self.config.guild(ctx.guild).channel.id())
+        except TypeError:
+            channel = None
         if not channel:
             channel = get(ctx.guild.text_channels, name = "applications")
             if not channel:
@@ -214,8 +220,8 @@ class Application(Cog):
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
         accepter = role.result
-        await self.config.guild(ctx.guild).applicant_id.set(applicant)
-        await self.config.guild(ctx.guild).channel_id.set(channel)
+        await self.config.guild(ctx.guild).applicant_id.set(applicant.id)
+        await self.config.guild(ctx.guild).channel_id.set(channel.id)
         await self.config.guild(ctx.guild).accepter_id.set(accepter.id)
         await ctx.send(
             "You have finished the setup! Please, move your new channel to the category you want it in."
@@ -228,14 +234,20 @@ class Application(Cog):
         """Accept a staff applicant.
 
         <target> can be a mention or an ID."""
-        accepter = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).accepter_id())
+        try:
+            accepter = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).accepter_id())
+        except TypeError:
+            accepter = None
         if not accepter:
             if not ctx.author.guild_permissions.administrator:
                 return await ctx.send("Uh oh, you cannot use this command.")
         else:
             if accepter not in ctx.author.roles:
                 return await ctx.send("Uh oh, you cannot use this command.")
-        applicant = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).applicant_id())
+        try:
+            applicant = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).applicant_id())
+        except TypeError:
+            applicant = None
         if not applicant:
             applicant = get(ctx.guild.roles, name="Staff Applicant")
             if not applicant:
@@ -269,14 +281,20 @@ class Application(Cog):
         """Deny a staff applicant.
 
         <target> can be a mention or an ID"""
-        accepter = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).accepter_id())
+        try:
+            accepter = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).accepter_id())
+        except TypeError:
+            accepter = None
         if not accepter:
             if not ctx.author.guild_permissions.administrator:
                 return await ctx.send("Uh oh, you cannot use this command.")
         else:
             if accepter not in ctx.author.roles:
                 return await ctx.send("Uh oh, you cannot use this command.")
-        applicant = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).applicant_id())
+        try:
+            applicant = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).applicant_id())
+        except TypeError:
+            applicant = None
         if not applicant:
             applicant = get(ctx.guild.roles, name="Staff Applicant")
             if not applicant:
