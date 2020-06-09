@@ -21,7 +21,7 @@ class Application(Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.1.1"
+    __version__ = "1.1.2"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -42,15 +42,15 @@ class Application(Cog):
         """Apply to be a staff member."""
         try:
             role_add = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).applicant_id())
-        except TypeError:
+        except TypeError, AttributeError:
             role_add = None
         if not role_add:
             role_add = get(ctx.guild.roles, name = "Staff Applicant")
             if not role_add:
                 return await ctx.send("Uh oh, the configuration is not correct. Ask the Admins to set it.")
         try:
-            channel = get(ctx.guild.text_channels, id = await self.config.guild(ctx.guild).channel.id())
-        except TypeError:
+            channel = get(ctx.guild.text_channels, id = await self.config.guild(ctx.guild).channel_id())
+        except TypeError, AttributeError:
             channel = None
         if not channel:
             channel = get(ctx.guild.text_channels, name = "applications")
@@ -236,7 +236,7 @@ class Application(Cog):
         <target> can be a mention or an ID."""
         try:
             accepter = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).accepter_id())
-        except TypeError:
+        except TypeError, AttributeError:
             accepter = None
         if not accepter:
             if not ctx.author.guild_permissions.administrator:
@@ -246,7 +246,7 @@ class Application(Cog):
                 return await ctx.send("Uh oh, you cannot use this command.")
         try:
             applicant = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).applicant_id())
-        except TypeError:
+        except TypeError, AttributeError:
             applicant = None
         if not applicant:
             applicant = get(ctx.guild.roles, name="Staff Applicant")
@@ -283,7 +283,7 @@ class Application(Cog):
         <target> can be a mention or an ID"""
         try:
             accepter = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).accepter_id())
-        except TypeError:
+        except TypeError, AttributeError:
             accepter = None
         if not accepter:
             if not ctx.author.guild_permissions.administrator:
@@ -293,7 +293,7 @@ class Application(Cog):
                 return await ctx.send("Uh oh, you cannot use this command.")
         try:
             applicant = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).applicant_id())
-        except TypeError:
+        except TypeError, AttributeError:
             applicant = None
         if not applicant:
             applicant = get(ctx.guild.roles, name="Staff Applicant")
