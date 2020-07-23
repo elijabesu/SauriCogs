@@ -2,16 +2,12 @@ import asyncio
 import discord
 import re
 
-from typing import Any
-
 from redbot.core import Config, checks, commands
 
 from redbot.core.bot import Red
 
-Cog: Any = getattr(commands, "Cog", object)
 
-
-class Gallery(Cog):
+class Gallery(commands.Cog):
     """
     Gallery channels!
     """

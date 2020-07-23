@@ -6,14 +6,13 @@ from redbot import VersionInfo, version_info
 from redbot.core import Config, commands, checks
 
 from redbot.core.bot import Red
-from typing import Any, Union
-
-Cog: Any = getattr(commands, "Cog", object)
+from typing import Union
 
 if version_info < VersionInfo.from_str("3.4.0"):
     SANITIZE_ROLES_KWARG = {}
 else:
     SANITIZE_ROLES_KWARG = {"sanitize_roles": False}
+
 
 class Forwarding(commands.Cog):
     """Forward messages to the bot owner, incl. pictures (max one per message).

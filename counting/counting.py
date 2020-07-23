@@ -1,7 +1,6 @@
 import asyncio
 import discord
 
-from typing import Any
 from discord.utils import get, find
 from datetime import datetime, timedelta
 
@@ -10,10 +9,8 @@ from redbot.core.utils.antispam import AntiSpam
 
 from redbot.core.bot import Red
 
-Cog: Any = getattr(commands, "Cog", object)
 
-
-class Counting(Cog):
+class Counting(commands.Cog):
     """
     Counting channel!
     """

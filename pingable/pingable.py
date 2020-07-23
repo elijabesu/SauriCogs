@@ -1,7 +1,6 @@
 import asyncio
 import discord
 
-from typing import Any
 from datetime import datetime, timedelta
 
 from redbot import VersionInfo, version_info
@@ -11,14 +10,13 @@ from redbot.core.utils.antispam import AntiSpam
 
 from redbot.core.bot import Red
 
-Cog: Any = getattr(commands, "Cog", object)
-
 if version_info < VersionInfo.from_str("3.4.0"):
     SANITIZE_ROLES_KWARG = {}
 else:
     SANITIZE_ROLES_KWARG = {"sanitize_roles": False}
 
-class Pingable(Cog):
+
+class Pingable(commands.Cog):
     """
     Make unpingable roles pingable by regular users with commands.
     """

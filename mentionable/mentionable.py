@@ -5,12 +5,9 @@ from discord.utils import get
 from redbot.core import checks, commands
 
 from redbot.core.bot import Red
-from typing import Any
-
-Cog: Any = getattr(commands, "Cog", object)
 
 
-class Mentionable(Cog):
+class Mentionable(commands.Cog):
     """
     Makes unmentionable roles mentionable.
     """

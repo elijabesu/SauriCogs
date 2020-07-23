@@ -1,7 +1,6 @@
 import asyncio
 import discord
 
-from typing import Any
 from discord.utils import get
 from datetime import datetime
 
@@ -11,10 +10,8 @@ from redbot.core.utils.chat_formatting import humanize_list
 
 from redbot.core.bot import Red
 
-Cog: Any = getattr(commands, "Cog", object)
 
-
-class AdvancedLock(Cog):
+class AdvancedLock(commands.Cog):
     """
     Lock `@everyone` from sending messages.
     Use `[p]setlock setup` first.

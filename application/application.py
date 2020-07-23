@@ -1,7 +1,6 @@
 import asyncio
 import discord
 
-from typing import Any
 from discord.utils import get
 from datetime import datetime, timedelta
 
@@ -11,10 +10,8 @@ from redbot.core.utils.antispam import AntiSpam
 
 from redbot.core.bot import Red
 
-Cog: Any = getattr(commands, "Cog", object)
 
-
-class Application(Cog):
+class Application(commands.Cog):
     """
     Simple application cog, basically.
     **Use `[p]applysetup` first.**

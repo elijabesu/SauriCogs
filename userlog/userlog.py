@@ -1,18 +1,14 @@
 import datetime
 import discord
 
-from typing import Any
-
 from redbot.core import checks, commands, Config
 
 from redbot.core.bot import Red
 
 __author__ = "saurichable"
 
-Cog: Any = getattr(commands, "Cog", object)
 
-
-class UserLog(Cog):
+class UserLog(commands.Cog):
     """Log when users join/leave into your specified channel."""
 
     __author__ = "saurichable"
