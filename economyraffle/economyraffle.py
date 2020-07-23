@@ -1,8 +1,6 @@
 import asyncio
 import random
-import discord
 
-from typing import Any
 from discord.utils import get
 
 from redbot.core import Config, checks, bank, commands
@@ -10,10 +8,8 @@ from redbot.core.utils.predicates import MessagePredicate
 
 from redbot.core.bot import Red
 
-Cog: Any = getattr(commands, "Cog", object)
 
-
-class EconomyRaffle(Cog):
+class EconomyRaffle(commands.Cog):
     """
     Simple economy raffle cog.
     **Use `[p]economysetup` first.**

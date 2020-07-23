@@ -2,8 +2,6 @@ import discord
 import asyncio
 import random
 
-from typing import Any
-
 from redbot.core import Config, checks, commands, bank
 from redbot.core.utils.chat_formatting import humanize_list
 from redbot.core.utils.predicates import MessagePredicate
@@ -12,10 +10,8 @@ from redbot.core.bot import Red
 
 __author__ = "saurichable"
 
-Cog: Any = getattr(commands, "Cog", object)
 
-
-class Marriage(Cog):
+class Marriage(commands.Cog):
     """
     Marriage cog with some extra shit
     """

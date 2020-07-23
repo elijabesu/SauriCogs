@@ -1,7 +1,6 @@
 import asyncio
 import discord
 
-from typing import Any
 from discord.utils import get
 
 from redbot.core import Config, checks, commands
@@ -9,10 +8,8 @@ from redbot.core.utils.predicates import MessagePredicate
 
 from redbot.core.bot import Red
 
-Cog: Any = getattr(commands, "Cog", object)
 
-
-class Lock(Cog):
+class Lock(commands.Cog):
     """
     Lock `@everyone` from sending messages.
     Use `[p]locksetup` first.

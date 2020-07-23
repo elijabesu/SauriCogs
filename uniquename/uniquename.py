@@ -1,16 +1,9 @@
 import discord
 
-from typing import Any
-from discord.utils import get
-
 from redbot.core import Config, checks, commands
 
-from redbot.core.bot import Red
 
-Cog: Any = getattr(commands, "Cog", object)
-
-
-class UniqueName(Cog):
+class UniqueName(commands.Cog):
     """Deny members' names to be the same as your Moderators'."""
 
     __author__ = "saurichable"

@@ -1,9 +1,5 @@
-import asyncio
 import discord
-import pymongo
 
-from typing import Any
-from discord.utils import get
 from pymongo import MongoClient
 from datetime import datetime
 
@@ -16,10 +12,8 @@ from redbot.core.bot import Red
 client = MongoClient()
 db = client["leveler"]
 
-Cog: Any = getattr(commands, "Cog", object)
 
-
-class LevelUpCookies(Cog):
+class LevelUpCookies(commands.Cog):
     """
     Set cookie rewards for users that level up!
 

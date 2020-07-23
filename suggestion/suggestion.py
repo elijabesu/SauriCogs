@@ -1,9 +1,9 @@
 import asyncio
 import discord
 
-from typing import Any, Optional
+from typing import Optional
 from discord.utils import get
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from redbot.core import Config, checks, commands
 from redbot.core.utils.predicates import MessagePredicate, ReactionPredicate
@@ -12,10 +12,8 @@ from redbot.core.utils.antispam import AntiSpam
 
 from redbot.core.bot import Red
 
-Cog: Any = getattr(commands, "Cog", object)
 
-
-class Suggestion(Cog):
+class Suggestion(commands.Cog):
     """
     Simple suggestion box, basically.
 
