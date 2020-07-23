@@ -3,7 +3,7 @@ import discord
 
 from typing import Optional
 from discord.utils import get
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from redbot.core import Config, checks, commands
 from redbot.core.utils.predicates import MessagePredicate, ReactionPredicate

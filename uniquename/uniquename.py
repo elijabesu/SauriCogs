@@ -1,10 +1,6 @@
 import discord
 
-from discord.utils import get
-
 from redbot.core import Config, checks, commands
-
-from redbot.core.bot import Red
 
 
 class UniqueName(commands.Cog):

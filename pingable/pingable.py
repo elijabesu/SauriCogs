@@ -1,7 +1,7 @@
 import asyncio
 import discord
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from redbot import VersionInfo, version_info
 from redbot.core import Config, checks, commands

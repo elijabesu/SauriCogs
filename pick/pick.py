@@ -5,8 +5,6 @@ from discord.utils import get
 
 from redbot.core import Config, checks, commands
 
-from redbot.core.bot import Red
-
 
 class Pick(commands.Cog):
     """Pick a random user or a user with a specified role. For the latter, use `[p]pickrole <role>` first.

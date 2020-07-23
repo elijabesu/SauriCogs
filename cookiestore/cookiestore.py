@@ -1,14 +1,13 @@
 import asyncio
 import discord
-import random
 
-from typing import Union, Optional
+from typing import Union
 from discord.utils import get
 from datetime import datetime
 
 from redbot import VersionInfo, version_info
 from redbot.core import Config, checks, commands
-from redbot.core.utils.chat_formatting import pagify, box, humanize_list
+from redbot.core.utils.chat_formatting import pagify, humanize_list
 from redbot.core.utils.predicates import MessagePredicate
 from redbot.core.utils.menus import menu, DEFAULT_CONTROLS
 

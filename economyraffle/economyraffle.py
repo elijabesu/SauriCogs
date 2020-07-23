@@ -1,6 +1,5 @@
 import asyncio
 import random
-import discord
 
 from discord.utils import get
 

@@ -1,7 +1,5 @@
 import discord
 
-from discord.utils import get
-
 from redbot.core import checks, commands
 
 from redbot.core.bot import Red

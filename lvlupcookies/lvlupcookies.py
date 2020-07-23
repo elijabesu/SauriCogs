@@ -1,8 +1,5 @@
-import asyncio
 import discord
-import pymongo
 
-from discord.utils import get
 from pymongo import MongoClient
 from datetime import datetime
 
