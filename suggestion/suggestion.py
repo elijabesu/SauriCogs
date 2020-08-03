@@ -184,6 +184,7 @@ class Suggestion(commands.Cog):
             op_name = str(op_info[1])
             op_avatar = ctx.guild.icon_url
         embed.set_author(name=f"Approved suggestion by {op_name}", icon_url=op_avatar)
+        embed.color = discord.Color.green()
         if is_global:
             await oldmsg.edit(content=content, embed=embed)
             try:
@@ -211,7 +212,7 @@ class Suggestion(commands.Cog):
                         pass
         await self.config.custom("SUGGESTION", server, suggestion_id).finished.set(True)
         await self.config.custom("SUGGESTION", server, suggestion_id).approved.set(True)
-        await ctx.tick()
+        await ctx.message.delete()
 
         try:
             await op.send(content="Your suggestion has been approved!", embed=embed)
@@ -274,6 +275,7 @@ class Suggestion(commands.Cog):
             op_name = str(op_info[1])
             op_avatar = ctx.guild.icon_url
         embed.set_author(name=f"Rejected suggestion by {op_name}", icon_url=op_avatar)
+        embed.color = discord.Color.red()
 
         if reason:
             embed.add_field(name="Reason:", value=reason, inline=False)
@@ -310,7 +312,7 @@ class Suggestion(commands.Cog):
                         pass
         await self.config.custom("SUGGESTION", server, suggestion_id).finished.set(True)
         await self.config.custom("SUGGESTION", server, suggestion_id).rejected.set(True)
-        await ctx.tick()
+        await ctx.message.delete()
 
         try:
             await op.send(content="Your suggestion has been rejected!", embed=embed)
