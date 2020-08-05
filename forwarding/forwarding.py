@@ -53,6 +53,8 @@ class Forwarding(commands.Cog):
             return
         if message.author == self.bot.user:
             return
+        if not (await self.bot.allowed_by_whitelist_blacklist(message.author)):
+            return
         if not message.attachments:
             embed = discord.Embed(
                 colour=discord.Colour.red(),
