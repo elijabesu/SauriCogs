@@ -17,7 +17,7 @@ class Marriage(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.4.4"
+    __version__ = "1.4.5"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -438,7 +438,7 @@ class Marriage(commands.Cog):
 
         await ctx.send(
             f":church: {ctx.author.mention} and {member.mention} are now a happy married couple! "
-            "Congrats! :tada:\n*You both paid {end_amount}.*"
+            f"Congrats! :tada:\n*You both paid {end_amount}.*"
         )
 
     @commands.guild_only()
