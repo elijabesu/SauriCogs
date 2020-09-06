@@ -22,7 +22,7 @@ class Suggestion(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.2.2"
+    __version__ = "1.3.0"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -38,6 +38,7 @@ class Suggestion(commands.Cog):
             next_id=1,
             up_emoji=None,
             down_emoji=None,
+            delete_suggest=False,
         )
         self.config.register_global(
             toggle=False, server_id=None, channel_id=None, next_id=1, ignore=[]
@@ -122,7 +123,10 @@ class Suggestion(commands.Cog):
         await self.config.custom("SUGGESTION", server, s_id).msg_id.set(msg.id)
 
         self.antispam[ctx.guild][ctx.author].stamp()
-        await ctx.tick()
+        if await self.config.guild(ctx.guild).delete_suggest():
+            await ctx.message.delete()
+        else:
+            await ctx.tick()
         try:
             await ctx.author.send(
                 content="Your suggestion has been sent for approval!", embed=embed
@@ -590,6 +594,19 @@ class Suggestion(commands.Cog):
                 return await ctx.send("Uh oh, I cannot use that emoji.")
             await self.config.guild(ctx.guild).down_emoji.set(down_emoji.id)
         await ctx.tick()
+
+    @checks.bot_has_permissions(manage_messages=True)
+    @setsuggest.command(name="autodelete")
+    async def setsuggest_autodelete(self, ctx: commands.Context, on_off: bool = None):
+        """ Toggle whether after `[p]suggest`, the bot deletes the message. """
+        target_state = (
+            on_off if on_off else not (await self.config.guild(ctx.guild).delete_suggest())
+        )
+        await self.config.guild(ctx.guild).delete_suggest.set(target_state)
+        if target_state:
+            await ctx.send("Global suggestions are now enabled.")
+        else:
+            await ctx.send("Global suggestions are now disabled.")
 
     @setsuggest.group(autohelp=True)
     @checks.is_owner()
