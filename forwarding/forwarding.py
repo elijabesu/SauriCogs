@@ -12,7 +12,7 @@ class Forwarding(commands.Cog):
     You can also DM someone as the bot with `[p]pm <user_ID> <message>`."""
 
     __author__ = "saurichable"
-    __version__ = "2.2.5"
+    __version__ = "2.2.6"
 
     def __init__(self, bot):
         self.bot = bot
@@ -24,7 +24,6 @@ class Forwarding(commands.Cog):
         )
 
     async def _send_to(self, embed):
-        await self.bot.is_owner(discord.Object(id=None))
         owner = self.bot.get_user(self.bot.owner_id)
         guild = self.bot.get_guild(await self.config.guild_id())
         if not guild:
