@@ -12,7 +12,7 @@ class Pick(commands.Cog):
     I suggest using it along with [nestedcommands](https://github.com/tmercswims/tmerc-cogs) and [scheduler](https://github.com/mikeshardmind/SinbadCogs)."""
 
     __author__ = "saurichable"
-    __version__ = "1.1.0"
+    __version__ = "1.1.1"
 
     def __init__(self, bot):
         self.bot = bot
@@ -51,5 +51,8 @@ class Pick(commands.Cog):
         
         I suggest using [nestedcommands by tmerc](https://github.com/tmercswims/tmerc-cogs) (Example of usage `[p]say Congratulations <@$(rpick)>! You won!`)"""
         role = get(ctx.guild.roles, id=await self.config.guild(ctx.guild).role())
-        winner = random.choice(role.members)
-        await ctx.send(f"{winner.id}")
+        if len(role.members) == 0:
+            await ctx.send("No members to choose from.")
+        else:
+            winner = random.choice(role.members)
+            await ctx.send(f"{winner.id}")
