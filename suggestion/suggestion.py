@@ -22,7 +22,7 @@ class Suggestion(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.3.0"
+    __version__ = "1.3.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -604,9 +604,9 @@ class Suggestion(commands.Cog):
         )
         await self.config.guild(ctx.guild).delete_suggest.set(target_state)
         if target_state:
-            await ctx.send("Global suggestions are now enabled.")
+            await ctx.send("Auto deletion is now enabled.")
         else:
-            await ctx.send("Global suggestions are now disabled.")
+            await ctx.send("Auto deletion is now disabled.")
 
     @setsuggest.group(autohelp=True)
     @checks.is_owner()
