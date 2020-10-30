@@ -23,7 +23,7 @@ class Cookies(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.1.2"
+    __version__ = "1.1.3"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -382,7 +382,7 @@ class Cookies(commands.Cog):
         await ctx.send("All cookies have been deleted from all members.")
 
     @setcookies.command(name="rate")
-    async def setcookies_rate(self, ctx: commands.Context, rate: int):
+    async def setcookies_rate(self, ctx: commands.Context, rate: float):
         """Set the exchange rate for `[p]cookieexchange`."""
         if rate <= 0:
             return await ctx.send("Uh oh, rate has to be more than 0.")
