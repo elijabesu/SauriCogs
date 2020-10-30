@@ -382,7 +382,7 @@ class Cookies(commands.Cog):
         await ctx.send("All cookies have been deleted from all members.")
 
     @setcookies.command(name="rate")
-    async def setcookies_rate(self, ctx: commands.Context, rate: float):
+    async def setcookies_rate(self, ctx: commands.Context, rate: Union[int, float]):
         """Set the exchange rate for `[p]cookieexchange`."""
         if rate <= 0:
             return await ctx.send("Uh oh, rate has to be more than 0.")
