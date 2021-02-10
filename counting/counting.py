@@ -251,7 +251,7 @@ class Counting(commands.Cog):
                 await warn_msg.delete()
         try:
             await message.delete()
-        except:
+        except (discord.Forbidden, discord.NotFound):
             pass
 
     @commands.Cog.listener()
