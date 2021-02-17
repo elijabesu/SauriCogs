@@ -249,7 +249,10 @@ class Counting(commands.Cog):
             if seconds != 0:
                 await asyncio.sleep(seconds)
                 await warn_msg.delete()
-        await message.delete()
+        try:
+            await message.delete()
+        except (discord.Forbidden, discord.NotFound):
+            pass
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
