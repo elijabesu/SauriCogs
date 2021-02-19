@@ -22,7 +22,7 @@ class Suggestion(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.3.1"
+    __version__ = "1.4.0"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -39,11 +39,12 @@ class Suggestion(commands.Cog):
             up_emoji=None,
             down_emoji=None,
             delete_suggest=False,
+            delete_suggestion=True,
         )
         self.config.register_global(
             toggle=False, server_id=None, channel_id=None, next_id=1, ignore=[]
         )
-        self.config.init_custom("SUGGESTION", 2)
+        self.config.init_custom("SUGGESTION", 2) # server_id, suggestion_id
         self.config.register_custom(
             "SUGGESTION",
             author=[],
@@ -106,12 +107,7 @@ class Suggestion(commands.Cog):
             content = f"Suggestion #{s_id}"
         msg = await channel.send(content=content, embed=embed)
 
-        up_emoji = self.bot.get_emoji(await self.config.guild(ctx.guild).up_emoji())
-        if not up_emoji:
-            up_emoji = "✅"
-        down_emoji = self.bot.get_emoji(await self.config.guild(ctx.guild).down_emoji())
-        if not down_emoji:
-            down_emoji = "❎"
+        up_emoji, down_emoji = _get_emojis(ctx)
         await msg.add_reaction(up_emoji)
         await msg.add_reaction(down_emoji)
 
@@ -188,31 +184,28 @@ class Suggestion(commands.Cog):
             op_name = str(op_info[1])
             op_avatar = ctx.guild.icon_url
         embed.set_author(name=f"Approved suggestion by {op_name}", icon_url=op_avatar)
+
+        embed.add_field(name="Results:", value=_get_results(ctx, oldmsg), inline=False)
+
         if is_global:
             await oldmsg.edit(content=content, embed=embed)
-            try:
-                await oldmsg.clear_reactions()
-            except discord.Forbidden:
-                pass
         else:
             if channel:
-                await oldmsg.delete()
+                if await self.config.guild(ctx.guild).delete_suggestion():
+                    await oldmsg.delete()
                 nmsg = await channel.send(content=content, embed=embed)
                 await self.config.custom(
                     "SUGGESTION", server, suggestion_id
                 ).msg_id.set(nmsg.id)
             else:
                 if not await self.config.guild(ctx.guild).same():
-                    await oldmsg.delete()
+                    if await self.config.guild(ctx.guild).delete_suggestion():
+                        await oldmsg.delete()
                     await self.config.custom(
                         "SUGGESTION", server, suggestion_id
                     ).msg_id.set(1)
                 else:
                     await oldmsg.edit(content=content, embed=embed)
-                    try:
-                        await oldmsg.clear_reactions()
-                    except discord.Forbidden:
-                        pass
         await self.config.custom("SUGGESTION", server, suggestion_id).finished.set(True)
         await self.config.custom("SUGGESTION", server, suggestion_id).approved.set(True)
         await ctx.tick()
@@ -279,6 +272,8 @@ class Suggestion(commands.Cog):
             op_avatar = ctx.guild.icon_url
         embed.set_author(name=f"Rejected suggestion by {op_name}", icon_url=op_avatar)
 
+        embed.add_field(name="Results:", value=_get_results(ctx, oldmsg), inline=False)
+
         if reason:
             embed.add_field(name="Reason:", value=reason, inline=False)
             await self.config.custom("SUGGESTION", server, suggestion_id).reason.set(
@@ -289,29 +284,23 @@ class Suggestion(commands.Cog):
             )
         if is_global:
             await oldmsg.edit(content=content, embed=embed)
-            try:
-                await oldmsg.clear_reactions()
-            except discord.Forbidden:
-                pass
         else:
             if channel:
-                await oldmsg.delete()
+                if await self.config.guild(ctx.guild).delete_suggestion():
+                    await oldmsg.delete()
                 nmsg = await channel.send(content=content, embed=embed)
                 await self.config.custom(
                     "SUGGESTION", server, suggestion_id
                 ).msg_id.set(nmsg.id)
             else:
                 if not await self.config.guild(ctx.guild).same():
-                    await oldmsg.delete()
+                    if await self.config.guild(ctx.guild).delete_suggestion():
+                        await oldmsg.delete()
                     await self.config.custom(
                         "SUGGESTION", server, suggestion_id
                     ).msg_id.set(1)
                 else:
                     await oldmsg.edit(content=content, embed=embed)
-                    try:
-                        await oldmsg.clear_reactions()
-                    except discord.Forbidden:
-                        pass
         await self.config.custom("SUGGESTION", server, suggestion_id).finished.set(True)
         await self.config.custom("SUGGESTION", server, suggestion_id).rejected.set(True)
         await ctx.tick()
@@ -406,14 +395,17 @@ class Suggestion(commands.Cog):
         await self.config.guild(ctx.guild).suggest_id.set(None)
         await self.config.guild(ctx.guild).approve_id.set(None)
         await self.config.guild(ctx.guild).reject_id.set(None)
+        await self.config.guild(ctx.guild).delete_suggestion.set(True)
+
         predchan = MessagePredicate.valid_text_channel(ctx)
+        pred = ReactionPredicate.yes_or_no(msg, ctx.author)
         overwrites = {
             ctx.guild.default_role: discord.PermissionOverwrite(send_messages=False),
             ctx.guild.me: discord.PermissionOverwrite(send_messages=True),
         }
+
         msg = await ctx.send("Do you already have your channel(s) done?")
         start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
-        pred = ReactionPredicate.yes_or_no(msg, ctx.author)
         try:
             await self.bot.wait_for("reaction_add", timeout=30, check=pred)
         except asyncio.TimeoutError:
@@ -432,7 +424,6 @@ class Suggestion(commands.Cog):
                 "Do you want to use the same channel for approved and rejected suggestions? (If yes, they won't be reposted anywhere, only their title will change accordingly.)"
             )
             start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
-            pred = ReactionPredicate.yes_or_no(msg, ctx.author)
             try:
                 await self.bot.wait_for("reaction_add", timeout=30, check=pred)
             except asyncio.TimeoutError:
@@ -449,7 +440,6 @@ class Suggestion(commands.Cog):
                         "Do you want to have an approved suggestions channel?"
                     )
                     start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
-                    pred = ReactionPredicate.yes_or_no(msg, ctx.author)
                     try:
                         await self.bot.wait_for("reaction_add", timeout=30, check=pred)
                     except asyncio.TimeoutError:
@@ -471,7 +461,6 @@ class Suggestion(commands.Cog):
                         "Do you want to have a rejected suggestions channel?"
                     )
                     start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
-                    pred = ReactionPredicate.yes_or_no(msg, ctx.author)
                     try:
                         await self.bot.wait_for("reaction_add", timeout=30, check=pred)
                     except asyncio.TimeoutError:
@@ -487,6 +476,19 @@ class Suggestion(commands.Cog):
                     await msg.delete()
                 else:
                     await self.config.guild(ctx.guild).reject_id.set(rejected.id)
+
+                msg = await ctx.send(
+                    "Do you want to keep suggestions in the original suggestion channel after being approved/rejected?"
+                )
+                start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
+                try:
+                    await self.bot.wait_for("reaction_add", timeout=30, check=pred)
+                except asyncio.TimeoutError:
+                    await msg.delete()
+                    return await ctx.send("You took too long. Try again, please.")
+                if pred.result:
+                    await self.config.guild(ctx.guild).delete_suggestion.set(False)
+                await msg.delete()
         else:
             await msg.delete()
             msg = await ctx.send(
@@ -505,7 +507,6 @@ class Suggestion(commands.Cog):
                 "Do you want to use the same channel for approved and rejected suggestions? (If yes, they won't be reposted anywhere, only their title will change accordingly.)"
             )
             start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
-            pred = ReactionPredicate.yes_or_no(msg, ctx.author)
             try:
                 await self.bot.wait_for("reaction_add", timeout=30, check=pred)
             except asyncio.TimeoutError:
@@ -520,7 +521,6 @@ class Suggestion(commands.Cog):
                     "Do you want to have an approved suggestions channel?"
                 )
                 start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
-                pred = ReactionPredicate.yes_or_no(msg, ctx.author)
                 try:
                     await self.bot.wait_for("reaction_add", timeout=30, check=pred)
                 except asyncio.TimeoutError:
@@ -544,7 +544,6 @@ class Suggestion(commands.Cog):
                     "Do you want to have a rejected suggestions channel?"
                 )
                 start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
-                pred = ReactionPredicate.yes_or_no(msg, ctx.author)
                 try:
                     await self.bot.wait_for("reaction_add", timeout=30, check=pred)
                 except asyncio.TimeoutError:
@@ -562,6 +561,19 @@ class Suggestion(commands.Cog):
                         return await ctx.send("You took too long. Try again, please.")
                     rejected = predchan.result
                     await self.config.guild(ctx.guild).reject_id.set(rejected.id)
+                await msg.delete()
+
+                msg = await ctx.send(
+                    "Do you want to keep suggestions in the original suggestion channel after being approved/rejected?"
+                )
+                start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
+                try:
+                    await self.bot.wait_for("reaction_add", timeout=30, check=pred)
+                except asyncio.TimeoutError:
+                    await msg.delete()
+                    return await ctx.send("You took too long. Try again, please.")
+                if pred.result:
+                    await self.config.guild(ctx.guild).delete_suggestion.set(False)
                 await msg.delete()
         await ctx.send(
             "You have finished the setup! Please, move your channels to the category you want them in."
@@ -676,6 +688,27 @@ class Suggestion(commands.Cog):
         else:
             await ctx.send(f"{server.name} already isn't in the ignored list.")
 
+    @commands.Cog.listener()
+    async def on_reaction_add(self, reaction, user):
+        message = reaction.message
+        # server suggestions
+        if message.channel.id == await.config.guild(message.guild).suggest_id():
+            is_finished = await self.config.custom("SUGGESTION", message.guild.id, int(message.content.split("#")[1])).finished()
+            if not is_finished:
+                for message_reaction in message.reactions():
+                    if message_reaction != reaction:
+                        if user in message_reaction.users():
+                            await message_reaction.remove(user)
+
+        # global suggestions
+        if message.channel.id == await.config.channel_id():
+            is_finished = await self.config.custom("SUGGESTION", 1, int(message.content.split("#")[1])).finished()
+            if not is_finished:
+                for message_reaction in message.reactions():
+                    if message_reaction != reaction:
+                        if user in message_reaction.users():
+                            await message_reaction.remove(user)
+
     async def _build_suggestion(
         self, ctx, author_id, server_id, suggestion_id, is_global
     ):
@@ -747,3 +780,24 @@ class Suggestion(commands.Cog):
                 inline=False,
             )
         return content, embed
+
+    async def _get_results(self, ctx, message):
+        up_emoji, down_emoji = _get_emojis(ctx)
+
+        for reaction in message.reactions:
+            if reaction.emoji == up_emoji:
+                up_count = reaction.count - 1 # minus the bot
+            if reaction.emoji == down_emoji:
+                down_count = reaction.count - 1 # minus the bot
+
+        results = up_count + "x " + up_emoji + "\n" + down_count + "x " + down_emoji
+        return results
+
+    async def _get_emojis(self, ctx):
+        up_emoji = self.bot.get_emoji(await self.config.guild(ctx.guild).up_emoji())
+        if not up_emoji:
+            up_emoji = "✅"
+        down_emoji = self.bot.get_emoji(await self.config.guild(ctx.guild).down_emoji())
+        if not down_emoji:
+            down_emoji = "❎"
+        return up_emoji, down_emoji
