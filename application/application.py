@@ -18,7 +18,7 @@ class Application(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.1.3"
+    __version__ = "1.2.0"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -27,9 +27,21 @@ class Application(commands.Cog):
         )
         self.antispam = {}
         self.config.register_guild(
+            is_set=False,
             applicant_id=None,
             accepter_id=None,
             channel_id=None,
+            applicant_role=True,
+            questions=[
+                ["What position are you applying for?", "Position", 120],
+                ["What is your name?", "Name", 120],
+                ["How old are you?", "Age", 120],
+                ["What timezone are you in? (Google is your friend.)", "Timezone", 120],
+                ["How many days per week can you be active?", "Active days/week", 120],
+                ["How many hours per day can you be active?", "Active hours/day", 120],
+                ["Do you have any previous experience? If so, please describe.", "Previous experience", 120],
+                ["Why do you want to be a member of our staff?", "Reason", 120],
+                ],
         )
 
     @commands.command()
@@ -37,14 +49,18 @@ class Application(commands.Cog):
     @checks.bot_has_permissions(manage_roles=True)
     async def apply(self, ctx: commands.Context):
         """Apply to be a staff member."""
-        try:
-            role_add = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).applicant_id())
-        except TypeError:
-            role_add = None
-        if not role_add:
-            role_add = get(ctx.guild.roles, name = "Staff Applicant")
+        if not await self.config.guild(ctx.guild).is_set():
+            return await ctx.send("Uh oh, the configuration is not correct. Ask the Admins to set it.")
+
+        if self.config.guild(ctx.guild).applicant_role:
+            try:
+                role_add = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).applicant_id())
+            except TypeError:
+                role_add = None
             if not role_add:
-                return await ctx.send("Uh oh, the configuration is not correct. Ask the Admins to set it.")
+                role_add = get(ctx.guild.roles, name = "Staff Applicant")
+                if not role_add:
+                    return await ctx.send("Uh oh, the configuration is not correct. Ask the Admins to set it.")
         try:
             channel = get(ctx.guild.text_channels, id = await self.config.guild(ctx.guild).channel_id())
         except TypeError:
@@ -69,7 +85,7 @@ class Application(commands.Cog):
             )
         try:
             await ctx.author.send(
-                "Let's start right away! You have maximum of 2 minutes for each question.\nWhat position are you applying for?"
+                "Let's start right away!"
             )
         except discord.Forbidden:
             return await ctx.send(
@@ -77,50 +93,6 @@ class Application(commands.Cog):
             )
         await ctx.send(f"Okay, {ctx.author.mention}, I've sent you a DM.")
 
-        def check(m):
-            return m.author == ctx.author and m.channel == ctx.author.dm_channel
-
-        try:
-            position = await self.bot.wait_for("message", timeout=120, check=check)
-        except asyncio.TimeoutError:
-            return await ctx.send("You took too long. Try again, please.")
-        await ctx.author.send("What is your name?")
-        try:
-            name = await self.bot.wait_for("message", timeout=120, check=check)
-        except asyncio.TimeoutError:
-            return await ctx.send("You took too long. Try again, please.")
-        await ctx.author.send("How old are you?")
-        try:
-            age = await self.bot.wait_for("message", timeout=120, check=check)
-        except asyncio.TimeoutError:
-            return await ctx.send("You took too long. Try again, please.")
-        await ctx.author.send("What timezone are you in? (Google is your friend.)")
-        try:
-            timezone = await self.bot.wait_for("message", timeout=120, check=check)
-        except asyncio.TimeoutError:
-            return await ctx.send("You took too long. Try again, please.")
-        await ctx.author.send("How many days per week can you be active?")
-        try:
-            days = await self.bot.wait_for("message", timeout=120, check=check)
-        except asyncio.TimeoutError:
-            return await ctx.send("You took too long. Try again, please.")
-        await ctx.author.send("How many hours per day can you be active?")
-        try:
-            hours = await self.bot.wait_for("message", timeout=120, check=check)
-        except asyncio.TimeoutError:
-            return await ctx.send("You took too long. Try again, please.")
-        await ctx.author.send(
-            "Do you have any previous experience? If so, please describe."
-        )
-        try:
-            experience = await self.bot.wait_for("message", timeout=120, check=check)
-        except asyncio.TimeoutError:
-            return await ctx.send("You took too long. Try again, please.")
-        await ctx.author.send("Why do you want to be a member of our staff?")
-        try:
-            reason = await self.bot.wait_for("message", timeout=120, check=check)
-        except asyncio.TimeoutError:
-            return await ctx.send("You took too long. Try again, please.")
         embed = discord.Embed(color=await ctx.embed_colour(), timestamp=datetime.now())
         embed.set_author(name="New application!", icon_url=ctx.author.avatar_url)
         embed.set_footer(
@@ -129,31 +101,37 @@ class Application(commands.Cog):
         embed.title = (
             f"User: {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})"
         )
-        embed.add_field(name="Name:", value=name.content, inline=True)
-        embed.add_field(name="Age:", value=age.content, inline=True)
-        embed.add_field(name="Timezone:", value=timezone.content, inline=True)
-        embed.add_field(name="Desired position:", value=position.content, inline=True)
-        embed.add_field(name="Active days/week:", value=days.content, inline=True)
-        embed.add_field(name="Active hours/day:", value=hours.content, inline=True)
-        embed.add_field(
-            name="Previous experience:", value=experience.content, inline=False
-        )
-        embed.add_field(name="Reason:", value=reason.content, inline=False)
+
+        def check(m):
+            return m.author == ctx.author and m.channel == ctx.author.dm_channel
+
+        questions = await self.config.guild(ctx.guild).questions() # list of lists
+        for question in questions: # for list in lists
+            await ctx.author.send(question[0])
+            try:
+                answer = await self.bot.wait_for("message", timeout=question[2], check=check)
+            except asyncio.TimeoutError:
+                return await ctx.send("You took too long. Try again, please.")
+            embed.add_field(name=question[1] + ":", value=answer.content)
 
         await channel.send(embed=embed)
 
         await ctx.author.add_roles(role_add)
-
         await ctx.author.send(
             "Your application has been sent to the Admins, thank you!"
         )
         self.antispam[ctx.guild][ctx.author].stamp()
 
     @checks.admin_or_permissions(administrator=True)
-    @commands.command()
+    @commands.group(autohelp=True)
     @commands.guild_only()
     @checks.bot_has_permissions(manage_channels=True, manage_roles=True)
-    async def applysetup(self, ctx: commands.Context):
+    async def setapply(self, ctx: commands.Context):
+        """Application settings"""
+        pass
+
+    @setapply.command(name="setup")
+    async def setapply_setup(self, ctx: commands.Context):
         """Go through the initial setup process."""
         pred = MessagePredicate.yes_or_no(ctx)
         role = MessagePredicate.valid_role(ctx)
@@ -171,14 +149,27 @@ class Application(commands.Cog):
         if not pred.result:
             return await ctx.send("Setup cancelled.")
         if not applicant:
+            await ctx.send(
+                "Do you want applicants to gain a role? (yes/no)"
+            )
             try:
-                applicant = await ctx.guild.create_role(
-                    name="Staff Applicant", reason="Application cog setup"
-                )
-            except discord.Forbidden:
-                return await ctx.send(
-                    "Uh oh. Looks like I don't have permissions to manage roles."
-                )
+                await self.bot.wait_for("message", timeout=30, check=pred)
+            except asyncio.TimeoutError:
+                return await ctx.send("You took too long. Try again, please.")
+            if pred.result:
+                await self.config.guild(ctx.guild).applicant_role.set(True)
+                try:
+                    applicant = await ctx.guild.create_role(
+                        name="Staff Applicant", reason="Application cog setup"
+                    )
+                except discord.Forbidden:
+                    return await ctx.send(
+                        "Uh oh. Looks like I don't have permissions to manage roles."
+                    )
+                await self.config.guild(ctx.guild).applicant_id.set(applicant.id)
+            else:
+                await self.config.guild(ctx.guild).applicant_role.set(False)
+                await self.config.guild(ctx.guild).applicant_id.set(None)
         if not channel:
             await ctx.send(
                 "Do you want everyone to see the applications channel? (yes/no)"
@@ -217,12 +208,59 @@ class Application(commands.Cog):
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
         accepter = role.result
-        await self.config.guild(ctx.guild).applicant_id.set(applicant.id)
         await self.config.guild(ctx.guild).channel_id.set(channel.id)
         await self.config.guild(ctx.guild).accepter_id.set(accepter.id)
+        await self.config.guild(ctx.guild).is_set.set(True)
         await ctx.send(
             "You have finished the setup! Please, move your new channel to the category you want it in."
         )
+
+    @setapply.command(name="questions")
+    async def setapply_questions(self, ctx: commands.Context):
+        """Set custom application questions."""
+        current_questions = "Default questions:"
+        for question in await self.config.guild(ctx.guild).questions():
+            current_questions += "\n" + question[0]
+        await ctx.send(current_questions)
+
+        same_context = MessagePredicate.same_context(ctx)
+        valid_int = MessagePredicate.valid_int(ctx)
+        
+        await ctx.send("How many questions?")
+        try:
+            number_of_questions = await self.bot.wait_for("message", timeout=60, check=valid_int)
+        except asyncio.TimeoutError:
+            return await ctx.send("You took too long. Try again, please.")
+
+        list_of_questions = list()
+        for x in range(int(number_of_questions.content)):
+            question_list = list()
+
+            await ctx.send("Enter question: ")
+            try:
+                await self.bot.wait_for("message", timeout=60, check=same_context)
+            except asyncio.TimeoutError:
+                return await ctx.send("You took too long. Try again, please.")
+            question_list.append(same_context.result)
+
+            await ctx.send("Enter how the question will look in final embed (f.e. Name): ")
+            try:
+                shortcut = await self.bot.wait_for("message", timeout=60, check=same_context)
+            except asyncio.TimeoutError:
+                return await ctx.send("You took too long. Try again, please.")
+            question_list.append(same_context.result)
+
+            await ctx.send("Enter how many seconds the applicant has to answer: ")
+            try:
+                time = await self.bot.wait_for("message", timeout=60, check=valid_int)
+            except asyncio.TimeoutError:
+                return await ctx.send("You took too long. Try again, please.")
+            question_list.append(int(valid_int).result)
+
+            list_of_questions.append(question_list)
+
+        await self.config.guild(ctx.guild).questions.set(list_of_questions)
+        await ctx.send("Done!")
 
     @commands.command()
     @commands.guild_only()
@@ -231,6 +269,9 @@ class Application(commands.Cog):
         """Accept a staff applicant.
 
         <target> can be a mention or an ID."""
+        if not await self.config.guild(ctx.guild).is_set():
+            return await ctx.send("Uh oh, the configuration is not correct. Ask the Admins to set it.")
+
         try:
             accepter = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).accepter_id())
         except TypeError:
@@ -241,35 +282,35 @@ class Application(commands.Cog):
         else:
             if accepter not in ctx.author.roles:
                 return await ctx.send("Uh oh, you cannot use this command.")
-        try:
-            applicant = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).applicant_id())
-        except TypeError:
-            applicant = None
-        if not applicant:
-            applicant = get(ctx.guild.roles, name="Staff Applicant")
-            if not applicant:
-                return await ctx.send("Uh oh, the configuration is not correct. Ask the Admins to set it.")
+
         role = MessagePredicate.valid_role(ctx)
-        if applicant in target.roles:
-            await ctx.send(f"What role do you want to accept {target.name} as?")
+        if await self.config.guild(ctx.guild).applicant_role():
             try:
-                await self.bot.wait_for("message", timeout=30, check=role)
-            except asyncio.TimeoutError:
-                return await ctx.send("You took too long. Try again, please.")
-            role_add = role.result
-            try:
-                await target.add_roles(role_add)
-            except discord.Forbidden:
-                return await ctx.send("Uh oh, I cannot give them the role. It might be above all of my roles.")
-            await target.remove_roles(applicant)
-            await ctx.send(f"Accepted {target.mention} as {role_add}.")
-            await target.send(
-                f"You have been accepted as {role_add} in {ctx.guild.name}."
-            )
-        else:
-            await ctx.send(
-                f"Uh oh. Looks like {target.mention} hasn't applied for anything."
-            )
+                applicant = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).applicant_id())
+            except TypeError:
+                applicant = None
+            if not applicant:
+                applicant = get(ctx.guild.roles, name="Staff Applicant")
+                if not applicant:
+                    return await ctx.send("Uh oh, the configuration is not correct. Ask the Admins to set it.")
+            if applicant not in target.roles:
+                await target.remove_roles(applicant)
+            else:
+                return await ctx.send(
+                    f"Uh oh. Looks like {target.mention} hasn't applied for anything."
+                )
+        await ctx.send(f"What role do you want to accept {target.name} as?")
+        try:
+            await self.bot.wait_for("message", timeout=30, check=role)
+        except asyncio.TimeoutError:
+            return await ctx.send("You took too long. Try again, please.")
+        role_add = role.result
+        try:
+            await target.add_roles(role_add)
+        except discord.Forbidden:
+            return await ctx.send("Uh oh, I cannot give them the role. It might be above all of my roles.")
+        await ctx.send(f"Accepted {target.mention} as {role_add}.")
+        await target.send(f"You have been accepted as {role_add} in {ctx.guild.name}.")
 
     @commands.command()
     @commands.guild_only()
@@ -278,6 +319,9 @@ class Application(commands.Cog):
         """Deny a staff applicant.
 
         <target> can be a mention or an ID"""
+        if not await self.config.guild(ctx.guild).is_set():
+            return await ctx.send("Uh oh, the configuration is not correct. Ask the Admins to set it.")
+
         try:
             accepter = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).accepter_id())
         except TypeError:
@@ -288,43 +332,47 @@ class Application(commands.Cog):
         else:
             if accepter not in ctx.author.roles:
                 return await ctx.send("Uh oh, you cannot use this command.")
-        try:
-            applicant = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).applicant_id())
-        except TypeError:
-            applicant = None
-        if not applicant:
-            applicant = get(ctx.guild.roles, name="Staff Applicant")
-            if not applicant:
-                return await ctx.send("Uh oh, the configuration is not correct. Ask the Admins to set it.")
-        if applicant in target.roles:
-            await ctx.send("Would you like to specify a reason? (yes/no)")
-            pred = MessagePredicate.yes_or_no(ctx)
+
+        if await self.config.guild(ctx.guild).applicant_role():
             try:
-                await self.bot.wait_for("message", timeout=30, check=pred)
+                applicant = get(ctx.guild.roles, id = await self.config.guild(ctx.guild).applicant_id())
+            except TypeError:
+                applicant = None
+            if not applicant:
+                applicant = get(ctx.guild.roles, name="Staff Applicant")
+                if not applicant:
+                    return await ctx.send("Uh oh, the configuration is not correct. Ask the Admins to set it.")
+            if applicant in target.roles:
+                await target.remove_roles(applicant)
+            else:
+                return await ctx.send(
+                    f"Uh oh. Looks like {target.mention} hasn't applied for anything."
+                )
+
+        await ctx.send("Would you like to specify a reason? (yes/no)")
+        pred = MessagePredicate.yes_or_no(ctx)
+        try:
+            await self.bot.wait_for("message", timeout=30, check=pred)
+        except asyncio.TimeoutError:
+            return await ctx.send("You took too long. Try again, please.")
+        if pred.result:
+            await ctx.send("Please, specify your reason now.")
+
+            def check(m):
+                return m.author == ctx.author
+
+            try:
+                reason = await self.bot.wait_for(
+                    "message", timeout=120, check=check
+                )
             except asyncio.TimeoutError:
                 return await ctx.send("You took too long. Try again, please.")
-            if pred.result:
-                await ctx.send("Please, specify your reason now.")
-
-                def check(m):
-                    return m.author == ctx.author
-
-                try:
-                    reason = await self.bot.wait_for(
-                        "message", timeout=120, check=check
-                    )
-                except asyncio.TimeoutError:
-                    return await ctx.send("You took too long. Try again, please.")
-                await target.send(
-                    f"Your application in {ctx.guild.name} has been denied.\n*Reason:* {reason.content}"
-                )
-            else:
-                await target.send(
-                    f"Your application in {ctx.guild.name} has been denied."
-                )
-            await target.remove_roles(applicant)
-            await ctx.send(f"Denied {target.mention}'s application.")
-        else:
-            await ctx.send(
-                f"Uh oh. Looks like {target.mention} hasn't applied for anything."
+            await target.send(
+                f"Your application in {ctx.guild.name} has been denied.\n*Reason:* {reason.content}"
             )
+        else:
+            await target.send(
+                f"Your application in {ctx.guild.name} has been denied."
+            )
+        await ctx.send(f"Denied {target.mention}'s application.")
+
