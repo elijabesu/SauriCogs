@@ -255,7 +255,7 @@ class Application(commands.Cog):
                 time = await self.bot.wait_for("message", timeout=60, check=valid_int)
             except asyncio.TimeoutError:
                 return await ctx.send("You took too long. Try again, please.")
-            question_list.append(int(valid_int).result)
+            question_list.append(int(valid_int.result))
 
             list_of_questions.append(question_list)
 
