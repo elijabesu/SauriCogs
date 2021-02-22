@@ -18,7 +18,7 @@ class Application(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.2.0"
+    __version__ = "1.2.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -106,13 +106,18 @@ class Application(commands.Cog):
             return m.author == ctx.author and m.channel == ctx.author.dm_channel
 
         questions = await self.config.guild(ctx.guild).questions() # list of lists
-        for question in questions: # for list in lists
-            await ctx.author.send(question[0])
-            try:
-                answer = await self.bot.wait_for("message", timeout=question[2], check=check)
-            except asyncio.TimeoutError:
-                return await ctx.send("You took too long. Try again, please.")
-            embed.add_field(name=question[1] + ":", value=answer.content)
+        try:
+            for question in questions: # for list in lists
+                await ctx.author.send(question[0])
+                try:
+                    answer = await self.bot.wait_for("message", timeout=question[2], check=check)
+                except asyncio.TimeoutError:
+                    return await ctx.send("You took too long. Try again, please.")
+                embed.add_field(name=question[1] + ":", value=answer.content)
+        except TypeError:
+            await ctx.send("There was an error fetching the questions, wait for the Admins.")
+            await channel.send(await ctx.send("There was an error fetching the questions, try reinstalling the cog. If the issue persists, please report it at <https://github.com/elijabesu/SauriCogs/issues/new>."))
+            return
 
         await channel.send(embed=embed)
 
@@ -219,8 +224,11 @@ class Application(commands.Cog):
     async def setapply_questions(self, ctx: commands.Context):
         """Set custom application questions."""
         current_questions = "Default questions:"
-        for question in await self.config.guild(ctx.guild).questions():
-            current_questions += "\n" + question[0]
+        try:
+            for question in await self.config.guild(ctx.guild).questions():
+                current_questions += "\n" + question[0]
+        except TypeError:
+            return await ctx.send("There was an error fetching the questions, try reinstalling the cog. If the issue persists, please report it at <https://github.com/elijabesu/SauriCogs/issues/new>.")
         await ctx.send(current_questions)
 
         same_context = MessagePredicate.same_context(ctx)
@@ -259,7 +267,10 @@ class Application(commands.Cog):
 
             list_of_questions.append(question_list)
 
-        await self.config.guild(ctx.guild).questions.set(list_of_questions)
+        try:
+            await self.config.guild(ctx.guild).questions.set(list_of_questions)
+        except TypeError:
+            return await ctx.send("There was an error saving the questions, try reinstalling the cog. If the issue persists, please report it at <https://github.com/elijabesu/SauriCogs/issues/new>.")
         await ctx.send("Done!")
 
     @commands.command()
