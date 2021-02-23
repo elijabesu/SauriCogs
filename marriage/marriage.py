@@ -17,7 +17,7 @@ class Marriage(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.4.5"
+    __version__ = "1.4.6"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -589,6 +589,8 @@ class Marriage(commands.Cog):
         mc = self.config.member
         if not await gc(ctx.guild).toggle():
             return await ctx.send("Marriage is not enabled!")
+        if member.id == ctx.author.id:
+            return await ctx.send("You cannot perform anything with yourself!")
         consent = 1
         if action == "flirt":
             endtext = (
