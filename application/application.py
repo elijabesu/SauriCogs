@@ -18,7 +18,7 @@ class Application(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.2.5"
+    __version__ = "1.2.6"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -405,3 +405,4 @@ class Application(commands.Cog):
         string = "**Default questions:**"
         for question in list_of_questions:
             string += "\n" + question[0]
+        return string
