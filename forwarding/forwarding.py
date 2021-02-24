@@ -12,7 +12,7 @@ class Forwarding(commands.Cog):
     You can also DM someone as the bot with `[p]pm <user_ID> <message>`."""
 
     __author__ = "saurichable"
-    __version__ = "2.3.0"
+    __version__ = "2.3.1"
 
     def __init__(self, bot):
         self.bot = bot
@@ -26,10 +26,10 @@ class Forwarding(commands.Cog):
     async def _send_to(self, embed):
         guild = self.bot.get_guild(await self.config.guild_id())
         if not guild:
-            return await _send_to_owners(embed)
+            return await self._send_to_owners(embed)
         channel = guild.get_channel(await self.config.channel_id())
         if not channel:
-            return await _send_to_owners(embed)
+            return await self._send_to_owners(embed)
         ping_role = guild.get_role(await self.config.ping_role_id())
         ping_user = guild.get_member(await self.config.ping_user_id())
         if not ping_role:
