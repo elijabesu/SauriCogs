@@ -22,7 +22,7 @@ class Suggestion(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.4.3"
+    __version__ = "1.4.4"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -185,7 +185,7 @@ class Suggestion(commands.Cog):
             op_avatar = ctx.guild.icon_url
         embed.set_author(name=f"Approved suggestion by {op_name}", icon_url=op_avatar)
 
-        embed.add_field(name="Results:", value=_get_results(ctx, oldmsg), inline=False)
+        embed.add_field(name="Results:", value=await self._get_results(ctx, oldmsg), inline=False)
 
         if is_global:
             await oldmsg.edit(content=content, embed=embed)
@@ -272,7 +272,7 @@ class Suggestion(commands.Cog):
             op_avatar = ctx.guild.icon_url
         embed.set_author(name=f"Rejected suggestion by {op_name}", icon_url=op_avatar)
 
-        embed.add_field(name="Results:", value=_get_results(ctx, oldmsg), inline=False)
+        embed.add_field(name="Results:", value=await self._get_results(ctx, oldmsg), inline=False)
 
         if reason:
             embed.add_field(name="Reason:", value=reason, inline=False)
@@ -698,6 +698,8 @@ class Suggestion(commands.Cog):
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
+        if message.author.id == self.bot.user.id:
+            return
         message = reaction.message
         # server suggestions
         if message.channel.id == await self.config.guild(message.guild).suggest_id():
