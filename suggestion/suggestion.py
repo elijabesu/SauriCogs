@@ -22,7 +22,7 @@ class Suggestion(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.4.1"
+    __version__ = "1.4.2"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -107,7 +107,7 @@ class Suggestion(commands.Cog):
             content = f"Suggestion #{s_id}"
         msg = await channel.send(content=content, embed=embed)
 
-        up_emoji, down_emoji = _get_emojis(ctx)
+        up_emoji, down_emoji = await self._get_emojis(ctx)
         await msg.add_reaction(up_emoji)
         await msg.add_reaction(down_emoji)
 
@@ -790,7 +790,7 @@ class Suggestion(commands.Cog):
         return content, embed
 
     async def _get_results(self, ctx, message):
-        up_emoji, down_emoji = _get_emojis(ctx)
+        up_emoji, down_emoji = await self._get_emojis(ctx)
 
         for reaction in message.reactions:
             if reaction.emoji == up_emoji:
