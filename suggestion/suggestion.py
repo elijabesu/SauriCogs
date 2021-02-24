@@ -710,7 +710,7 @@ class Suggestion(commands.Cog):
         if message.channel.id == await self.config.channel_id():
             for message_reaction in message.reactions:
                 if message_reaction != reaction:
-                    if user in await message_reaction.users().flatten()::
+                    if user in await message_reaction.users().flatten():
                         await message_reaction.remove(user)
 
     async def _build_suggestion(
