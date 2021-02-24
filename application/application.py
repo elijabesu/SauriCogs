@@ -18,7 +18,7 @@ class Application(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.2.4"
+    __version__ = "1.2.5"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -388,7 +388,7 @@ class Application(commands.Cog):
             )
         await ctx.send(f"Denied {target.mention}'s application.")
 
-    async def _default_questions_list():
+    async def _default_questions_list(self):
         return [
             ["What position are you applying for?", "Position", 120],
             ["What is your name?", "Name", 120],
@@ -400,7 +400,7 @@ class Application(commands.Cog):
             ["Why do you want to be a member of our staff?", "Reason", 120],
         ]
 
-    async def _default_questions_string():
+    async def _default_questions_string(self):
         list_of_questions = await self._default_questions_list()
         string = "**Default questions:**"
         for question in list_of_questions:
