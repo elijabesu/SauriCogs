@@ -22,7 +22,7 @@ class Suggestion(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.4.4"
+    __version__ = "1.4.5"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -704,14 +704,14 @@ class Suggestion(commands.Cog):
         # server suggestions
         if message.channel.id == await self.config.guild(message.guild).suggest_id():
             for message_reaction in message.reactions:
-                if message_reaction != reaction:
+                if message_reaction.emoji != reaction.emoji:
                     if user in await message_reaction.users().flatten():
                         await message_reaction.remove(user)
 
         # global suggestions
         if message.channel.id == await self.config.channel_id():
             for message_reaction in message.reactions:
-                if message_reaction != reaction:
+                if message_reaction.emoji != reaction.emoji:
                     if user in await message_reaction.users().flatten():
                         await message_reaction.remove(user)
 
@@ -789,6 +789,8 @@ class Suggestion(commands.Cog):
 
     async def _get_results(self, ctx, message):
         up_emoji, down_emoji = await self._get_emojis(ctx)
+        up_count = 0
+        down_count = 0
 
         for reaction in message.reactions:
             if reaction.emoji == up_emoji:
