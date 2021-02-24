@@ -22,7 +22,7 @@ class Suggestion(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.4.2"
+    __version__ = "1.4.3"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -701,21 +701,17 @@ class Suggestion(commands.Cog):
         message = reaction.message
         # server suggestions
         if message.channel.id == await self.config.guild(message.guild).suggest_id():
-            is_finished = await self.config.custom("SUGGESTION", message.guild.id, int(message.content.split("#")[1])).finished()
-            if not is_finished:
-                for message_reaction in message.reactions():
-                    if message_reaction != reaction:
-                        if user in message_reaction.users():
-                            await message_reaction.remove(user)
+            for message_reaction in message.reactions:
+                if message_reaction != reaction:
+                    if user in await message_reaction.users().flatten():
+                        await message_reaction.remove(user)
 
         # global suggestions
         if message.channel.id == await self.config.channel_id():
-            is_finished = await self.config.custom("SUGGESTION", 1, int(message.content.split("#")[1])).finished()
-            if not is_finished:
-                for message_reaction in message.reactions():
-                    if message_reaction != reaction:
-                        if user in message_reaction.users():
-                            await message_reaction.remove(user)
+            for message_reaction in message.reactions:
+                if message_reaction != reaction:
+                    if user in await message_reaction.users().flatten()::
+                        await message_reaction.remove(user)
 
     async def _build_suggestion(
         self, ctx, author_id, server_id, suggestion_id, is_global
