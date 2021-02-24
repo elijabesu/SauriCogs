@@ -22,7 +22,7 @@ class Suggestion(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.4.5"
+    __version__ = "1.4.6"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -143,7 +143,7 @@ class Suggestion(commands.Cog):
         """Approve a suggestion."""
         if is_global:
             if await self.config.toggle():
-                if ctx.author.id != self.bot.owner_id:
+                if ctx.author.id not in self.bot.owner_ids:
                     return await ctx.send("Uh oh, you're not my owner.")
                 server = 1
                 global_guild = self.bot.get_guild(await self.config.server_id())
@@ -230,7 +230,7 @@ class Suggestion(commands.Cog):
         """Reject a suggestion. Reason is optional."""
         if is_global:
             if await self.config.toggle():
-                if ctx.author.id != self.bot.owner_id:
+                if ctx.author.id not in self.bot.owner_ids:
                     return await ctx.send("Uh oh, you're not my owner.")
                 server = 1
                 global_guild = self.bot.get_guild(await self.config.server_id())
@@ -327,7 +327,7 @@ class Suggestion(commands.Cog):
         Only works for non global suggestions."""
         if is_global:
             if await self.config.toggle():
-                if ctx.author.id != self.bot.owner_id:
+                if ctx.author.id not in self.bot.owner_ids:
                     return await ctx.send("Uh oh, you're not my owner.")
                 server = 1
                 global_guild = self.bot.get_guild(await self.config.server_id())
@@ -720,7 +720,7 @@ class Suggestion(commands.Cog):
     ):
         if is_global:
             if await self.config.toggle():
-                if author_id != self.bot.owner_id:
+                if author_id not in self.bot.owner_ids:
                     return await ctx.send("Uh oh, you're not my owner.")
                 server = 1
                 if (
@@ -798,7 +798,7 @@ class Suggestion(commands.Cog):
             if reaction.emoji == down_emoji:
                 down_count = reaction.count - 1 # minus the bot
 
-        results = up_count + "x " + up_emoji + "\n" + down_count + "x " + down_emoji
+        results = str(up_count) + "x " + up_emoji + "\n" + str(down_count) + "x " + down_emoji
         return results
 
     async def _get_emojis(self, ctx):
