@@ -22,7 +22,7 @@ class Suggestion(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.4.0"
+    __version__ = "1.4.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -398,7 +398,6 @@ class Suggestion(commands.Cog):
         await self.config.guild(ctx.guild).delete_suggestion.set(True)
 
         predchan = MessagePredicate.valid_text_channel(ctx)
-        pred = ReactionPredicate.yes_or_no(msg, ctx.author)
         overwrites = {
             ctx.guild.default_role: discord.PermissionOverwrite(send_messages=False),
             ctx.guild.me: discord.PermissionOverwrite(send_messages=True),
@@ -406,6 +405,7 @@ class Suggestion(commands.Cog):
 
         msg = await ctx.send("Do you already have your channel(s) done?")
         start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
+        pred = ReactionPredicate.yes_or_no(msg, ctx.author)
         try:
             await self.bot.wait_for("reaction_add", timeout=30, check=pred)
         except asyncio.TimeoutError:
@@ -424,6 +424,7 @@ class Suggestion(commands.Cog):
                 "Do you want to use the same channel for approved and rejected suggestions? (If yes, they won't be reposted anywhere, only their title will change accordingly.)"
             )
             start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
+            pred = ReactionPredicate.yes_or_no(msg, ctx.author)
             try:
                 await self.bot.wait_for("reaction_add", timeout=30, check=pred)
             except asyncio.TimeoutError:
@@ -440,6 +441,7 @@ class Suggestion(commands.Cog):
                         "Do you want to have an approved suggestions channel?"
                     )
                     start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
+                    pred = ReactionPredicate.yes_or_no(msg, ctx.author)
                     try:
                         await self.bot.wait_for("reaction_add", timeout=30, check=pred)
                     except asyncio.TimeoutError:
@@ -461,6 +463,7 @@ class Suggestion(commands.Cog):
                         "Do you want to have a rejected suggestions channel?"
                     )
                     start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
+                    pred = ReactionPredicate.yes_or_no(msg, ctx.author)
                     try:
                         await self.bot.wait_for("reaction_add", timeout=30, check=pred)
                     except asyncio.TimeoutError:
@@ -481,6 +484,7 @@ class Suggestion(commands.Cog):
                     "Do you want to keep suggestions in the original suggestion channel after being approved/rejected?"
                 )
                 start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
+                pred = ReactionPredicate.yes_or_no(msg, ctx.author)
                 try:
                     await self.bot.wait_for("reaction_add", timeout=30, check=pred)
                 except asyncio.TimeoutError:
@@ -507,6 +511,7 @@ class Suggestion(commands.Cog):
                 "Do you want to use the same channel for approved and rejected suggestions? (If yes, they won't be reposted anywhere, only their title will change accordingly.)"
             )
             start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
+            pred = ReactionPredicate.yes_or_no(msg, ctx.author)
             try:
                 await self.bot.wait_for("reaction_add", timeout=30, check=pred)
             except asyncio.TimeoutError:
@@ -521,6 +526,7 @@ class Suggestion(commands.Cog):
                     "Do you want to have an approved suggestions channel?"
                 )
                 start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
+                pred = ReactionPredicate.yes_or_no(msg, ctx.author)
                 try:
                     await self.bot.wait_for("reaction_add", timeout=30, check=pred)
                 except asyncio.TimeoutError:
@@ -544,6 +550,7 @@ class Suggestion(commands.Cog):
                     "Do you want to have a rejected suggestions channel?"
                 )
                 start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
+                pred = ReactionPredicate.yes_or_no(msg, ctx.author)
                 try:
                     await self.bot.wait_for("reaction_add", timeout=30, check=pred)
                 except asyncio.TimeoutError:
@@ -567,6 +574,7 @@ class Suggestion(commands.Cog):
                     "Do you want to keep suggestions in the original suggestion channel after being approved/rejected?"
                 )
                 start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
+                pred = ReactionPredicate.yes_or_no(msg, ctx.author)
                 try:
                     await self.bot.wait_for("reaction_add", timeout=30, check=pred)
                 except asyncio.TimeoutError:
