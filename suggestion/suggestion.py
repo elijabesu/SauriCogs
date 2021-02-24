@@ -692,7 +692,7 @@ class Suggestion(commands.Cog):
     async def on_reaction_add(self, reaction, user):
         message = reaction.message
         # server suggestions
-        if message.channel.id == await.config.guild(message.guild).suggest_id():
+        if message.channel.id == await self.config.guild(message.guild).suggest_id():
             is_finished = await self.config.custom("SUGGESTION", message.guild.id, int(message.content.split("#")[1])).finished()
             if not is_finished:
                 for message_reaction in message.reactions():
@@ -701,7 +701,7 @@ class Suggestion(commands.Cog):
                             await message_reaction.remove(user)
 
         # global suggestions
-        if message.channel.id == await.config.channel_id():
+        if message.channel.id == await self.config.channel_id():
             is_finished = await self.config.custom("SUGGESTION", 1, int(message.content.split("#")[1])).finished()
             if not is_finished:
                 for message_reaction in message.reactions():
