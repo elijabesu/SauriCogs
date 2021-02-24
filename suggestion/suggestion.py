@@ -22,7 +22,7 @@ class Suggestion(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.4.6"
+    __version__ = "1.4.7"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -698,9 +698,9 @@ class Suggestion(commands.Cog):
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
+        message = reaction.message
         if message.author.id == self.bot.user.id:
             return
-        message = reaction.message
         # server suggestions
         if message.channel.id == await self.config.guild(message.guild).suggest_id():
             for message_reaction in message.reactions:
