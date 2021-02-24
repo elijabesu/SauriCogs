@@ -12,7 +12,7 @@ class Forwarding(commands.Cog):
     You can also DM someone as the bot with `[p]pm <user_ID> <message>`."""
 
     __author__ = "saurichable"
-    __version__ = "2.2.6"
+    __version__ = "2.3.0"
 
     def __init__(self, bot):
         self.bot = bot
@@ -24,13 +24,12 @@ class Forwarding(commands.Cog):
         )
 
     async def _send_to(self, embed):
-        owner = self.bot.get_user(self.bot.owner_id)
         guild = self.bot.get_guild(await self.config.guild_id())
         if not guild:
-            return await owner.send(embed=embed)
+            return await _send_to_owners(embed)
         channel = guild.get_channel(await self.config.channel_id())
         if not channel:
-            return await owner.send(embed=embed)
+            return await _send_to_owners(embed)
         ping_role = guild.get_role(await self.config.ping_role_id())
         ping_user = guild.get_member(await self.config.ping_user_id())
         if not ping_role:
@@ -44,11 +43,16 @@ class Forwarding(commands.Cog):
         else:
             await channel.send(content=f"{ping_role.mention}", embed=embed)
 
+    async def _send_to_owners(self, embed):
+        for owner_id in self.bot.owner_ids:
+            await self.bot.get_user(owner_id).send(embed=embed)
+
+
     @commands.Cog.listener()
     async def on_message_without_command(self, message):
         if message.guild:
             return
-        if message.channel.recipient.id == self.bot.owner_id:
+        if message.channel.recipient.id in self.bot.owner_ids:
             return
         if message.author == self.bot.user:
             return
