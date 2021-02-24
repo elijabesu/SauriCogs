@@ -18,7 +18,7 @@ class Application(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.2.3"
+    __version__ = "1.2.4"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -106,7 +106,7 @@ class Application(commands.Cog):
             return m.author == ctx.author and m.channel == ctx.author.dm_channel
 
         questions = await self.config.guild(ctx.guild).questions() # list of lists
-        default_questions = _default_questions_list() # default list of lists just in case
+        default_questions = await self._default_questions_list() # default list of lists just in case
         for i, question in enumerate(questions): # for list in lists
             try:
                 await ctx.author.send(question[0])
@@ -231,7 +231,7 @@ class Application(commands.Cog):
             try:
                 current_questions += "\n" + question[0]
             except TypeError:
-                current_questions = "Uh oh, couldn't fetch your questions.\n" + _default_questions_string()
+                current_questions = "Uh oh, couldn't fetch your questions.\n" + await self._default_questions_string()
                 break
         await ctx.send(current_questions)
 
@@ -401,7 +401,7 @@ class Application(commands.Cog):
         ]
 
     async def _default_questions_string():
-        list_of_questions = _default_questions_list()
+        list_of_questions = await self._default_questions_list()
         string = "**Default questions:**"
         for question in list_of_questions:
             string += "\n" + question[0]
