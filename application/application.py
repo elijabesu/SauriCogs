@@ -119,7 +119,7 @@ class Application(commands.Cog):
             try:
                 answer = await self.bot.wait_for("message", timeout=timeout, check=check)
             except asyncio.TimeoutError:
-                return await ctx.send("You took too long. Try again, please.")
+                return await ctx.author.send("You took too long. Try again, please.")
             embed.add_field(name=shortcut + ":", value=answer.content)
 
         await channel.send(embed=embed)
