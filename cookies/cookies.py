@@ -23,7 +23,7 @@ class Cookies(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.1.3"
+    __version__ = "1.1.4"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -84,11 +84,13 @@ class Cookies(commands.Cog):
         next_steal = await self.config.member(ctx.author).next_steal()
         enabled = await self.config.guild(ctx.guild).stealing()
         author_cookies = int(await self.config.member(ctx.author).cookies())
+
         if not enabled:
             return await ctx.send("Uh oh, stealing is disabled.")
         if cur_time < next_steal:
             dtime = self.display_time(next_steal - cur_time)
             return await ctx.send(f"Uh oh, you have to wait {dtime}.")
+
         if not target:
             ids = await self._get_ids(ctx)
             while not target:
@@ -101,6 +103,9 @@ class Cookies(commands.Cog):
             return await ctx.send(
                 f"Uh oh, {target.display_name} doesn't have any :cookie:"
             )
+
+        await self.config.member(ctx.author).next_steal.set(cur_time + await self.config.guild(ctx.guild).stealcd())
+
         success_chance = random.randint(1, 100)
         if success_chance > 90:
             cookies_stolen = int(target_cookies * 0.5)
@@ -119,22 +124,28 @@ class Cookies(commands.Cog):
             cookies_penalty = int(author_cookies * 0.25)
             if cookies_penalty == 0:
                 cookies_penalty = 1
-            penalty = random.randint(1, cookies_penalty)
-            target_cookies += penalty
-            if self._max_balance_check(target_cookies):
+            if cookies_penalty > 0:
+                penalty = random.randint(1, cookies_penalty)
+                if author_cookies < penalty:
+                    penalty = author_cookies
+                if self._max_balance_check(target_cookies + penalty):
+                    return await ctx.send(
+                        f"Uh oh, you got caught while trying to steal {target.display_name}'s :cookie:\n"
+                        f"{target.display_name} has reached the maximum amount of cookies, "
+                        "so you haven't lost any."
+                    )
+                author_cookies -= penalty
+                target_cookies += penalty
+                await ctx.send(
+                    f"You got caught while trying to steal {target.display_name}'s :cookie:\nYour penalty is {penalty} :cookie: which they got!"
+                )
+            else:
                 return await ctx.send(
                     f"Uh oh, you got caught while trying to steal {target.display_name}'s :cookie:\n"
-                    f"{target.display_name} has reached the maximum amount of cookies, "
-                    "so you haven't lost any cookie."
+                    f"You don't have any cookies, so you haven't lost any."
                 )
-            author_cookies -= penalty
-            await ctx.send(
-                f"You got caught while trying to steal {target.display_name}'s :cookie:\nYour penalty is {penalty} :cookie: which they got!"
-            )
-        next_steal = cur_time + await self.config.guild(ctx.guild).stealcd()
         await self.config.member(target).cookies.set(target_cookies)
         await self.config.member(ctx.author).cookies.set(author_cookies)
-        await self.config.member(ctx.author).next_steal.set(next_steal)
 
     @commands.command()
     @commands.guild_only()
