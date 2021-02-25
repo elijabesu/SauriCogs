@@ -17,7 +17,7 @@ class Marriage(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.4.6"
+    __version__ = "1.4.7"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -164,7 +164,7 @@ class Marriage(commands.Cog):
             "house",
         ]
         if action not in available:
-            return await ctx.send(f"Available actions/gifts are: {available}")
+            return await ctx.send(f"Available actions/gifts are: {humanize_list(available)}")
         if temper < 0:
             return await ctx.send("Uh oh, temper has to be 0 or more.")
         if temper > 100:
@@ -194,7 +194,7 @@ class Marriage(commands.Cog):
             "house",
         ]
         if action not in available:
-            return await ctx.send(f"Available actions/gifts are: {available}")
+            return await ctx.send(f"Available actions/gifts are: {humanize_list(available)}")
         if price < 0:
             return await ctx.send("Uh oh, price has to be 0 or more.")
         action_data = await self.config.guild(ctx.guild).shit.get_raw(action)
@@ -619,7 +619,7 @@ class Marriage(commands.Cog):
                 "house",
             ]
             if item not in gifts:
-                return await ctx.send(f"Available gifts are: {gifts}")
+                return await ctx.send(f"Available gifts are: {humanize_list(gifts)}")
             endtext = (
                 f":gift: {ctx.author.mention} has gifted one {item} to {member.mention}"
             )
