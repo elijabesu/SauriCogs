@@ -209,6 +209,7 @@ class Application(commands.Cog):
         If `channel` is not provided, applications are disabled."""
         if channel:
             await self.config.guild(ctx.guild).channel_id.set(channel.id)
+            await channel.set_permissions(ctx.guild.me, read_messages=True, send_messages=True)
         else:
             await self.config.guild(ctx.guild).channel_id.set(None)
         await ctx.tick()
