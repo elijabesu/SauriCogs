@@ -1,5 +1,6 @@
 import asyncio
 import discord
+import datetime
 
 from redbot.core import Config, checks, commands
 
@@ -65,7 +66,7 @@ class Pingable(commands.Cog):
                 else:
                     roles_channel += role.name + "(" + channel.mention + ")\n"
 
-        embed = discord.Embed(colour=await ctx.embed_colour(), timestamp=datetime.now())
+        embed = discord.Embed(colour=await ctx.embed_colour(), timestamp=datetime.datetime.now())
         embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
         embed.title = "**__Pingable settings:__**"
         embed.set_footer(text="*required to function properly")

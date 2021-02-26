@@ -1,6 +1,7 @@
 import discord
 import asyncio
 import random
+import datetime
 
 from redbot.core import Config, checks, commands, bank
 from redbot.core.utils.chat_formatting import humanize_list
@@ -244,7 +245,7 @@ class Marriage(commands.Cog):
             str(shit["house"][1]) + " price"
         )
 
-        embed = discord.Embed(colour=await ctx.embed_colour(), timestamp=datetime.now())
+        embed = discord.Embed(colour=await ctx.embed_colour(), timestamp=datetime.datetime.now())
         embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
         embed.title = "**__Marriage settings:__**"
         embed.add_field(name="Enabled*:", value=str(data["toggle"]))

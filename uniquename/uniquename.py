@@ -1,4 +1,5 @@
 import discord
+import datetime
 
 from redbot.core import Config, checks, commands
 from redbot.core.utils.chat_formatting import humanize_list
@@ -107,7 +108,7 @@ class UniqueName(commands.Cog):
                 if role:
                     roles.append(role.name)
 
-        embed = discord.Embed(colour=await ctx.embed_colour(), timestamp=datetime.now())
+        embed = discord.Embed(colour=await ctx.embed_colour(), timestamp=datetime.datetime.now())
         embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
         embed.title = "**__Unique Name settings:__**"
         embed.set_footer(text="*required to function properly")
