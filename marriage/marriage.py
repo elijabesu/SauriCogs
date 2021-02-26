@@ -250,6 +250,7 @@ class Marriage(commands.Cog):
         embed.title = "**__Marriage settings:__**"
         embed.add_field(name="Enabled*:", value=str(data["toggle"]))
         embed.add_field(name="Currency:", value=currency_used)
+        embed.add_field(name="\u200b", value="\u200b")
         embed.add_field(name="Marriage price:", value=str(data["marprice"]))
         embed.add_field(name="Divorce price:", value=str(data["divprice"]))
         embed.add_field(name="Multiple spouses:", value=str(data["multi"]))
