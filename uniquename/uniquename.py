@@ -7,7 +7,7 @@ class UniqueName(commands.Cog):
     """Deny members' names to be the same as your Moderators'."""
 
     __author__ = "saurichable"
-    __version__ = "1.3.0"
+    __version__ = "1.4.0"
 
     def __init__(self, bot):
         self.bot = bot
@@ -18,22 +18,23 @@ class UniqueName(commands.Cog):
         self.config.register_guild(toggle=False, roles=[], name="username", channel=None)
         self.config.register_global(guilds=[])
 
-    @commands.group(autohelp=True)
+    @commands.max_concurrency(1, commands.BucketType.guild, True)
+    @commands.group(autohelp=True, aliases=["unset"])
     @checks.admin_or_permissions(manage_guild=True)
     @commands.guild_only()
     @checks.bot_has_permissions(manage_nicknames=True)
-    async def unset(self, ctx: commands.Context):
+    async def uniquenameset(self, ctx: commands.Context):
         """Admin settings for ModName."""
         pass
 
-    @unset.command(name="role")
+    @uniquenameset.command(name="role")
     async def unset_role(self, ctx: commands.Context, role: discord.Role):
         """Add a role to the protected list."""
         async with self.config.guild(ctx.guild).roles() as roles:
             roles.append(role.id)
         await ctx.tick()
 
-    @unset.command(name="delrole")
+    @uniquenameset.command(name="delrole")
     async def unset_delrole(self, ctx: commands.Context, role: discord.Role):
         """Remove a role from the protected list."""
         if not (await self.config.guild(ctx.guild).roles(role.id)):
@@ -42,7 +43,7 @@ class UniqueName(commands.Cog):
             roles.remove(role.id)
         await ctx.tick()
 
-    @unset.command(name="roles")
+    @uniquenameset.command(name="roles")
     async def unset_roles(self, ctx: commands.Context):
         """View the protected roles."""
         roles = []
@@ -53,7 +54,7 @@ class UniqueName(commands.Cog):
         pretty_roles = humanize_list(roles)
         await ctx.send(f"List of roles that are protected:\n{pretty_roles}")
 
-    @unset.command(name="channel")
+    @uniquenameset.command(name="channel")
     async def unset_channel(self, ctx, channel: discord.TextChannel = None):
         """Set the channel for warnings.
 
@@ -64,13 +65,13 @@ class UniqueName(commands.Cog):
             await self.config.guild(ctx.guild).channel.set(None)
         await ctx.tick()
 
-    @unset.command(name="name")
+    @uniquenameset.command(name="name")
     async def unset_name(self, ctx: commands.Context, name: str):
         """Set a default name that will be set."""
         await self.config.guild(ctx.guild).name.set(name)
         await ctx.tick()
 
-    @unset.command(name="toggle")
+    @uniquenameset.command(name="toggle")
     async def unset_toggle(self, ctx: commands.Context, on_off: bool = None):
         """Toggle UniqueName for this server. 
 
@@ -87,6 +88,36 @@ class UniqueName(commands.Cog):
             await ctx.send("UniqueName is now enabled.")
         else:
             await ctx.send("UniqueName is now disabled.")
+
+    @uniquenameset.command(name="settings")
+    async def unset_settings(self, ctx: commands.Context):
+        data = await self.config.guild(ctx.guild).all()
+        channel = ctx.guild.get_channel(await self.config.guild(ctx.guild).channel())
+        if not channel:
+            channel = "None"
+        else:
+            channel = channel.mention
+        config_roles = await self.config.guild(ctx.guild).roles()
+        if len(config_roles) == 0:
+            roles = "None"
+        else:
+            roles = list()
+            for rid in config_roles:
+                role = ctx.guild.get_role(id=rid)
+                if role:
+                    roles.append(role.name)
+
+        embed = discord.Embed(colour=await ctx.embed_colour(), timestamp=datetime.now())
+        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
+        embed.title = "**__Unique Name settings:__**"
+        embed.set_footer(text="*required to function properly")
+
+        embed.add_field(name="Enabled*:", value=str(data["toggle"]))
+        embed.add_field(name="Protected roles*:", value=humanize_list(roles))
+        embed.add_field(name="Default name:", value=data["name"])
+        embed.add_field(name="Logging channel:", value=channel)
+
+        await ctx.send(embed)
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
