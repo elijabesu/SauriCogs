@@ -257,7 +257,6 @@ class Marriage(commands.Cog):
         embed.set_footer(text="*required to function properly")
         await ctx.send(embed)
 
-    @commands.cooldown(1, 60, commands.BucketType.member)
     @commands.guild_only()
     @commands.command()
     async def addabout(self, ctx: commands.Context, *, about: str):
@@ -269,7 +268,6 @@ class Marriage(commands.Cog):
         await self.config.member(ctx.author).about.set(about)
         await ctx.tick()
 
-    @commands.cooldown(1, 30, commands.BucketType.member)
     @commands.guild_only()
     @commands.command()
     async def about(self, ctx: commands.Context, member: discord.Member = None):
@@ -372,7 +370,6 @@ class Marriage(commands.Cog):
 
         await ctx.send(embed=e)
 
-    @commands.cooldown(1, 600, commands.BucketType.member)
     @commands.guild_only()
     @commands.command()
     async def exes(self, ctx: commands.Context, member: discord.Member = None):
@@ -395,7 +392,6 @@ class Marriage(commands.Cog):
             ex_text = humanize_list(exes)
         await ctx.send(f"{member.mention}'s exes are: {ex_text}")
 
-    @commands.cooldown(1, 600, commands.BucketType.member)
     @commands.guild_only()
     @commands.command()
     async def crush(self, ctx: commands.Context, member: discord.Member = None):
@@ -411,7 +407,6 @@ class Marriage(commands.Cog):
         await ctx.tick()
 
     @commands.max_concurrency(1, commands.BucketType.channel, True)
-    @commands.cooldown(1, 600, commands.BucketType.member)
     @commands.guild_only()
     @commands.command()
     async def marry(self, ctx: commands.Context, member: discord.Member):
@@ -504,7 +499,6 @@ class Marriage(commands.Cog):
         )
 
     @commands.max_concurrency(1, commands.BucketType.channel, True)
-    @commands.cooldown(1, 600, commands.BucketType.member)
     @commands.guild_only()
     @commands.command()
     async def divorce(
@@ -640,7 +634,6 @@ class Marriage(commands.Cog):
         )
 
     @commands.max_concurrency(1, commands.BucketType.channel, True)
-    @commands.cooldown(1, 600, commands.BucketType.member)
     @commands.guild_only()
     @commands.command()
     async def perform(
