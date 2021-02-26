@@ -44,9 +44,7 @@ class CookieStore(commands.Cog):
 
         If `on_off` is not provided, the state will be flipped."""
         target_state = (
-            on_off
-            if on_off
-            else not (await self.config.guild(ctx.guild).enabled())
+            on_off if on_off else not (await self.config.guild(ctx.guild).enabled())
         )
         await self.config.guild(ctx.guild).enabled.set(target_state)
         if target_state:
@@ -733,7 +731,8 @@ class CookieStore(commands.Cog):
                 timestamp=datetime.now(),
             )
             embed.set_author(
-                name=f"{ctx.guild.name}'s cookie store", icon_url=ctx.guild.icon_url,
+                name=f"{ctx.guild.name}'s cookie store",
+                icon_url=ctx.guild.icon_url,
             )
             page_list.append(embed)
         return page_list

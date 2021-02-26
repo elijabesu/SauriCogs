@@ -76,7 +76,7 @@ class Gallery(commands.Cog):
     @checks.bot_has_permissions(manage_messages=True)
     async def gallerytime(self, ctx: commands.Context, time: int):
         """Set how long (in seconds!!) the bot should wait before deleting non images.
-        
+
         0 to reset (default time)"""
         await self.config.guild(ctx.guild).time.set(time)
         await ctx.send(

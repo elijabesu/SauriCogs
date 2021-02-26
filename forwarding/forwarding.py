@@ -47,7 +47,6 @@ class Forwarding(commands.Cog):
         for owner_id in self.bot.owner_ids:
             await self.bot.get_user(owner_id).send(embed=embed)
 
-
     @commands.Cog.listener()
     async def on_message_without_command(self, message):
         if message.guild:
@@ -114,7 +113,7 @@ class Forwarding(commands.Cog):
         self, ctx: commands.Context, *, channel: Union[discord.TextChannel, int]
     ):
         """Set a channel in the current guild to be used for forwarding.
-        
+
         Use 0 to reset."""
         if isinstance(channel, int):
             if channel == 0:
@@ -131,7 +130,7 @@ class Forwarding(commands.Cog):
         self, ctx: commands.Context, *, role: Union[discord.Role, int]
     ):
         """Set a role to be pinged for forwarding.
-        
+
         Use 0 to reset."""
         if isinstance(role, int):
             if role == 0:
@@ -146,7 +145,7 @@ class Forwarding(commands.Cog):
         self, ctx: commands.Context, *, member: Union[discord.Member, int]
     ):
         """Set a role to be pinged for forwarding.
-        
+
         Use 0 to reset."""
         if isinstance(member, int):
             if member == 0:

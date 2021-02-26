@@ -141,9 +141,7 @@ class Counting(commands.Cog):
         If `on_off` is not provided, the state will be flipped.
         Optionally add how many seconds the bot should wait before deleting the message (0 for not deleting)."""
         target_state = (
-            on_off
-            if on_off
-            else not (await self.config.guild(ctx.guild).warning())
+            on_off if on_off else not (await self.config.guild(ctx.guild).warning())
         )
         await self.config.guild(ctx.guild).warning.set(target_state)
         if target_state:
@@ -165,9 +163,7 @@ class Counting(commands.Cog):
 
         If `on_off` is not provided, the state will be flipped.="""
         target_state = (
-            on_off
-            if on_off
-            else not (await self.config.guild(ctx.guild).topic())
+            on_off if on_off else not (await self.config.guild(ctx.guild).topic())
         )
         await self.config.guild(ctx.guild).topic.set(target_state)
         if target_state:
@@ -175,21 +171,21 @@ class Counting(commands.Cog):
         else:
             await ctx.send("Updating the channel's topic is now disabled.")
 
-#    @setcount.command(name="allowtext")
-#    async def setcount_allowtext(self, ctx: commands.Context, on_off: bool = None):
-#        """Toggle allowing text AFTER the number.
-#
-#        If `on_off` is not provided, the state will be flipped."""
-#        target_state = (
-#            on_off
-#            if on_off
-#            else not (await self.config.guild(ctx.guild).allow_text())
-#        )
-#        await self.config.guild(ctx.guild).allow_text.set(target_state)
-#        if target_state:
-#            await ctx.send("Text in messages is now allowed.")
-#        else:
-#            await ctx.send("Text in messages is no longer allowed.")
+    #    @setcount.command(name="allowtext")
+    #    async def setcount_allowtext(self, ctx: commands.Context, on_off: bool = None):
+    #        """Toggle allowing text AFTER the number.
+    #
+    #        If `on_off` is not provided, the state will be flipped."""
+    #        target_state = (
+    #            on_off
+    #            if on_off
+    #            else not (await self.config.guild(ctx.guild).allow_text())
+    #        )
+    #        await self.config.guild(ctx.guild).allow_text.set(target_state)
+    #        if target_state:
+    #            await ctx.send("Text in messages is now allowed.")
+    #        else:
+    #            await ctx.send("Text in messages is no longer allowed.")
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -217,20 +213,20 @@ class Counting(commands.Cog):
                     return
             except (TypeError, ValueError):
                 pass
-#                if await self.config.guild(message.guild).allow_text():
-#                    nums = [int(i) for i in message.content.split() if i.isdigit()]
-#                    if now != []:
-#                        now = nums[0]
-#                        if now - 1 == previous:
-#                            await self.config.guild(message.guild).previous.set(now)
-#                            await self.config.guild(message.guild).last.set(
-#                                message.author.id
-#                            )
-#                            n = now + 1
-#                            return await self._set_topic(now, goal, n, message.channel)
-#                        pass
-#                    else:
-#                        pass
+        #                if await self.config.guild(message.guild).allow_text():
+        #                    nums = [int(i) for i in message.content.split() if i.isdigit()]
+        #                    if now != []:
+        #                        now = nums[0]
+        #                        if now - 1 == previous:
+        #                            await self.config.guild(message.guild).previous.set(now)
+        #                            await self.config.guild(message.guild).last.set(
+        #                                message.author.id
+        #                            )
+        #                            n = now + 1
+        #                            return await self._set_topic(now, goal, n, message.channel)
+        #                        pass
+        #                    else:
+        #                        pass
         rid = await self.config.guild(message.guild).whitelist()
         if rid:
             role = message.guild.get_role(int(rid))

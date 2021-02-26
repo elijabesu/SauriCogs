@@ -43,13 +43,11 @@ class UserLog(commands.Cog):
 
     @userlogset.command(name="join")
     async def user_join_log(self, ctx: commands.Context, on_off: bool = None):
-        """Toggle logging when users join the current server. 
+        """Toggle logging when users join the current server.
 
         If `on_off` is not provided, the state will be flipped."""
         target_state = (
-            on_off
-            if on_off
-            else not (await self.config.guild(ctx.guild).join())
+            on_off if on_off else not (await self.config.guild(ctx.guild).join())
         )
         await self.config.guild(ctx.guild).join.set(target_state)
         if target_state:
@@ -63,9 +61,7 @@ class UserLog(commands.Cog):
 
         If `on_off` is not provided, the state will be flipped."""
         target_state = (
-            on_off
-            if on_off
-            else not (await self.config.guild(ctx.guild).leave())
+            on_off if on_off else not (await self.config.guild(ctx.guild).leave())
         )
         await self.config.guild(ctx.guild).leave.set(target_state)
         if target_state:
@@ -82,7 +78,9 @@ class UserLog(commands.Cog):
         else:
             channel = channel.mention
 
-        embed = discord.Embed(colour=await ctx.embed_colour(), timestamp=datetime.datetime.now())
+        embed = discord.Embed(
+            colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
+        )
         embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
         embed.title = "**__User Log settings:__**"
 
@@ -98,7 +96,9 @@ class UserLog(commands.Cog):
         join = await self.config.guild(member.guild).join()
         if not join:
             return
-        channel = member.guild.get_channel(await self.config.guild(member.guild).channel())
+        channel = member.guild.get_channel(
+            await self.config.guild(member.guild).channel()
+        )
         if not channel:
             return
         time = datetime.datetime.utcnow()
@@ -129,7 +129,9 @@ class UserLog(commands.Cog):
         leave = await self.config.guild(member.guild).leave()
         if not leave:
             return
-        channel = member.guild.get_channel(await self.config.guild(member.guild).channel())
+        channel = member.guild.get_channel(
+            await self.config.guild(member.guild).channel()
+        )
         if not channel:
             return
         time = datetime.datetime.utcnow()

@@ -29,7 +29,7 @@ class Pick(commands.Cog):
     @checks.mod_or_permissions(manage_roles=True)
     async def pick(self, ctx: commands.Context):
         """Pick a random user. **Output is a user ID.**
-        
+
         I suggest using [nestedcommands by tmerc](https://github.com/tmercswims/tmerc-cogs) (Example of usage `[p]say Congratulations <@$(pick)>! You won!`)"""
         winner = random.choice(ctx.guild.members)
         await ctx.send(f"{winner.id}")
@@ -48,7 +48,7 @@ class Pick(commands.Cog):
     @checks.mod_or_permissions(manage_roles=True)
     async def rpick(self, ctx: commands.Context):
         """Pick a random user with specified role. **Output is a user ID.**
-        
+
         I suggest using [nestedcommands by tmerc](https://github.com/tmercswims/tmerc-cogs) (Example of usage `[p]say Congratulations <@$(rpick)>! You won!`)"""
         role = get(ctx.guild.roles, id=await self.config.guild(ctx.guild).role())
         if len(role.members) == 0:

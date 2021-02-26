@@ -83,13 +83,11 @@ class Marriage(commands.Cog):
 
     @marryset.command(name="toggle")
     async def marryset_toggle(self, ctx: commands.Context, on_off: bool = None):
-        """Toggle Marriage for current server. 
-        
+        """Toggle Marriage for current server.
+
         If `on_off` is not provided, the state will be flipped."""
         target_state = (
-            on_off
-            if on_off
-            else not (await self.config.guild(ctx.guild).toggle())
+            on_off if on_off else not (await self.config.guild(ctx.guild).toggle())
         )
         await self.config.guild(ctx.guild).toggle.set(target_state)
         if target_state:
@@ -125,7 +123,7 @@ class Marriage(commands.Cog):
     @marryset.command(name="marprice")
     async def marryset_marprice(self, ctx: commands.Context, price: int):
         """Set the price for getting married.
-        
+
         With each past marriage, the cost of getting married is 50% more"""
         if price <= 0:
             return await ctx.send("Uh oh, price cannot be 0 or less.")
@@ -135,7 +133,7 @@ class Marriage(commands.Cog):
     @marryset.command(name="divprice")
     async def marryset_divprice(self, ctx: commands.Context, multiplier: int):
         """Set the MULTIPLIER for getting divorced.
-        
+
         This is a multiplier, not the price! Default is 2."""
         if multiplier <= 1:
             return await ctx.send("Uh oh, that ain't a valia multiplier.")
@@ -166,7 +164,9 @@ class Marriage(commands.Cog):
             "house",
         ]
         if action not in available:
-            return await ctx.send(f"Available actions/gifts are: {humanize_list(available)}")
+            return await ctx.send(
+                f"Available actions/gifts are: {humanize_list(available)}"
+            )
         if temper < 0:
             return await ctx.send("Uh oh, temper has to be 0 or more.")
         if temper > 100:
@@ -196,11 +196,15 @@ class Marriage(commands.Cog):
             "house",
         ]
         if action not in available:
-            return await ctx.send(f"Available actions/gifts are: {humanize_list(available)}")
+            return await ctx.send(
+                f"Available actions/gifts are: {humanize_list(available)}"
+            )
         if price < 0:
             return await ctx.send("Uh oh, price has to be 0 or more.")
         action_data = await self.config.guild(ctx.guild).shit.get_raw(action)
-        await self.config.guild(ctx.guild).shit.set_raw(action, value=[action_data[0], price])
+        await self.config.guild(ctx.guild).shit.set_raw(
+            action, value=[action_data[0], price]
+        )
         await ctx.tick()
 
     @marryset.command(name="settings")
@@ -214,38 +218,90 @@ class Marriage(commands.Cog):
 
         shit = data["shit"]
         actions = (
-            "Flirt: " + str(shit["flirt"][0]) + " temper, " +
-            str(shit["flirt"][1]) + " price" + "\n" +
-            "Fuck: " + str(shit["fuck"][0]) + " temper, " +
-            str(shit["fuck"][1]) + " price" + "\n" +
-            "Dinner: " + str(shit["dinner"][0]) + " temper, " +
-            str(shit["dinner"][1]) + " price" + "\n" +
-            "Date: " + str(shit["date"][0]) + " temper, " +
-            str(shit["date"][1]) + " price"
-            )
-
-        gifts = (
-            "Flower: " + str(shit["flower"][0]) + " temper, " +
-            str(shit["flower"][1]) + " price" + "\n" +
-            "Sweets: " + str(shit["sweets"][0]) + " temper, " +
-            str(shit["sweets"][1]) + " price" + "\n" +
-            "Alcohol: " + str(shit["alcohol"][0]) + " temper, " +
-            str(shit["alcohol"][1]) + " price" + "\n" +
-            "Love letter: " + str(shit["loveletter"][0]) + " temper, " +
-            str(shit["loveletter"][1]) + " price" + "\n" +
-            "Food: " + str(shit["food"][0]) + " temper, " +
-            str(shit["food"][1]) + " price" + "\n" +
-            "Makeup: " + str(shit["makeup"][0]) + " temper, " +
-            str(shit["makeup"][1]) + " price" + "\n" +
-            "Car: " + str(shit["car"][0]) + " temper, " +
-            str(shit["car"][1]) + " price" + "\n" +
-            "Yacht: " + str(shit["yacht"][0]) + " temper, " +
-            str(shit["yacht"][1]) + " price" + "\n" +
-            "House: " + str(shit["house"][0]) + " temper, " +
-            str(shit["house"][1]) + " price"
+            "Flirt: "
+            + str(shit["flirt"][0])
+            + " temper, "
+            + str(shit["flirt"][1])
+            + " price"
+            + "\n"
+            + "Fuck: "
+            + str(shit["fuck"][0])
+            + " temper, "
+            + str(shit["fuck"][1])
+            + " price"
+            + "\n"
+            + "Dinner: "
+            + str(shit["dinner"][0])
+            + " temper, "
+            + str(shit["dinner"][1])
+            + " price"
+            + "\n"
+            + "Date: "
+            + str(shit["date"][0])
+            + " temper, "
+            + str(shit["date"][1])
+            + " price"
         )
 
-        embed = discord.Embed(colour=await ctx.embed_colour(), timestamp=datetime.datetime.now())
+        gifts = (
+            "Flower: "
+            + str(shit["flower"][0])
+            + " temper, "
+            + str(shit["flower"][1])
+            + " price"
+            + "\n"
+            + "Sweets: "
+            + str(shit["sweets"][0])
+            + " temper, "
+            + str(shit["sweets"][1])
+            + " price"
+            + "\n"
+            + "Alcohol: "
+            + str(shit["alcohol"][0])
+            + " temper, "
+            + str(shit["alcohol"][1])
+            + " price"
+            + "\n"
+            + "Love letter: "
+            + str(shit["loveletter"][0])
+            + " temper, "
+            + str(shit["loveletter"][1])
+            + " price"
+            + "\n"
+            + "Food: "
+            + str(shit["food"][0])
+            + " temper, "
+            + str(shit["food"][1])
+            + " price"
+            + "\n"
+            + "Makeup: "
+            + str(shit["makeup"][0])
+            + " temper, "
+            + str(shit["makeup"][1])
+            + " price"
+            + "\n"
+            + "Car: "
+            + str(shit["car"][0])
+            + " temper, "
+            + str(shit["car"][1])
+            + " price"
+            + "\n"
+            + "Yacht: "
+            + str(shit["yacht"][0])
+            + " temper, "
+            + str(shit["yacht"][1])
+            + " price"
+            + "\n"
+            + "House: "
+            + str(shit["house"][0])
+            + " temper, "
+            + str(shit["house"][1])
+            + " price"
+        )
+
+        embed = discord.Embed(
+            colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
+        )
         embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
         embed.title = "**__Marriage settings:__**"
         embed.add_field(name="Enabled*:", value=str(data["toggle"]))

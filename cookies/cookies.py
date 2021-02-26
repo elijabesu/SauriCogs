@@ -58,7 +58,7 @@ class Cookies(commands.Cog):
                     if not role_multiplier:
                         role_multiplier = 1
                     multipliers.append(role_multiplier)
-                cookies += (amount * max(multipliers)) 
+                cookies += amount * max(multipliers)
             else:
                 minimum = int(await self.config.guild(ctx.guild).minimum())
                 maximum = int(await self.config.guild(ctx.guild).maximum())
@@ -104,7 +104,9 @@ class Cookies(commands.Cog):
                 f"Uh oh, {target.display_name} doesn't have any :cookie:"
             )
 
-        await self.config.member(ctx.author).next_steal.set(cur_time + await self.config.guild(ctx.guild).stealcd())
+        await self.config.member(ctx.author).next_steal.set(
+            cur_time + await self.config.guild(ctx.guild).stealcd()
+        )
 
         success_chance = random.randint(1, 100)
         if success_chance > 90:
@@ -200,7 +202,9 @@ class Cookies(commands.Cog):
         cookies += new_cookies
         await self.config.member(ctx.author).cookies.set(cookies)
         currency = await bank.get_currency_name(ctx.guild)
-        await ctx.send(f"You have exchanged {amount} {currency} and got {new_cookies} :cookie:\nYou now have {cookies} :cookie:")
+        await ctx.send(
+            f"You have exchanged {amount} {currency} and got {new_cookies} :cookie:\nYou now have {cookies} :cookie:"
+        )
 
     @commands.command(aliases=["cookieleaderboard"])
     @commands.guild_only()
@@ -317,13 +321,11 @@ class Cookies(commands.Cog):
 
     @setcookies.command(name="steal")
     async def setcookies_steal(self, ctx: commands.Context, on_off: bool = None):
-        """Toggle cookie stealing for current server. 
+        """Toggle cookie stealing for current server.
 
         If `on_off` is not provided, the state will be flipped."""
         target_state = (
-            on_off
-            if on_off
-            else not (await self.config.guild(ctx.guild).stealing())
+            on_off if on_off else not (await self.config.guild(ctx.guild).stealing())
         )
         await self.config.guild(ctx.guild).stealing.set(target_state)
         if target_state:
@@ -399,8 +401,10 @@ class Cookies(commands.Cog):
             return await ctx.send("Uh oh, rate has to be more than 0.")
         await self.config.guild(ctx.guild).rate.set(rate)
         currency = await bank.get_currency_name(ctx.guild)
-        test_amount = 100*rate
-        await ctx.send(f"Set the exchange rate {rate}. This means that 100 {currency} will give you {test_amount} :cookie:")
+        test_amount = 100 * rate
+        await ctx.send(
+            f"Set the exchange rate {rate}. This means that 100 {currency} will give you {test_amount} :cookie:"
+        )
 
     @setcookies.group(autohelp=True)
     async def role(self, ctx):
@@ -434,12 +438,14 @@ class Cookies(commands.Cog):
         self, ctx: commands.Context, role: discord.Role, multiplier: int
     ):
         """Set cookies multipler for role. Disabled when random amount is enabled.
-        
+
         Default is 1 (aka the same amount)."""
         if multiplier <= 0:
             return await ctx.send("Uh oh, multiplier has to be more than 0.")
         await self.config.role(role).multiplier.set(multiplier)
-        await ctx.send(f"Users with {role.name} will now get {multiplier} times more :cookie:")
+        await ctx.send(
+            f"Users with {role.name} will now get {multiplier} times more :cookie:"
+        )
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):

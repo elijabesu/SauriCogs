@@ -47,7 +47,9 @@ class Pingable(commands.Cog):
         await ctx.send(f"{role.name} removed from the pingable roles.")
 
     @pingableset.command(name="pingin")
-    async def pingableset_pingin(self, ctx: commands.Context, role: discord.Role, channel: discord.TextChannel):
+    async def pingableset_pingin(
+        self, ctx: commands.Context, role: discord.Role, channel: discord.TextChannel
+    ):
         """Make a role pinable in a specified channel only."""
         await self.config.role(role).pingable.set(True)
         await self.config.role(role).channel.set(channel.id)
@@ -66,13 +68,19 @@ class Pingable(commands.Cog):
                 else:
                     roles_channel += role.name + "(" + channel.mention + ")\n"
 
-        embed = discord.Embed(colour=await ctx.embed_colour(), timestamp=datetime.datetime.now())
+        embed = discord.Embed(
+            colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
+        )
         embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
         embed.title = "**__Pingable settings:__**"
         embed.set_footer(text="*required to function properly")
 
-        embed.add_field(name="Pingable roles everywhere:", value=roles_nochannel.strip())
-        embed.add_field(name="Pingable roles with specified channel:", value=roles_channel.strip())
+        embed.add_field(
+            name="Pingable roles everywhere:", value=roles_nochannel.strip()
+        )
+        embed.add_field(
+            name="Pingable roles with specified channel:", value=roles_channel.strip()
+        )
 
         await ctx.send(embed=embed)
 

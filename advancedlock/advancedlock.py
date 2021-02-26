@@ -51,13 +51,11 @@ class AdvancedLock(commands.Cog):
     @commands.guild_only()
     @setlock.command(name="toggle")
     async def setlock_toggle(self, ctx: commands.Context, on_off: bool = None):
-        """ Toggle Lock for current server. 
-        
+        """Toggle Lock for current server.
+
         If `on_off` is not provided, the state will be flipped."""
         target_state = (
-            on_off
-            if on_off
-            else not (await self.config.guild(ctx.guild).toggle())
+            on_off if on_off else not (await self.config.guild(ctx.guild).toggle())
         )
         await self.config.guild(ctx.guild).toggle.set(target_state)
         has_been_set = await self.config.guild(ctx.guild).has_been_set()
@@ -106,7 +104,9 @@ class AdvancedLock(commands.Cog):
                     return m.author == ctx.author and m.channel == ctx.channel
 
                 try:
-                    answer = await self.bot.wait_for("message", timeout=120, check=check)
+                    answer = await self.bot.wait_for(
+                        "message", timeout=120, check=check
+                    )
                 except asyncio.TimeoutError:
                     return await ctx.send("You took too long. Try again, please.")
                 arole_list = await self._get_roles_from_content(ctx, answer.content)
@@ -143,7 +143,9 @@ class AdvancedLock(commands.Cog):
                         return m.author == ctx.author and m.channel == ctx.channel
 
                     try:
-                        answer = await self.bot.wait_for("message", timeout=120, check=check)
+                        answer = await self.bot.wait_for(
+                            "message", timeout=120, check=check
+                        )
                     except asyncio.TimeoutError:
                         return await ctx.send("You took too long. Try again, please.")
                     drole_list = await self._get_roles_from_content(ctx, answer.content)
@@ -496,8 +498,8 @@ class AdvancedLock(commands.Cog):
     @commands.guild_only()
     @checks.bot_has_permissions(manage_channels=True)
     async def lock(self, ctx: commands.Context, seconds=0):
-        """ Lock `@everyone` from sending messages.
-        
+        """Lock `@everyone` from sending messages.
+
         Optionally, you can set how many seconds the channel should stay locked for."""
         has_been_set = await self.config.guild(ctx.guild).has_been_set()
         if not has_been_set:

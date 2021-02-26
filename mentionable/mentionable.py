@@ -34,8 +34,8 @@ class Mentionable(commands.Cog):
     @checks.bot_has_permissions(manage_roles=True)
     async def unmention(self, ctx: commands.Context, *, role: discord.Role):
         """
-       Makes that role unmentionable
-       """
+        Makes that role unmentionable
+        """
         if not role.mentionable:
             await ctx.send(f"{role} is already unmentionable.")
         else:

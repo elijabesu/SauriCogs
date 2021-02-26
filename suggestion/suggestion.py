@@ -1,14 +1,14 @@
 import asyncio
 import discord
+import datetime
 
 from typing import Optional
 from discord.utils import get
-from datetime import timedelta
 
 from redbot.core import Config, checks, commands
+from redbot.core.utils.chat_formatting import humanize_list
 from redbot.core.utils.predicates import MessagePredicate, ReactionPredicate
 from redbot.core.utils.menus import start_adding_reactions
-from redbot.core.utils.antispam import AntiSpam
 
 from redbot.core.bot import Red
 
@@ -17,19 +17,17 @@ class Suggestion(commands.Cog):
     """
     Simple suggestion box, basically.
 
-    **Use `[p]setsuggest setup` first.**
     Only admins can approve or reject suggestions.
     """
 
     __author__ = "saurichable"
-    __version__ = "1.4.8"
+    __version__ = "1.5.0"
 
     def __init__(self, bot: Red):
         self.bot = bot
         self.config = Config.get_conf(
             self, identifier=2115656421364, force_registration=True
         )
-        self.antispam = {}
         self.config.register_guild(
             same=False,
             suggest_id=None,
@@ -44,7 +42,7 @@ class Suggestion(commands.Cog):
         self.config.register_global(
             toggle=False, server_id=None, channel_id=None, next_id=1, ignore=[]
         )
-        self.config.init_custom("SUGGESTION", 2) # server_id, suggestion_id
+        self.config.init_custom("SUGGESTION", 2)  # server_id, suggestion_id
         self.config.register_custom(
             "SUGGESTION",
             author=[],
@@ -79,12 +77,6 @@ class Suggestion(commands.Cog):
             return await ctx.send(
                 "Uh oh, looks like your Admins haven't added the required channel."
             )
-        if ctx.guild not in self.antispam:
-            self.antispam[ctx.guild] = {}
-        if ctx.author not in self.antispam[ctx.guild]:
-            self.antispam[ctx.guild][ctx.author] = AntiSpam([(timedelta(days=1), 6)])
-        if self.antispam[ctx.guild][ctx.author].spammy:
-            return await ctx.send("Uh oh, you're doing this way too frequently.")
         embed = discord.Embed(color=await ctx.embed_colour(), description=suggestion)
         embed.set_author(
             name=f"Suggestion by {ctx.author.display_name}",
@@ -118,7 +110,6 @@ class Suggestion(commands.Cog):
         await self.config.custom("SUGGESTION", server, s_id).stext.set(suggestion)
         await self.config.custom("SUGGESTION", server, s_id).msg_id.set(msg.id)
 
-        self.antispam[ctx.guild][ctx.author].stamp()
         if await self.config.guild(ctx.guild).delete_suggest():
             await ctx.message.delete()
         else:
@@ -185,7 +176,9 @@ class Suggestion(commands.Cog):
             op_avatar = ctx.guild.icon_url
         embed.set_author(name=f"Approved suggestion by {op_name}", icon_url=op_avatar)
 
-        embed.add_field(name="Results:", value=await self._get_results(ctx, oldmsg), inline=False)
+        embed.add_field(
+            name="Results:", value=await self._get_results(ctx, oldmsg), inline=False
+        )
 
         if is_global:
             await oldmsg.edit(content=content, embed=embed)
@@ -272,7 +265,9 @@ class Suggestion(commands.Cog):
             op_avatar = ctx.guild.icon_url
         embed.set_author(name=f"Rejected suggestion by {op_name}", icon_url=op_avatar)
 
-        embed.add_field(name="Results:", value=await self._get_results(ctx, oldmsg), inline=False)
+        embed.add_field(
+            name="Results:", value=await self._get_results(ctx, oldmsg), inline=False
+        )
 
         if reason:
             embed.add_field(name="Reason:", value=reason, inline=False)
@@ -323,7 +318,7 @@ class Suggestion(commands.Cog):
         reason: str,
     ):
         """Add a reason to a rejected suggestion.
-        
+
         Only works for non global suggestions."""
         if is_global:
             if await self.config.toggle():
@@ -350,7 +345,9 @@ class Suggestion(commands.Cog):
                 )
         msg_id = await self.config.custom("SUGGESTION", server, suggestion_id).msg_id()
         if msg_id != 0:
-            if not await self.config.custom("SUGGESTION", server, suggestion_id).rejected():
+            if not await self.config.custom(
+                "SUGGESTION", server, suggestion_id
+            ).rejected():
                 return await ctx.send("This suggestion hasn't been rejected.")
             if await self.config.custom("SUGGESTION", server, suggestion_id).reason():
                 return await ctx.send("This suggestion already has a reason.")
@@ -381,15 +378,15 @@ class Suggestion(commands.Cog):
         await ctx.send(content=content, embed=embed)
 
     @checks.admin_or_permissions(administrator=True)
-    @commands.group(autohelp=True)
+    @commands.group(autohelp=True, aliases=["setsuggest"])
     @commands.guild_only()
-    async def setsuggest(self, ctx: commands.Context):
-        """Suggestion settings"""
+    async def suggestset(self, ctx: commands.Context):
+        """Various Suggestion settings"""
         pass
 
     @checks.bot_has_permissions(manage_channels=True)
-    @setsuggest.command(name="setup")
-    async def setsuggest_setup(self, ctx: commands.Context):
+    @suggestset.command(name="setup")
+    async def suggestset_setup(self, ctx: commands.Context):
         """ Go through the initial setup process. """
         await self.config.guild(ctx.guild).same.set(False)
         await self.config.guild(ctx.guild).suggest_id.set(None)
@@ -588,8 +585,10 @@ class Suggestion(commands.Cog):
         )
 
     @checks.bot_has_permissions(add_reactions=True)
-    @setsuggest.command(name="upemoji")
-    async def setsuggest_upemoji(self, ctx: commands.Context, up_emoji: discord.Emoji = None):
+    @suggestset.command(name="upemoji")
+    async def suggestset_upemoji(
+        self, ctx: commands.Context, up_emoji: discord.Emoji = None
+    ):
         """ Set custom reactions emoji instead of ✅. """
         if not up_emoji:
             await self.config.guild(ctx.guild).up_emoji.set(None)
@@ -602,8 +601,10 @@ class Suggestion(commands.Cog):
         await ctx.tick()
 
     @checks.bot_has_permissions(add_reactions=True)
-    @setsuggest.command(name="downemoji")
-    async def setsuggest_downemoji(self, ctx: commands.Context, down_emoji: discord.Emoji = None):
+    @suggestset.command(name="downemoji")
+    async def suggestset_downemoji(
+        self, ctx: commands.Context, down_emoji: discord.Emoji = None
+    ):
         """ Set custom reactions emoji instead of ❎. """
         if not down_emoji:
             await self.config.guild(ctx.guild).up_emoji.set(None)
@@ -616,11 +617,13 @@ class Suggestion(commands.Cog):
         await ctx.tick()
 
     @checks.bot_has_permissions(manage_messages=True)
-    @setsuggest.command(name="autodelete")
-    async def setsuggest_autodelete(self, ctx: commands.Context, on_off: bool = None):
+    @suggestset.command(name="autodelete")
+    async def suggestset_autodelete(self, ctx: commands.Context, on_off: bool = None):
         """ Toggle whether after `[p]suggest`, the bot deletes the message. """
         target_state = (
-            on_off if on_off else not (await self.config.guild(ctx.guild).delete_suggest())
+            on_off
+            if on_off
+            else not (await self.config.guild(ctx.guild).delete_suggest())
         )
         await self.config.guild(ctx.guild).delete_suggest.set(target_state)
         if target_state:
@@ -628,32 +631,57 @@ class Suggestion(commands.Cog):
         else:
             await ctx.send("Auto deletion is now disabled.")
 
-    @setsuggest.group(autohelp=True)
+    @suggestset.coomand(name="settings")
+    async def suggestset_settings(self, ctx: command.Context):
+        data = await self.config.guild(ctx.guild).all()
+        # same=False,
+        # suggest_id=None,
+        # approve_id=None,
+        # reject_id=None,
+        # next_id=1,
+        # up_emoji=None,
+        # down_emoji=None,
+        # delete_suggest=False,
+        # delete_suggestion=True,
+        embed = discord.Embed(
+            colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
+        )
+        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
+        embed.title = "**__Suggestion settings (guild):__**"
+
+        embed.set_footer(text="*required to function properly")
+        embed.add_field(name="Same*:", value=data["toggle"])
+        embed.add_field(name="Suggest channel*:", value=channel)
+        embed.add_field(
+            name="Ignored servers:", value=humanize_list(servers), inline=False
+        )
+
+        await ctx.send(embed=embed)
+
+    @suggestset.group(autohelp=True)
     @checks.is_owner()
     @commands.guild_only()
-    async def setglobal(self, ctx: commands.Context):
+    async def globalset(self, ctx: commands.Context):
         """Global suggestions settings.
 
         There is nothing like approved or rejected channels because global suggestions are meant to be for the bot only and will only work if it is sent in a server where normal suggestions are disabled."""
         pass
 
-    @setglobal.command(name="toggle")
-    async def setsuggest_setglobal_toggle(
+    @globalset.command(name="toggle")
+    async def suggestset_globalset_toggle(
         self, ctx: commands.Context, on_off: bool = None
     ):
-        """Toggle global suggestions. 
+        """Toggle global suggestions.
         If `on_off` is not provided, the state will be flipped."""
-        target_state = (
-            on_off if on_off else not (await self.config.toggle())
-        )
+        target_state = on_off if on_off else not (await self.config.toggle())
         await self.config.toggle.set(target_state)
         if target_state:
             await ctx.send("Global suggestions are now enabled.")
         else:
             await ctx.send("Global suggestions are now disabled.")
 
-    @setglobal.command(name="channel")
-    async def setsuggest_setglobal_channel(
+    @globalset.command(name="channel")
+    async def suggestset_globalset_channel(
         self,
         ctx: commands.Context,
         server: discord.Guild = None,
@@ -668,8 +696,8 @@ class Suggestion(commands.Cog):
         await self.config.channel_id.set(channel.id)
         await ctx.send(f"{channel.mention} has been saved for global suggestions.")
 
-    @setglobal.command(name="ignore")
-    async def setsuggest_setglobal_ignore(
+    @globalset.command(name="ignore")
+    async def suggestset_globalset_ignore(
         self, ctx: commands.Context, server: discord.Guild = None
     ):
         """ Ignore suggestions from the server. """
@@ -682,8 +710,8 @@ class Suggestion(commands.Cog):
         else:
             await ctx.send(f"{server.name} is already in the ignored list.")
 
-    @setglobal.command(name="unignore")
-    async def setsuggest_setglobal_unignore(
+    @globalset.command(name="unignore")
+    async def suggestset_globalset_unignore(
         self, ctx: commands.Context, server: discord.Guild = None
     ):
         """ Remove server from the ignored list. """
@@ -695,6 +723,40 @@ class Suggestion(commands.Cog):
             await ctx.send(f"{server.name} has been removed from the ignored list.")
         else:
             await ctx.send(f"{server.name} already isn't in the ignored list.")
+
+    @globalset.coomand(name="settings")
+    async def suggestset_globalset_settings(self, ctx: command.Context):
+        data = await self.config.all()
+        global_guild = self.bot.get_guild(data["server_id"])
+        if not global_guild:
+            channel = "None"
+        else:
+            channel = global_guild.get_channel(data["channel_id"])
+            if not channel:
+                channel = "None"
+            else:
+                channel = channel.name(global_guild.name)
+
+        servers = list()
+        for sid in data["ignore"]:
+            server = self.bot.get_guild(sid)
+            if server:
+                servers.append(server.name)
+
+        embed = discord.Embed(
+            colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
+        )
+        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
+        embed.title = "**__Suggestion settings (global):__**"
+
+        embed.set_footer(text="*required to function properly")
+        embed.add_field(name="Enabled*:", value=data["toggle"])
+        embed.add_field(name="Channel*:", value=channel)
+        embed.add_field(
+            name="Ignored servers:", value=humanize_list(servers), inline=False
+        )
+
+        await ctx.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
@@ -762,11 +824,9 @@ class Suggestion(commands.Cog):
             if await self.config.custom("SUGGESTION", server, suggestion_id).approved():
                 atext = f"Approved suggestion by {op_name}"
             else:
-                if (
-                    await self.config.custom(
-                        "SUGGESTION", server, suggestion_id
-                    ).rejected()
-                ):
+                if await self.config.custom(
+                    "SUGGESTION", server, suggestion_id
+                ).rejected():
                     atext = f"Rejected suggestion by {op_name}"
         embed = discord.Embed(
             color=await ctx.embed_colour(),
@@ -794,11 +854,13 @@ class Suggestion(commands.Cog):
 
         for reaction in message.reactions:
             if reaction.emoji == up_emoji:
-                up_count = reaction.count - 1 # minus the bot
+                up_count = reaction.count - 1  # minus the bot
             if reaction.emoji == down_emoji:
-                down_count = reaction.count - 1 # minus the bot
+                down_count = reaction.count - 1  # minus the bot
 
-        results = str(up_count) + "x " + up_emoji + "\n" + str(down_count) + "x " + down_emoji
+        results = (
+            str(up_count) + "x " + up_emoji + "\n" + str(down_count) + "x " + down_emoji
+        )
         return results
 
     async def _get_emojis(self, ctx):

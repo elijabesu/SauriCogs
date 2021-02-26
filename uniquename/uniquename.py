@@ -4,6 +4,7 @@ import datetime
 from redbot.core import Config, checks, commands
 from redbot.core.utils.chat_formatting import humanize_list
 
+
 class UniqueName(commands.Cog):
     """Deny members' names to be the same as your Moderators'."""
 
@@ -16,7 +17,9 @@ class UniqueName(commands.Cog):
             self, identifier=58462132145646132, force_registration=True
         )
 
-        self.config.register_guild(toggle=False, roles=[], name="username", channel=None)
+        self.config.register_guild(
+            toggle=False, roles=[], name="username", channel=None
+        )
         self.config.register_global(guilds=[])
 
     @commands.max_concurrency(1, commands.BucketType.guild, wait=True)
@@ -56,7 +59,9 @@ class UniqueName(commands.Cog):
         await ctx.send(f"List of roles that are protected:\n{pretty_roles}")
 
     @uniquenameset.command(name="channel")
-    async def unset_channel(self, ctx: commands.Context, channel: discord.TextChannel = None):
+    async def unset_channel(
+        self, ctx: commands.Context, channel: discord.TextChannel = None
+    ):
         """Set the channel for warnings.
 
         If the channel is not provided, logging will be disabled."""
@@ -74,13 +79,11 @@ class UniqueName(commands.Cog):
 
     @uniquenameset.command(name="toggle")
     async def unset_toggle(self, ctx: commands.Context, on_off: bool = None):
-        """Toggle UniqueName for this server. 
+        """Toggle UniqueName for this server.
 
         If `on_off` is not provided, the state will be flipped."""
         target_state = (
-            on_off
-            if on_off
-            else not (await self.config.guild(ctx.guild).toggle())
+            on_off if on_off else not (await self.config.guild(ctx.guild).toggle())
         )
         await self.config.guild(ctx.guild).toggle.set(target_state)
         async with self.config.guilds() as guilds:
@@ -108,7 +111,9 @@ class UniqueName(commands.Cog):
                 if role:
                     roles.append(role.name)
 
-        embed = discord.Embed(colour=await ctx.embed_colour(), timestamp=datetime.datetime.now())
+        embed = discord.Embed(
+            colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
+        )
         embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
         embed.title = "**__Unique Name settings:__**"
         embed.set_footer(text="*required to function properly")
@@ -135,7 +140,9 @@ class UniqueName(commands.Cog):
                     return
         names = await self._build_name_list(before.guild)
         name = await self.config.guild(before.guild).name()
-        channel = before.guild.get_channel(await self.config.guild(before.guild).channel())
+        channel = before.guild.get_channel(
+            await self.config.guild(before.guild).channel()
+        )
         if not after.nick:
             return
         if after.nick not in names:
