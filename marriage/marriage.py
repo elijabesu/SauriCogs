@@ -17,7 +17,7 @@ class Marriage(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.4.7"
+    __version__ = "1.5.0"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -72,15 +72,16 @@ class Marriage(commands.Cog):
     # "shit": [temper, price]
     # "gift": owned pcs
 
-    @commands.group(autohelp=True)
+    @commands.max_concurrency(1, commands.BucketType.guild, True)
+    @commands.group(autohelp=True, aliases=["marriageset", "setmarry"])
     @commands.guild_only()
     @checks.admin_or_permissions(manage_guild=True)
-    async def marriage(self, ctx):
+    async def marryset(self, ctx):
         """Various Marriage settings."""
         pass
 
-    @marriage.command(name="toggle")
-    async def marriage_toggle(self, ctx: commands.Context, on_off: bool = None):
+    @marryset.command(name="toggle")
+    async def marryset_toggle(self, ctx: commands.Context, on_off: bool = None):
         """Toggle Marriage for current server. 
         
         If `on_off` is not provided, the state will be flipped."""
@@ -96,8 +97,8 @@ class Marriage(commands.Cog):
             await ctx.send("Marriage is now disabled.")
 
     @checks.is_owner()
-    @marriage.command(name="currency")
-    async def marriage_currency(self, ctx: commands.Context, currency: int):
+    @marryset.command(name="currency")
+    async def marryset_currency(self, ctx: commands.Context, currency: int):
         """Set the currency that should be used. 0 for Red's economy, 1 for SauriCogs' cookies"""
         if currency != 0:
             if currency != 1:
@@ -110,8 +111,8 @@ class Marriage(commands.Cog):
         await self.config.guild(ctx.guild).currency.set(currency)
         await ctx.tick()
 
-    @marriage.command(name="multiple")
-    async def marriage_multiple(self, ctx: commands.Context, state: bool):
+    @marryset.command(name="multiple")
+    async def marryset_multiple(self, ctx: commands.Context, state: bool):
         """Enable/disable whether members can be married to multiple people at once."""
         if not state:
             text = "Members cannot marry multiple people."
@@ -120,8 +121,8 @@ class Marriage(commands.Cog):
         await self.config.guild(ctx.guild).multi.set(state)
         await ctx.send(text)
 
-    @marriage.command(name="marprice")
-    async def marriage_marprice(self, ctx: commands.Context, price: int):
+    @marryset.command(name="marprice")
+    async def marryset_marprice(self, ctx: commands.Context, price: int):
         """Set the price for getting married.
         
         With each past marriage, the cost of getting married is 50% more"""
@@ -130,8 +131,8 @@ class Marriage(commands.Cog):
         await self.config.guild(ctx.guild).marprice.set(price)
         await ctx.tick()
 
-    @marriage.command(name="divprice")
-    async def marriage_divprice(self, ctx: commands.Context, multiplier: int):
+    @marryset.command(name="divprice")
+    async def marryset_divprice(self, ctx: commands.Context, multiplier: int):
         """Set the MULTIPLIER for getting divorced.
         
         This is a multiplier, not the price! Default is 2."""
@@ -140,8 +141,8 @@ class Marriage(commands.Cog):
         await self.config.guild(ctx.guild).divprice.set(multiplier)
         await ctx.tick()
 
-    @marriage.command(name="changetemper")
-    async def marriage_changetemper(
+    @marryset.command(name="changetemper")
+    async def marryset_changetemper(
         self, ctx: commands.Context, action: str, temper: int
     ):
         """Set the action's/gift's temper
@@ -173,8 +174,8 @@ class Marriage(commands.Cog):
         action[0] = temper
         await self.config.guild(ctx.guild).shit.get_raw(action)
 
-    @marriage.command(name="changeprice")
-    async def marriage_changeprice(
+    @marryset.command(name="changeprice")
+    async def marryset_changeprice(
         self, ctx: commands.Context, action: str, price: int
     ):
         """Set the action's/gift's price"""
@@ -201,6 +202,62 @@ class Marriage(commands.Cog):
         await self.config.guild(ctx.guild).shit.set_raw(action, value=[action_data[0], price])
         await ctx.tick()
 
+    @marryset.command(name="settings")
+    async def marryset_settings(self, ctx: commands.Context):
+        """See current settings."""
+        data = await self.config.guild(ctx.guild).all()
+        if data["currency"] == 0:
+            currency_used = "Red's economy"
+        else:
+            currency_used = "SauriCogs' cookies"
+
+        shit = data["shit"]
+        actions = (
+            "Flirt: " + str(shit["flirt"][0]) + " temper, " +
+            str(shit["flirt"][1]) + " price" + "\n" +
+            "Fuck: " + str(shit["fuck"][0]) + " temper, " +
+            str(shit["fuck"][1]) + " price" + "\n" +
+            "Dinner: " + str(shit["dinner"][0]) + " temper, " +
+            str(shit["dinner"][1]) + " price" + "\n" +
+            "Date: " + str(shit["date"][0]) + " temper, " +
+            str(shit["date"][1]) + " price"
+            )
+
+        gifts = (
+            "Flower: " + str(shit["flower"][0]) + " temper, " +
+            str(shit["flower"][1]) + " price" + "\n" +
+            "Sweets: " + str(shit["sweets"][0]) + " temper, " +
+            str(shit["sweets"][1]) + " price" + "\n" +
+            "Alcohol: " + str(shit["alcohol"][0]) + " temper, " +
+            str(shit["alcohol"][1]) + " price" + "\n" +
+            "Love letter: " + str(shit["loveletter"][0]) + " temper, " +
+            str(shit["loveletter"][1]) + " price" + "\n" +
+            "Food: " + str(shit["food"][0]) + " temper, " +
+            str(shit["food"][1]) + " price" + "\n" +
+            "Makeup: " + str(shit["makeup"][0]) + " temper, " +
+            str(shit["makeup"][1]) + " price" + "\n" +
+            "Car: " + str(shit["car"][0]) + " temper, " +
+            str(shit["car"][1]) + " price" + "\n" +
+            "Yacht: " + str(shit["yacht"][0]) + " temper, " +
+            str(shit["yacht"][1]) + " price" + "\n" +
+            "House: " + str(shit["house"][0]) + " temper, " +
+            str(shit["house"][1]) + " price"
+        )
+
+        embed = discord.Embed(colour=await ctx.embed_colour(), timestamp=datetime.now())
+        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
+        embed.title = "**__Marriage settings:__**"
+        embed.add_field(name="Enabled*:", value=str(data["toggle"]))
+        embed.add_field(name="Currency:", value=currency_used)
+        embed.add_field(name="Marriage price:", value=str(data["marprice"]))
+        embed.add_field(name="Divorce price:", value=str(data["divprice"]))
+        embed.add_field(name="Multiple spouses:", value=str(data["multi"]))
+        embed.add_field(name="Actions:", value=actions)
+        embed.add_field(name="Gifts:", value=gifts)
+        embed.set_footer(text="*required to function properly")
+        await ctx.send(embed)
+
+    @commands.cooldown(1, 60, commands.BucketType.member)
     @commands.guild_only()
     @commands.command()
     async def addabout(self, ctx: commands.Context, *, about: str):
@@ -212,6 +269,7 @@ class Marriage(commands.Cog):
         await self.config.member(ctx.author).about.set(about)
         await ctx.tick()
 
+    @commands.cooldown(1, 30, commands.BucketType.member)
     @commands.guild_only()
     @commands.command()
     async def about(self, ctx: commands.Context, member: discord.Member = None):
@@ -314,6 +372,7 @@ class Marriage(commands.Cog):
 
         await ctx.send(embed=e)
 
+    @commands.cooldown(1, 600, commands.BucketType.member)
     @commands.guild_only()
     @commands.command()
     async def exes(self, ctx: commands.Context, member: discord.Member = None):
@@ -336,6 +395,7 @@ class Marriage(commands.Cog):
             ex_text = humanize_list(exes)
         await ctx.send(f"{member.mention}'s exes are: {ex_text}")
 
+    @commands.cooldown(1, 600, commands.BucketType.member)
     @commands.guild_only()
     @commands.command()
     async def crush(self, ctx: commands.Context, member: discord.Member = None):
@@ -350,6 +410,8 @@ class Marriage(commands.Cog):
             await self.config.member(ctx.author).crush.set(member.id)
         await ctx.tick()
 
+    @commands.max_concurrency(1, commands.BucketType.channel, True)
+    @commands.cooldown(1, 600, commands.BucketType.member)
     @commands.guild_only()
     @commands.command()
     async def marry(self, ctx: commands.Context, member: discord.Member):
@@ -441,6 +503,8 @@ class Marriage(commands.Cog):
             f"Congrats! :tada:\n*You both paid {end_amount}.*"
         )
 
+    @commands.max_concurrency(1, commands.BucketType.channel, True)
+    @commands.cooldown(1, 600, commands.BucketType.member)
     @commands.guild_only()
     @commands.command()
     async def divorce(
@@ -575,6 +639,8 @@ class Marriage(commands.Cog):
             f":broken_heart: {ctx.author.mention} and {member.mention} got divorced...\n*{end_amount}.*"
         )
 
+    @commands.max_concurrency(1, commands.BucketType.channel, True)
+    @commands.cooldown(1, 600, commands.BucketType.member)
     @commands.guild_only()
     @commands.command()
     async def perform(
