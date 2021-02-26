@@ -12,7 +12,7 @@ class UserLog(commands.Cog):
     """Log when users join/leave into your specified channel."""
 
     __author__ = "saurichable"
-    __version__ = "1.0.3"
+    __version__ = "1.1.0"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -22,14 +22,15 @@ class UserLog(commands.Cog):
 
         self.config.register_guild(channel=None, join=True, leave=True)
 
+    @commands.max_concurrency(1, commands.BucketType.guild, True)
     @commands.group(autohelp=True)
     @commands.guild_only()
     @checks.admin_or_permissions(manage_guild=True)
-    async def userlog(self, ctx):
+    async def userlogset(self, ctx):
         """Manage user log settings."""
         pass
 
-    @userlog.command(name="channel")
+    @userlogset.command(name="channel")
     async def user_channel_log(self, ctx, channel: discord.TextChannel = None):
         """Set the channel for logs.
 
@@ -40,7 +41,7 @@ class UserLog(commands.Cog):
             await self.config.guild(ctx.guild).channel.set(None)
         await ctx.tick()
 
-    @userlog.command(name="join")
+    @userlogset.command(name="join")
     async def user_join_log(self, ctx: commands.Context, on_off: bool = None):
         """Toggle logging when users join the current server. 
 
@@ -56,7 +57,7 @@ class UserLog(commands.Cog):
         else:
             await ctx.send("Logging users joining is now disabled.")
 
-    @userlog.command(name="leave")
+    @userlogset.command(name="leave")
     async def user_leave_log(self, ctx: commands.Context, on_off: bool = None):
         """Toggle logging when users leave the current server.
 
@@ -71,6 +72,25 @@ class UserLog(commands.Cog):
             await ctx.send("Logging users leaving is now enabled.")
         else:
             await ctx.send("Logging users leaving is now disabled.")
+
+    @userlogset.command(name="settings")
+    async def user_settings(self, ctx: commands.Context):
+        data = await self.config.guild(ctx.guild).all()
+        channel = member.guild.get_channel(await self.config.guild(ctx.guild).channel())
+        if not channel:
+            channel = "None"
+        else:
+            channel = channel.mention
+
+        embed = discord.Embed(colour=await ctx.embed_colour(), timestamp=datetime.now())
+        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
+        embed.title = "**__User Log settings:__**"
+        embed.set_footer(text="*required to function properly")
+        embed.add_field(name="Channel*:", value=channel)
+        embed.add_field(name="Join:", value=str(data["join"]))
+        embed.add_field(name="Leave:", value=str(data["leave"]))
+
+        await ctx.send(embed)
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
