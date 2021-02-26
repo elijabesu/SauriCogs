@@ -118,7 +118,7 @@ class UniqueName(commands.Cog):
         embed.add_field(name="Default name:", value=data["name"])
         embed.add_field(name="Logging channel:", value=channel)
 
-        await ctx.send(embed)
+        await ctx.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):

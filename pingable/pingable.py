@@ -74,7 +74,7 @@ class Pingable(commands.Cog):
         embed.add_field(name="Pingable roles everywhere:", value=roles_nochannel.strip())
         embed.add_field(name="Pingable roles with specified channel:", value=roles_channel.strip())
 
-        await ctx.send(embed)
+        await ctx.send(embed=embed)
 
     @commands.cooldown(1, 1800, commands.BucketType.member)
     @commands.command()

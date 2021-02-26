@@ -91,7 +91,7 @@ class UserLog(commands.Cog):
         embed.add_field(name="Join:", value=str(data["join"]))
         embed.add_field(name="Leave:", value=str(data["leave"]))
 
-        await ctx.send(embed)
+        await ctx.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_member_join(self, member):

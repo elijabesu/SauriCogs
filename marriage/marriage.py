@@ -256,7 +256,7 @@ class Marriage(commands.Cog):
         embed.add_field(name="Actions:", value=actions)
         embed.add_field(name="Gifts:", value=gifts)
         embed.set_footer(text="*required to function properly")
-        await ctx.send(embed)
+        await ctx.send(embed=embed)
 
     @commands.guild_only()
     @commands.command()
