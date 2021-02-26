@@ -76,7 +76,7 @@ class UserLog(commands.Cog):
     @userlogset.command(name="settings")
     async def user_settings(self, ctx: commands.Context):
         data = await self.config.guild(ctx.guild).all()
-        channel = member.guild.get_channel(await self.config.guild(ctx.guild).channel())
+        channel = ctx.guild.get_channel(await self.config.guild(ctx.guild).channel())
         if not channel:
             channel = "None"
         else:
@@ -85,6 +85,7 @@ class UserLog(commands.Cog):
         embed = discord.Embed(colour=await ctx.embed_colour(), timestamp=datetime.now())
         embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
         embed.title = "**__User Log settings:__**"
+
         embed.set_footer(text="*required to function properly")
         embed.add_field(name="Channel*:", value=channel)
         embed.add_field(name="Join:", value=str(data["join"]))
