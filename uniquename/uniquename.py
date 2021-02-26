@@ -18,7 +18,7 @@ class UniqueName(commands.Cog):
         self.config.register_guild(toggle=False, roles=[], name="username", channel=None)
         self.config.register_global(guilds=[])
 
-    @commands.max_concurrency(1, commands.BucketType.guild, True)
+    @commands.max_concurrency(1, commands.BucketType.guild, wait=True)
     @commands.group(autohelp=True, aliases=["unset"])
     @checks.admin_or_permissions(manage_guild=True)
     @commands.guild_only()

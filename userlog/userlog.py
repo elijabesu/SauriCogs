@@ -22,7 +22,7 @@ class UserLog(commands.Cog):
 
         self.config.register_guild(channel=None, join=True, leave=True)
 
-    @commands.max_concurrency(1, commands.BucketType.guild, True)
+    @commands.max_concurrency(1, commands.BucketType.guild, wait=True)
     @commands.group(autohelp=True)
     @commands.guild_only()
     @checks.admin_or_permissions(manage_guild=True)

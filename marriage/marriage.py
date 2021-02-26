@@ -72,7 +72,7 @@ class Marriage(commands.Cog):
     # "shit": [temper, price]
     # "gift": owned pcs
 
-    @commands.max_concurrency(1, commands.BucketType.guild, True)
+    @commands.max_concurrency(1, commands.BucketType.guild, wait=True)
     @commands.group(autohelp=True, aliases=["marriageset", "setmarry"])
     @commands.guild_only()
     @checks.admin_or_permissions(manage_guild=True)
@@ -406,7 +406,7 @@ class Marriage(commands.Cog):
             await self.config.member(ctx.author).crush.set(member.id)
         await ctx.tick()
 
-    @commands.max_concurrency(1, commands.BucketType.channel, True)
+    @commands.max_concurrency(1, commands.BucketType.channel, wait=True)
     @commands.guild_only()
     @commands.command()
     async def marry(self, ctx: commands.Context, member: discord.Member):
@@ -498,7 +498,7 @@ class Marriage(commands.Cog):
             f"Congrats! :tada:\n*You both paid {end_amount}.*"
         )
 
-    @commands.max_concurrency(1, commands.BucketType.channel, True)
+    @commands.max_concurrency(1, commands.BucketType.channel, wait=True)
     @commands.guild_only()
     @commands.command()
     async def divorce(
@@ -633,7 +633,7 @@ class Marriage(commands.Cog):
             f":broken_heart: {ctx.author.mention} and {member.mention} got divorced...\n*{end_amount}.*"
         )
 
-    @commands.max_concurrency(1, commands.BucketType.channel, True)
+    @commands.max_concurrency(1, commands.BucketType.channel, wait=True)
     @commands.guild_only()
     @commands.command()
     async def perform(
