@@ -56,7 +56,7 @@ class UniqueName(commands.Cog):
         await ctx.send(f"List of roles that are protected:\n{pretty_roles}")
 
     @uniquenameset.command(name="channel")
-    async def unset_channel(self, ctx, channel: discord.TextChannel = None):
+    async def unset_channel(self, ctx: commands.Context, channel: discord.TextChannel = None):
         """Set the channel for warnings.
 
         If the channel is not provided, logging will be disabled."""
