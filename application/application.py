@@ -213,6 +213,41 @@ class Application(commands.Cog):
             await self.config.guild(ctx.guild).channel_id.set(None)
         await ctx.tick()
 
+    @applyset.command(name="settings")
+    async def applyset_settings(self, ctx: commands.Context):
+        """See current settings."""
+        data = await self.config.guild(ctx.guild).all()
+        channel = ctx.guild.get_channel(data["channel_id"])
+        if channel:
+            channel = channel.mention
+        else: 
+            channel = "None"
+        accepter = ctx.guild.get_role(data["accepter_id"])
+        if accepter:
+            accepter = accepter.name
+        else:
+            accepter = "None (guild admins)"
+        applicant = ctx.guild.get_role(data["applicant_id"])
+        if applicant:
+            applicant = applicant.name
+        else:
+            applicant = "None"
+        questions = ""
+        for question in data["questions"]:
+            questions += question[0] + "\n"
+
+
+        embed = discord.Embed(colour=await ctx.embed_colour(), timestamp=datetime.datetime.now())
+        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
+        embed.set_footer(text="*required to function properly")
+
+        embed.title = "**__Application settings:__**"
+        embed.add_field(name="Channel*:", value=channel)
+        embed.add_field(name="Accepter:", value=accepter)
+        embed.add_field(name="Applicant:", value=applicant)
+        embed.add_field(name="Questions:", value=questions.strip())
+        await ctx.send(embed=embed)
+
     @commands.command()
     @commands.guild_only()
     @checks.bot_has_permissions(manage_roles=True)
