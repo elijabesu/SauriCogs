@@ -74,7 +74,7 @@ class Marriage(commands.Cog):
     # "gift": owned pcs
 
     @commands.max_concurrency(1, commands.BucketType.guild, wait=True)
-    @commands.group(autohelp=True, aliases=["marriageset", "setmarry"])
+    @commands.group(autohelp=True)
     @commands.guild_only()
     @checks.admin_or_permissions(manage_guild=True)
     async def marryset(self, ctx):
@@ -485,7 +485,7 @@ class Marriage(commands.Cog):
             f"{member.mention}, what do you say?"
         )
         pred = MessagePredicate.yes_or_no(ctx, ctx.channel, member)
-        await self.bot.wait_for("message", check=pred)
+        await self.bot.wait_for("message", timeout=120, check=pred)
         if not pred.result:
             return await ctx.send("Oh no... I was looking forward to the cerenomy...")
         default_amount = await self.config.guild(ctx.guild).marprice()
