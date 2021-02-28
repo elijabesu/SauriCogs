@@ -701,7 +701,11 @@ class Marriage(commands.Cog):
         member: discord.Member,
         item: str = None,
     ):
-        """Do something with someone"""
+        """Do something with someone
+
+        Available actions are: flirt, fuck, dinner, date, and gift
+        Available gifts are: flower, sweets, alcohol, loveletter, food, makeup, car, yacht, and house
+        """
         gc = self.config.guild
         mc = self.config.member
         if not await gc(ctx.guild).toggle():
@@ -742,7 +746,7 @@ class Marriage(commands.Cog):
             )
         else:
             return await ctx.send(
-                "Available actions are: `flirt`, `fuck`, `dinner`, `date`, and `gift`"
+                "Available actions are: flirt, fuck, dinner, date, and gift"
             )
         if action == "gift":
             author_gift = await mc(ctx.author).gifts.get_raw(item)
