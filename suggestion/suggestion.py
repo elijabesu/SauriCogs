@@ -378,13 +378,15 @@ class Suggestion(commands.Cog):
         await ctx.send(content=content, embed=embed)
 
     @checks.admin_or_permissions(administrator=True)
-    @commands.group(autohelp=True, aliases=["setsuggest"])
+    @checks.bot_has_permissions(
+        manage_channels=True, add_reactions=True, manage_messages=True
+    )
+    @commands.group(autohelp=True)
     @commands.guild_only()
     async def suggestset(self, ctx: commands.Context):
         """Various Suggestion settings"""
         pass
 
-    @checks.bot_has_permissions(manage_channels=True)
     @suggestset.command(name="setup")
     async def suggestset_setup(self, ctx: commands.Context):
         """ Go through the initial setup process. """
@@ -584,7 +586,45 @@ class Suggestion(commands.Cog):
             "You have finished the setup! Please, move your channels to the category you want them in."
         )
 
-    @checks.bot_has_permissions(add_reactions=True)
+    @suggestset.command(name="channel")
+    async def suggestset_channel(
+        self, ctx: commands.Context, channel: discord.TextChannel = None
+    ):
+        """Set the channel for suggestions.
+
+        If the channel is not provided, suggestions will be disabled."""
+        if channel:
+            await self.config.guild(ctx.guild).suggest_id.set(channel.id)
+        else:
+            await self.config.guild(ctx.guild).suggest_id.set(None)
+        await ctx.tick()
+
+    @suggestset.command(name="approved")
+    async def suggestset_approved(
+        self, ctx: commands.Context, channel: discord.TextChannel = None
+    ):
+        """Set the channel for suggestions.
+
+        If the channel is not provided, approved suggestions will not be reposted."""
+        if channel:
+            await self.config.guild(ctx.guild).approve_id.set(channel.id)
+        else:
+            await self.config.guild(ctx.guild).approve_id.set(None)
+        await ctx.tick()
+
+    @suggestset.command(name="rejected")
+    async def suggestset_rejected(
+        self, ctx: commands.Context, channel: discord.TextChannel = None
+    ):
+        """Set the channel for suggestions.
+
+        If the channel is not provided, rejected suggestions will not be reposted."""
+        if channel:
+            await self.config.guild(ctx.guild).reject_id.set(channel.id)
+        else:
+            await self.config.guild(ctx.guild).reject_id.set(None)
+        await ctx.tick()
+
     @suggestset.command(name="upemoji")
     async def suggestset_upemoji(
         self, ctx: commands.Context, up_emoji: discord.Emoji = None
@@ -600,7 +640,6 @@ class Suggestion(commands.Cog):
             await self.config.guild(ctx.guild).up_emoji.set(up_emoji.id)
         await ctx.tick()
 
-    @checks.bot_has_permissions(add_reactions=True)
     @suggestset.command(name="downemoji")
     async def suggestset_downemoji(
         self, ctx: commands.Context, down_emoji: discord.Emoji = None
@@ -616,7 +655,6 @@ class Suggestion(commands.Cog):
             await self.config.guild(ctx.guild).down_emoji.set(down_emoji.id)
         await ctx.tick()
 
-    @checks.bot_has_permissions(manage_messages=True)
     @suggestset.command(name="autodelete")
     async def suggestset_autodelete(self, ctx: commands.Context, on_off: bool = None):
         """ Toggle whether after `[p]suggest`, the bot deletes the message. """
@@ -634,15 +672,32 @@ class Suggestion(commands.Cog):
     @suggestset.coomand(name="settings")
     async def suggestset_settings(self, ctx: command.Context):
         data = await self.config.guild(ctx.guild).all()
-        # same=False,
-        # suggest_id=None,
-        # approve_id=None,
-        # reject_id=None,
-        # next_id=1,
-        # up_emoji=None,
-        # down_emoji=None,
-        # delete_suggest=False,
-        # delete_suggestion=True,
+        suggest_channel = ctx.guild.get_channel(
+            await self.config.guild(ctx.guild).suggest_id()
+        )
+        if not suggest_channel:
+            suggest_channel = "None"
+        else:
+            suggest_channel = suggest_channel.mention
+
+        approve_channel = ctx.guild.get_channel(
+            await self.config.guild(ctx.guild).suggest_id()
+        )
+        if not approve_channel:
+            approve_channel = "None"
+        else:
+            approve_channel = approve_channel.mention
+
+        reject_channel = ctx.guild.get_channel(
+            await self.config.guild(ctx.guild).suggest_id()
+        )
+        if not reject_channel:
+            reject_channel = "None"
+        else:
+            reject_channel = reject_channel.mention
+
+        up_emoji, down_emoji = await self._get_emojis(ctx)
+
         embed = discord.Embed(
             colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
         )
@@ -650,10 +705,21 @@ class Suggestion(commands.Cog):
         embed.title = "**__Suggestion settings (guild):__**"
 
         embed.set_footer(text="*required to function properly")
-        embed.add_field(name="Same*:", value=data["toggle"])
-        embed.add_field(name="Suggest channel*:", value=channel)
+        embed.add_field(name="Same channel*:", value=str(data["same"]), inline=False)
+        embed.add_field(name="Suggest channel*:", value=suggest_channel)
+        embed.add_field(name="Approved channel:", value=approve_channel)
+        embed.add_field(name="Rejected channel:", value=reject_channel)
+        embed.add_field(name="Up emoji:", value=up_emoji)
+        embed.add_field(name="Down emoji:", value=down_emoji)
         embed.add_field(
-            name="Ignored servers:", value=humanize_list(servers), inline=False
+            name=f"Delete `{ctx.clean_prefix}suggest` upon use:",
+            value=data["delete_suggest"],
+            inline=False,
+        )
+        embed.add_field(
+            name="Delete suggestion upon approving/rejecting:",
+            value=data["delete_suggestion"],
+            inline=False,
         )
 
         await ctx.send(embed=embed)
