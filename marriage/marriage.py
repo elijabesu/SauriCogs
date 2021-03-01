@@ -370,7 +370,10 @@ class Marriage(commands.Cog):
             f"{member.mention}, what do you say?"
         )
         pred = MessagePredicate.yes_or_no(ctx, ctx.channel, member)
-        await self.bot.wait_for("message", check=pred)
+        try:
+            await self.bot.wait_for("message", timeout=75, check=pred)
+        except asyncio.TimeoutError:
+            return await ctx.send("You took too long to respond!")
         if not pred.result:
             return await ctx.send("Oh no... I was looking forward to the cerenomy...")
         default_amount = await self.config.guild(ctx.guild).marprice()
