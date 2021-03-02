@@ -71,7 +71,7 @@ class Pingable(commands.Cog):
         if roles_channel == "":
             roles_channel = "None"
         if roles_nochannel == "":
-            roles_channel = "None"
+            roles_nochannel = "None"
 
         embed = discord.Embed(
             colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
