@@ -73,7 +73,7 @@ class Marriage(commands.Cog):
                 },
             },
             gifts={
-                "basics": {"text": ":gift: {0} has gifted one {1} to {2}"}
+                "text": ":gift: {0} has gifted one {1} to {2}",
                 "flower": {"temper": 5, "price": 5},
                 "sweets": {"temper": 5, "price": 5},
                 "alcohol": {"temper": 5, "price": 5},
@@ -708,7 +708,7 @@ class Marriage(commands.Cog):
             if item not in gifts:
                 return await ctx.send(f"Available gifts are: {humanize_list(gifts)}")
 
-            endtext = await gc(ctx.guild).gifts.get_raw("basics").get("text").format(ctx.author.mention, item, member.mention)
+            endtext = await gc(ctx.guild).gifts.get_raw("text").format(ctx.author.mention, item, member.mention)
 
             author_gift = await mc(ctx.author).gifts.get_raw(item)
             member_gift = await mc(member).gifts.get_raw(item)
