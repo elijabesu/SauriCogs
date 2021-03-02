@@ -886,6 +886,16 @@ class Marriage(commands.Cog):
         return all_items
 
     async def _is_custom(self, ctx, item):
-        actions = list(await self.config.guild(ctx.guild).custom_actions().keys())
-        gifts = list(await self.config.guild(ctx.guild).custom_gifts().keys())
+        actions = await self.config.guild(ctx.guild).custom_actions()
+        if len(actions) == 0:
+            actions = list()
+        else:
+            actions = list(actions.keys())
+
+        gifts = await self.config.guild(ctx.guild).custom_gifts()
+        if len(gifts) == 0:
+            gifts = list()
+        else:
+            gifts = list(gifts.keys())
+
         return item in actions or item in gifts
