@@ -857,7 +857,7 @@ class Marriage(commands.Cog):
             custom_actions = list(custom_actions.keys())
 
         for removed in removed_actions:
-            actions.pop(removed)
+            actions.remove(removed)
 
         actions.extend(custom_actions)
 
@@ -873,7 +873,7 @@ class Marriage(commands.Cog):
             custom_gifts = list(custom_gifts.keys())
 
         for removed in removed_gifts:
-            gifts.pop(removed)
+            gifts.remove(removed)
 
         gifts.extend(custom_gifts)
 
