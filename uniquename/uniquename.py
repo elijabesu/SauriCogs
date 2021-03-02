@@ -95,6 +95,7 @@ class UniqueName(commands.Cog):
 
     @uniquenameset.command(name="settings")
     async def unset_settings(self, ctx: commands.Context):
+        """See current settings."""
         data = await self.config.guild(ctx.guild).all()
         channel = ctx.guild.get_channel(await self.config.guild(ctx.guild).channel())
         if not channel:
@@ -110,6 +111,7 @@ class UniqueName(commands.Cog):
                 role = ctx.guild.get_role(id=rid)
                 if role:
                     roles.append(role.name)
+            roles = humanize_list(roles)
 
         embed = discord.Embed(
             colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
@@ -119,9 +121,9 @@ class UniqueName(commands.Cog):
         embed.set_footer(text="*required to function properly")
 
         embed.add_field(name="Enabled*:", value=str(data["toggle"]))
-        embed.add_field(name="Protected roles*:", value=humanize_list(roles))
         embed.add_field(name="Default name:", value=data["name"])
         embed.add_field(name="Logging channel:", value=channel)
+        embed.add_field(name="Protected roles*:", value=roles, inline=False)
 
         await ctx.send(embed=embed)
 
