@@ -199,7 +199,7 @@ class Marriage(commands.Cog):
         """Remove custom action."""
         if action not in await self._get_actions(ctx):
             return await ctx.send("Uh oh, that's not a registered action.")
-        if await self._is_custom(ctx, item):
+        if await self._is_custom(ctx, action):
             await self.config.guild(ctx.guild).custom_actions.clear_raw(action)
         else:
             async with self.config.guild(ctx.guild).removed_actions() as removed:
@@ -253,7 +253,7 @@ class Marriage(commands.Cog):
         """Remove custom gift."""
         if gift not in await self._get_gifts(ctx):
             return await ctx.send("Uh oh, that's not a registered gift.")
-        if await self._is_custom(ctx, item):
+        if await self._is_custom(ctx, gift):
             await self.config.guild(ctx.guild).custom_gifts.clear_raw(gift)
         else:
             async with self.config.guild(ctx.guild).removed_gifts() as removed:
