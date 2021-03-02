@@ -687,10 +687,10 @@ class Marriage(commands.Cog):
             return await ctx.send("You cannot perform anything with yourself!")
 
         if action in actions:
-            action = await gc(ctx.guild).custom_actions.get_raw(action, default=None)
-            if not action:
-                action = self._DEFAULT_ACTIONS.get(action)
-            endtext = action.get("description").format(
+            exertion = await gc(ctx.guild).custom_actions.get_raw(action, default=None)
+            if not exertion:
+                exertion = self._DEFAULT_ACTIONS.get(action)
+            endtext = exertion.get("description").format(
                 ctx.author.mention, member.mention
             )
 
@@ -698,25 +698,26 @@ class Marriage(commands.Cog):
             member_gift = -1
 
         elif action == "gift":
-            action = await gc(ctx.guild).custom_gifts.get_raw(item, default=None)
-            if not action:
-                action = self._DEFAULT_GIFTS.get(action)
+            exertion = await gc(ctx.guild).custom_gifts.get_raw(item, default=None)
+            if not exertion:
+                exertion = self._DEFAULT_GIFTS.get(item)
 
             if item not in gifts:
                 return await ctx.send(f"Available gifts are: {humanize_list(gifts)}")
 
-            endtext = await gc(ctx.guild).gift_text.format(
+            endtext_format = await gc(ctx.guild).gift_text()
+            endtext = endtext_format.format(
                 ctx.author.mention, item, member.mention
             )
 
-            author_gift = await mc(ctx.author).gifts.get_raw(item)
-            member_gift = await mc(member).gifts.get_raw(item)
+            author_gift = await mc(ctx.author).gifts.get_raw(item, default=0)
+            member_gift = await mc(member).gifts.get_raw(item, default=0)
 
         else:
             return await ctx.send(f"Available actions are: {humanize_list(actions)}")
 
-        temper = action.get("temper")
-        price = action.get("price")
+        temper = exertion.get("temper")
+        price = exertion.get("price")
 
         if author_gift == 0:
             price = int(round(price))
@@ -748,9 +749,9 @@ class Marriage(commands.Cog):
             await mc(ctx.author).gifts.set_raw(item, value=author_gift)
         if member_gift > 0:
             await mc(member).gifts.set_raw(item, value=member_gift)
-        if action.get("require_consent"):
+        if exertion.get("require_consent"):
             await ctx.send(
-                action.get("consent_description").format(
+                exertion.get("consent_description").format(
                     ctx.author.mention, member.mention
                 )
             )
