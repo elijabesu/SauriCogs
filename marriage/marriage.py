@@ -218,85 +218,22 @@ class Marriage(commands.Cog):
 
         shit = data["shit"]
         actions = (
-            "Flirt: "
-            + str(shit["flirt"][0])
-            + " temper, "
-            + str(shit["flirt"][1])
-            + " price"
-            + "\n"
-            + "Fuck: "
-            + str(shit["fuck"][0])
-            + " temper, "
-            + str(shit["fuck"][1])
-            + " price"
-            + "\n"
-            + "Dinner: "
-            + str(shit["dinner"][0])
-            + " temper, "
-            + str(shit["dinner"][1])
-            + " price"
-            + "\n"
-            + "Date: "
-            + str(shit["date"][0])
-            + " temper, "
-            + str(shit["date"][1])
-            + " price"
+            f"Flirt: {str(shit["flirt"][0])} temper, {str(shit["flirt"][1])} price\n"
+            f"Fuck: {str(shit["fuck"][0])} temper, {str(shit["fuck"][1])} price\n"
+            f"Dinner: {str(shit["dinner"][0])} temper, {str(shit["dinner"][1])} price\n"
+            f"Date: {str(shit["date"][0])} temper, {str(shit["date"][1])} price"
         )
 
         gifts = (
-            "Flower: "
-            + str(shit["flower"][0])
-            + " temper, "
-            + str(shit["flower"][1])
-            + " price"
-            + "\n"
-            + "Sweets: "
-            + str(shit["sweets"][0])
-            + " temper, "
-            + str(shit["sweets"][1])
-            + " price"
-            + "\n"
-            + "Alcohol: "
-            + str(shit["alcohol"][0])
-            + " temper, "
-            + str(shit["alcohol"][1])
-            + " price"
-            + "\n"
-            + "Love letter: "
-            + str(shit["loveletter"][0])
-            + " temper, "
-            + str(shit["loveletter"][1])
-            + " price"
-            + "\n"
-            + "Food: "
-            + str(shit["food"][0])
-            + " temper, "
-            + str(shit["food"][1])
-            + " price"
-            + "\n"
-            + "Makeup: "
-            + str(shit["makeup"][0])
-            + " temper, "
-            + str(shit["makeup"][1])
-            + " price"
-            + "\n"
-            + "Car: "
-            + str(shit["car"][0])
-            + " temper, "
-            + str(shit["car"][1])
-            + " price"
-            + "\n"
-            + "Yacht: "
-            + str(shit["yacht"][0])
-            + " temper, "
-            + str(shit["yacht"][1])
-            + " price"
-            + "\n"
-            + "House: "
-            + str(shit["house"][0])
-            + " temper, "
-            + str(shit["house"][1])
-            + " price"
+            f"Flower: {str(shit["flower"][0])} temper, {str(shit["flower"][1])} price\n"
+            f"Sweets: {str(shit["sweets"][0])} temper, {str(shit["sweets"][1])} price\n"
+            f"Alcohol: {str(shit["alcohol"][0])} temper, {str(shit["alcohol"][1])} price\n"
+            f"Love letter: {str(shit["loveletter"][0])} temper, {str(shit["loveletter"][1])} price\n"
+            f"Food: {str(shit["food"][0])} temper, {str(shit["food"][1])} price\n"
+            f"Makeup: {str(shit["makeup"][0])} temper, {str(shit["makeup"][1])} price\n"
+            f"Car: {str(shit["car"][0])} temper, {str(shit["car"][1])} price\n"
+            f"Yacht: {str(shit["yacht"][0])} temper, {str(shit["yacht"][1])} price\n"
+            f"House: {str(shit["house"][0])} temper, {str(shit["house"][1])} price"
         )
 
         embed = discord.Embed(
