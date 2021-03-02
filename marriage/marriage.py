@@ -208,7 +208,7 @@ class Marriage(commands.Cog):
         """Custom actions"""
         pass
 
-    @actions.command(name="add")
+    @marriage_actions.command(name="add")
     async def marriage_actions_add(
         self,
         ctx: commands.Context,
@@ -235,7 +235,7 @@ class Marriage(commands.Cog):
         )
         await ctx.tick()
 
-    @actions.command(name="remove")
+    @marriage_actions.command(name="remove")
     async def marriage_actions_remove(self, ctx: commands.Context, action: str):
         """Remove custom action."""
         if not await self.config.guild(ctx.guild).actions.get_raw(action):
@@ -243,7 +243,7 @@ class Marriage(commands.Cog):
         await self.config.guild(ctx.guild).actions.clear_raw(action)
         await ctx.tick()
 
-    @actions.command(name="show")
+    @marriage_actions.command(name="show")
     async def marriage_actions_show(self, ctx: commands.Context, action: str):
         """Show custom action."""
         data = await self.config.guild(ctx.guild).actions.get_raw(action)
@@ -258,7 +258,7 @@ class Marriage(commands.Cog):
             f"- description: {data.get('description')}"
         )
 
-    @actions.command(name="all")
+    @marriage_actions.command(name="all")
     async def marriage_actions_all(self, ctx: commands.Context):
         """Show custom action."""
         actions = await self._get_actions(ctx)
@@ -269,7 +269,7 @@ class Marriage(commands.Cog):
         """Custom gifts"""
         pass
 
-    @gifts.command(name="add")
+    @marriage_gifts.command(name="add")
     async def marriage_gifts_add(
         self, ctx: commands.Context, gift: str, temper: int, price: int
     ):
@@ -281,7 +281,7 @@ class Marriage(commands.Cog):
         )
         await ctx.tick()
 
-    @gifts.command(name="remove")
+    @marriage_gifts.command(name="remove")
     async def marriage_gifts_remove(self, ctx: commands.Context, gift: str):
         """Remove custom gift."""
         if not await self.config.guild(ctx.guild).gifts.get_raw(gift):
@@ -289,7 +289,7 @@ class Marriage(commands.Cog):
         await self.config.guild(ctx.guild).gifts.clear_raw(gift)
         await ctx.tick()
 
-    @gifts.command(name="show")
+    @marriage_gifts.command(name="show")
     async def marriage_gifts_show(self, ctx: commands.Context, gift: str):
         """Show custom gift."""
         data = await self.config.guild(ctx.guild).gifts.get_raw(gift)
@@ -301,7 +301,7 @@ class Marriage(commands.Cog):
             f"- price: {data.get('price')}"
         )
 
-    @gifts.command(name="all")
+    @marriage_gifts.command(name="all")
     async def marriage_gifts_all(self, ctx: commands.Context):
         """Show custom gift."""
         gifts = await self._get_gifts(ctx)
