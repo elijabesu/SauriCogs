@@ -99,7 +99,7 @@ class Marriage(commands.Cog):
     @commands.group(autohelp=True)
     @commands.guild_only()
     @checks.admin_or_permissions(manage_guild=True)
-    async def marriage(self, ctx):
+    async def marriage(self, ctx: commands.Context):
         """Various Marriage settings."""
         pass
 
@@ -163,7 +163,7 @@ class Marriage(commands.Cog):
         await ctx.tick()
 
     @marriage.group(autohelp=True, name="actions")
-    async def marriage_actions(self, ctx):
+    async def marriage_actions(self, ctx: commands.Context):
         """Custom actions"""
         pass
 
@@ -209,6 +209,9 @@ class Marriage(commands.Cog):
     @marriage_actions.command(name="show")
     async def marriage_actions_show(self, ctx: commands.Context, action: str):
         """Show custom action."""
+        if await self._is_removed(ctx, action):
+            return await ctx.send("Uh oh, that's not a registered action.")
+
         data = await self.config.guild(ctx.guild).custom_actions.get_raw(
             action, default=None
         )
@@ -232,7 +235,7 @@ class Marriage(commands.Cog):
         await ctx.send(humanize_list(actions))
 
     @marriage.group(autohelp=True, name="gifts")
-    async def marriage_gifts(self, ctx):
+    async def marriage_gifts(self, ctx: commands.Context):
         """Custom gifts"""
         pass
 
@@ -263,6 +266,9 @@ class Marriage(commands.Cog):
     @marriage_gifts.command(name="show")
     async def marriage_gifts_show(self, ctx: commands.Context, gift: str):
         """Show custom gift."""
+        if await self._is_removed(ctx, gift):
+            return await ctx.send("Uh oh, that's not a registered gift.")
+
         data = await self.config.guild(ctx.guild).custom_gifts.get_raw(
             gift, default=None
         )
@@ -897,5 +903,11 @@ class Marriage(commands.Cog):
             gifts = list()
         else:
             gifts = list(gifts.keys())
+
+        return item in actions or item in gifts
+
+    async def _is_removed(self, ctx, item):
+        actions = await self.config.guild(ctx.guild).removed_actions()
+        gifts = await self.config.guild(ctx.guild).removed_gifts()
 
         return item in actions or item in gifts
