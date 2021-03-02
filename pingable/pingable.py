@@ -81,10 +81,14 @@ class Pingable(commands.Cog):
         embed.set_footer(text="*required to function properly")
 
         embed.add_field(
-            name="Pingable roles everywhere:", value=roles_nochannel.strip()
+            name="Pingable roles everywhere:",
+            value=roles_nochannel.strip(),
+            inline=False,
         )
         embed.add_field(
-            name="Pingable roles with specified channel:", value=roles_channel.strip()
+            name="Pingable roles with specified channel:",
+            value=roles_channel.strip(),
+            inline=False,
         )
 
         await ctx.send(embed=embed)
