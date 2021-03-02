@@ -217,11 +217,22 @@ class Marriage(commands.Cog):
         price: int,
         consent: typing.Optional[int] = False,
         consent_description: typing.Optional[str] = None,
-        *, description: str):
+        *,
+        description: str,
+    ):
         """Add custom action."""
         if await self.config.guild(ctx.guild).actions.get_raw(action):
             return await ctx.send("Uh oh, that's already a registered action.")
-        await self.config.guild(ctx.guild).actions.set_raw(action, value={"temper": temper, "price": price, "require_consent": consent, "consent_description": consent_description, "description": description})
+        await self.config.guild(ctx.guild).actions.set_raw(
+            action,
+            value={
+                "temper": temper,
+                "price": price,
+                "require_consent": consent,
+                "consent_description": consent_description,
+                "description": description,
+            },
+        )
         await ctx.tick()
 
     @actions.command(name="remove")
@@ -260,15 +271,14 @@ class Marriage(commands.Cog):
 
     @gifts.command(name="add")
     async def marriage_gifts_add(
-        self,
-        ctx: commands.Context,
-        gift: str,
-        temper: int,
-        price: int):
+        self, ctx: commands.Context, gift: str, temper: int, price: int
+    ):
         """Add custom gift."""
         if await self.config.guild(ctx.guild).gifts.get_raw(gift):
             return await ctx.send("Uh oh, that's already a registered gift.")
-        await self.config.guild(ctx.guild).gifts.set_raw(gift, value={"temper": temper, "price": price})
+        await self.config.guild(ctx.guild).gifts.set_raw(
+            gift, value={"temper": temper, "price": price}
+        )
         await ctx.tick()
 
     @gifts.command(name="remove")
@@ -697,7 +707,9 @@ class Marriage(commands.Cog):
 
         if action in actions:
             action = await gc(ctx.guild).actions.get_raw(action)
-            endtext = action.get("description").format(ctx.author.mention, member.mention)
+            endtext = action.get("description").format(
+                ctx.author.mention, member.mention
+            )
 
             author_gift = 0
             member_gift = -1
@@ -708,15 +720,17 @@ class Marriage(commands.Cog):
             if item not in gifts:
                 return await ctx.send(f"Available gifts are: {humanize_list(gifts)}")
 
-            endtext = await gc(ctx.guild).gifts.get_raw("text").format(ctx.author.mention, item, member.mention)
+            endtext = (
+                await gc(ctx.guild)
+                .gifts.get_raw("text")
+                .format(ctx.author.mention, item, member.mention)
+            )
 
             author_gift = await mc(ctx.author).gifts.get_raw(item)
             member_gift = await mc(member).gifts.get_raw(item)
 
         else:
-            return await ctx.send(
-                f"Available actions are: {humanize_list(actions)}"
-            )
+            return await ctx.send(f"Available actions are: {humanize_list(actions)}")
 
         temper = action.get("temper")
         price = action.get("price")
@@ -751,7 +765,7 @@ class Marriage(commands.Cog):
             await mc(ctx.author).gifts.set_raw(item, value=author_gift)
         if member_gift > 0:
             await mc(member).gifts.set_raw(item, value=member_gift)
-        if action.get("require_consent")
+        if action.get("require_consent"):
             await ctx.send(action.get("consent_description"))
             pred = MessagePredicate.yes_or_no(ctx, ctx.channel, member)
             try:
