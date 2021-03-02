@@ -850,9 +850,11 @@ class Marriage(commands.Cog):
     async def _get_actions(self, ctx):
         actions = list(self._DEFAULT_ACTIONS.keys())
         removed_actions = await self.config.guild(ctx.guild).removed_actions()
-        custom_actions = list(
-            await self.config.guild(ctx.guild).custom_actions().keys()
-        )
+        custom_actions = await self.config.guild(ctx.guild).custom_actions()
+        if len(custom_actions) == 0:
+            custom_actions = list()
+        else:
+            custom_actions = list(custom_actions.keys())
 
         for removed in removed_actions:
             actions.pop(removed)
@@ -864,7 +866,11 @@ class Marriage(commands.Cog):
     async def _get_gifts(self, ctx):
         gifts = list(self._DEFAULT_GIFTS.keys())
         removed_gifts = await self.config.guild(ctx.guild).removed_gifts()
-        custom_gifts = list(await self.config.guild(ctx.guild).custom_gifts().keys())
+        custom_gifts = await self.config.guild(ctx.guild).custom_gifts()
+        if len(custom_gifts) == 0:
+            custom_gifts = list()
+        else:
+            custom_gifts = list(custom_gifts.keys())
 
         for removed in removed_gifts:
             gifts.pop(removed)
