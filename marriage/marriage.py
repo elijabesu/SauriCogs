@@ -221,8 +221,11 @@ class Marriage(commands.Cog):
         description: str,
     ):
         """Add custom action."""
-        if await self.config.guild(ctx.guild).actions.get_raw(action):
-            return await ctx.send("Uh oh, that's already a registered action.")
+        try:
+            if await self.config.guild(ctx.guild).actions.get_raw(action):
+                return await ctx.send("Uh oh, that's already a registered action.")
+        except KeyError:
+            pass
         await self.config.guild(ctx.guild).actions.set_raw(
             action,
             value={
@@ -274,8 +277,11 @@ class Marriage(commands.Cog):
         self, ctx: commands.Context, gift: str, temper: int, price: int
     ):
         """Add custom gift."""
-        if await self.config.guild(ctx.guild).gifts.get_raw(gift):
-            return await ctx.send("Uh oh, that's already a registered gift.")
+        try:
+            if await self.config.guild(ctx.guild).gifts.get_raw(gift):
+                return await ctx.send("Uh oh, that's already a registered gift.")
+        except KeyError:
+            pass
         await self.config.guild(ctx.guild).gifts.set_raw(
             gift, value={"temper": temper, "price": price}
         )
