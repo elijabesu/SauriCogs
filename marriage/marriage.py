@@ -1,6 +1,7 @@
 import discord
 import asyncio
 import random
+import typing
 
 from redbot.core import Config, checks, commands, bank
 from redbot.core.utils.chat_formatting import humanize_list
@@ -13,11 +14,11 @@ __author__ = "saurichable"
 
 class Marriage(commands.Cog):
     """
-    Marriage cog with some extra shit
+    Marriage cog with some extra stuff.
     """
 
     __author__ = "saurichable"
-    __version__ = "1.4.7"
+    __version__ = "1.5.0"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -35,15 +36,7 @@ class Marriage(commands.Cog):
             marcount=0,
             temper=100,
             gifts={
-                "flower": 0,
-                "sweets": 0,
-                "alcohol": 0,
-                "loveletter": 0,
-                "food": 0,
-                "makeup": 0,
-                "car": 0,
-                "yacht": 0,
-                "house": 0,
+                # "gift": owned pcs
             },
         )
         self.config.register_guild(
@@ -52,25 +45,46 @@ class Marriage(commands.Cog):
             divprice=2,
             currency=0,
             multi=False,
-            shit={
-                "flirt": [5, 0],
-                "fuck": [15, 0],
-                "dinner": [15, 0],
-                "date": [10, 0],
-                "flower": [5, 5],
-                "sweets": [5, 5],
-                "alcohol": [5, 5],
-                "loveletter": [5, 1],
-                "food": [5, 10],
-                "makeup": [5, 20],
-                "car": [15, 500],
-                "yacht": [30, 1000],
-                "house": [60, 25000],
+            actions={
+                "flirt": {
+                    "temper": 5,
+                    "price": 0,
+                    "require_consent": False,
+                    "description": ":heart_eyes: {0} is flirting with {1}",
+                },
+                "fuck": {
+                    "temper": 15,
+                    "price": 0,
+                    "require_consent": True,
+                    "consent_description": "{0} wants to bang you, {1}, give consent?",
+                    "description": ":smirk: {0} banged {1}",
+                },
+                "dinner": {
+                    "temper": 15,
+                    "price": 0,
+                    "require_consent": False,
+                    "description": ":ramen: {0} took {1} on a fancy dinner",
+                },
+                "date": {
+                    "temper": 10,
+                    "price": 0,
+                    "require_consent": False,
+                    "description": ":relaxed: {0} took {1} on a nice date",
+                },
+            },
+            gifts={
+                "text": ":gift: {0} has gifted one {1} to {2}"
+                "flower": {"temper": 5, "price": 5},
+                "sweets": {"temper": 5, "price": 5},
+                "alcohol": {"temper": 5, "price": 5},
+                "loveletter": {"temper": 5, "price": 1},
+                "food": {"temper": 5, "price": 10},
+                "makeup": {"temper": 5, "price": 20},
+                "car": {"temper": 15, "price": 500},
+                "yacht": {"temper": 30, "price": 1000},
+                "house": {"temper": 60, "price": 25000},
             },
         )
-
-    # "shit": [temper, price]
-    # "gift": owned pcs
 
     @commands.group(autohelp=True)
     @commands.guild_only()
@@ -81,13 +95,11 @@ class Marriage(commands.Cog):
 
     @marriage.command(name="toggle")
     async def marriage_toggle(self, ctx: commands.Context, on_off: bool = None):
-        """Toggle Marriage for current server. 
-        
+        """Toggle Marriage for current server.
+
         If `on_off` is not provided, the state will be flipped."""
         target_state = (
-            on_off
-            if on_off
-            else not (await self.config.guild(ctx.guild).toggle())
+            on_off if on_off else not (await self.config.guild(ctx.guild).toggle())
         )
         await self.config.guild(ctx.guild).toggle.set(target_state)
         if target_state:
@@ -123,7 +135,7 @@ class Marriage(commands.Cog):
     @marriage.command(name="marprice")
     async def marriage_marprice(self, ctx: commands.Context, price: int):
         """Set the price for getting married.
-        
+
         With each past marriage, the cost of getting married is 50% more"""
         if price <= 0:
             return await ctx.send("Uh oh, price cannot be 0 or less.")
@@ -133,7 +145,7 @@ class Marriage(commands.Cog):
     @marriage.command(name="divprice")
     async def marriage_divprice(self, ctx: commands.Context, multiplier: int):
         """Set the MULTIPLIER for getting divorced.
-        
+
         This is a multiplier, not the price! Default is 2."""
         if multiplier <= 1:
             return await ctx.send("Uh oh, that ain't a valia multiplier.")
@@ -148,58 +160,142 @@ class Marriage(commands.Cog):
 
         Temper has to be in range 1 to 100. Negative actions (f.e. flirting with someone other than one's spouse) should have negative temper.
         !!! Remember that starting point for everyone is 100 == happy and satisfied, 0 == leave their spouse"""
-        available = [
-            "flirt",
-            "fuck",
-            "dinner",
-            "date",
-            "flower",
-            "sweets",
-            "alcohol",
-            "loveletter",
-            "food",
-            "makeup",
-            "car",
-            "yacht",
-            "house",
-        ]
-        if action not in available:
-            return await ctx.send(f"Available actions/gifts are: {humanize_list(available)}")
+        available = await self._get_all(ctx)
+        actions = await self._get_actions(ctx)
+        gifts = await self._get_gifts(ctx)
+
         if temper < 0:
             return await ctx.send("Uh oh, temper has to be 0 or more.")
         if temper > 100:
             return await ctx.send("Uh oh, temper has to be 100 or less.")
-        action = await self.config.guild(ctx.guild).shit.get_raw(action)
-        action[0] = temper
-        await self.config.guild(ctx.guild).shit.get_raw(action)
+
+        if action in actions:
+            await self.config.guild(ctx.guild).actions.set_raw(action, "temper", temper)
+        elif action in gifts:
+            await self.config.guild(ctx.guild).gifts.set_raw(action, "temper", temper)
+        else:
+            return await ctx.send(
+                f"Available actions/gifts are: {humanize_list(available)}"
+            )
+
+        await ctx.tick()
 
     @marriage.command(name="changeprice")
     async def marriage_changeprice(
         self, ctx: commands.Context, action: str, price: int
     ):
         """Set the action's/gift's price"""
-        available = [
-            "flirt",
-            "fuck",
-            "dinner",
-            "date",
-            "flower",
-            "sweets",
-            "alcohol",
-            "loveletter",
-            "food",
-            "makeup",
-            "car",
-            "yacht",
-            "house",
-        ]
-        if action not in available:
-            return await ctx.send(f"Available actions/gifts are: {humanize_list(available)}")
+        available = await self._get_all(ctx)
+        actions = await self._get_actions(ctx)
+        gifts = await self._get_gifts(ctx)
+
         if price < 0:
             return await ctx.send("Uh oh, price has to be 0 or more.")
-        action_data = await self.config.guild(ctx.guild).shit.get_raw(action)
-        await self.config.guild(ctx.guild).shit.set_raw(action, value=[action_data[0], price])
+
+        if action in actions:
+            await self.config.guild(ctx.guild).actions.set_raw(action, "price", temper)
+        elif action in gifts:
+            await self.config.guild(ctx.guild).gifts.set_raw(action, "price", temper)
+        else:
+            return await ctx.send(
+                f"Available actions/gifts are: {humanize_list(available)}"
+            )
+
         await ctx.tick()
+
+    @marriage.group(autohelp=True, name="actions")
+    async def marriage_actions(self, ctx):
+        """Custom actions"""
+        pass
+
+    @actions.command(name="add")
+    async def marriage_actions_add(
+        self,
+        ctx: commands.Context,
+        action: str,
+        temper: int,
+        price: int,
+        consent: typing.Optional[int] = False,
+        consent_description: typing.Optional[str] = None,
+        *, description: str):
+        """Add custom action."""
+        if await self.config.guild(ctx.guild).actions.get_raw(action):
+            return await ctx.send("Uh oh, that's already a registered action.")
+        await self.config.guild(ctx.guild).actions.set_raw(action, value={"temper": temper, "price": price, "require_consent": consent, "consent_description": consent_description, "description": description})
+        await ctx.tick()
+
+    @actions.command(name="remove")
+    async def marriage_actions_remove(self, ctx: commands.Context, action: str):
+        """Remove custom action."""
+        if not await self.config.guild(ctx.guild).actions.get_raw(action):
+            return await ctx.send("Uh oh, that's not a registered action.")
+        await self.config.guild(ctx.guild).actions.clear_raw(action)
+        await ctx.tick()
+
+    @actions.command(name="show")
+    async def marriage_actions_show(self, ctx: commands.Context, action: str):
+        """Show custom action."""
+        data = await self.config.guild(ctx.guild).actions.get_raw(action)
+        if not data:
+            return await ctx.send("Uh oh, that's not a registered action.")
+        await ctx.send(
+            f"**{action}**\n"
+            f"- temper: {data.get('temper')}\n"
+            f"- price: {data.get('price')}\n"
+            f"- require_consent: {data.get('require_consent')}\n"
+            f"- consent_description: {data.get('consent_description')}\n"
+            f"- description: {data.get('description')}"
+        )
+
+    @actions.command(name="all")
+    async def marriage_actions_all(self, ctx: commands.Context):
+        """Show custom action."""
+        actions = await self._get_actions(ctx)
+        await ctx.send(humanize_list(actions))
+
+    @marriage.group(autohelp=True, name="gifts")
+    async def marriage_gifts(self, ctx):
+        """Custom gifts"""
+        pass
+
+    @gifts.command(name="add")
+    async def marriage_gifts_add(
+        self,
+        ctx: commands.Context,
+        gift: str,
+        temper: int,
+        price: int):
+        """Add custom gift."""
+        if await self.config.guild(ctx.guild).gifts.get_raw(gift):
+            return await ctx.send("Uh oh, that's already a registered gift.")
+        await self.config.guild(ctx.guild).gifts.set_raw(gift, value={"temper": temper, "price": price})
+        await ctx.tick()
+
+    @gifts.command(name="remove")
+    async def marriage_gifts_remove(self, ctx: commands.Context, gift: str):
+        """Remove custom gift."""
+        if not await self.config.guild(ctx.guild).gifts.get_raw(gift):
+            return await ctx.send("Uh oh, that's not a registered gift.")
+        await self.config.guild(ctx.guild).gifts.clear_raw(gift)
+        await ctx.tick()
+
+    @gifts.command(name="show")
+    async def marriage_gifts_show(self, ctx: commands.Context, gift: str):
+        """Show custom gift."""
+        data = await self.config.guild(ctx.guild).gifts.get_raw(gift)
+        if not data:
+            return await ctx.send("Uh oh, that's not a registered gift.")
+        await ctx.send(
+            f"**{gift}**\n"
+            f"- temper: {data.get('temper')}\n"
+            f"- price: {data.get('price')}"
+        )
+
+    @gifts.command(name="all")
+    async def marriage_gifts_all(self, ctx: commands.Context):
+        """Show custom gift."""
+        gifts = await self._get_gifts(ctx)
+        await ctx.send(humanize_list(gifts))
 
     @commands.guild_only()
     @commands.command()
@@ -491,12 +587,12 @@ class Marriage(commands.Cog):
                         else:
                             return await ctx.send(
                                 f"Uh oh, you two cannot afford this... But you can force a court by "
-                                "doing `{ctx.clean_prefix}divorce {member.mention} yes`"
+                                f"doing `{ctx.clean_prefix}divorce {member.mention} yes`"
                             )
                     else:
                         return await ctx.send(
                             f"Uh oh, you two cannot afford this... But you can force a court by "
-                            "doing `{ctx.clean_prefix}divorce {member.mention} yes`"
+                            f"doing `{ctx.clean_prefix}divorce {member.mention} yes`"
                         )
                 else:
                     author_cookies = int(
@@ -521,12 +617,12 @@ class Marriage(commands.Cog):
                         else:
                             return await ctx.send(
                                 f"Uh oh, you two cannot afford this... But you can force a court by "
-                                "doing `{ctx.clean_prefix}divorce {member.mention} yes`"
+                                f"doing `{ctx.clean_prefix}divorce {member.mention} yes`"
                             )
                     else:
                         return await ctx.send(
                             f"Uh oh, you two cannot afford this... But you can force a court by "
-                            "doing `{ctx.clean_prefix}divorce {member.mention} yes`"
+                            f"doing `{ctx.clean_prefix}divorce {member.mention} yes`"
                         )
             else:
                 court = True
@@ -590,58 +686,41 @@ class Marriage(commands.Cog):
         """Do something with someone"""
         gc = self.config.guild
         mc = self.config.member
+        actions = await self._get_actions(ctx)
+        gifts = await self._get_gifts(ctx)
+
         if not await gc(ctx.guild).toggle():
             return await ctx.send("Marriage is not enabled!")
+
         if member.id == ctx.author.id:
             return await ctx.send("You cannot perform anything with yourself!")
-        consent = 1
-        if action == "flirt":
-            endtext = (
-                f":heart_eyes: {ctx.author.mention} is flirting with {member.mention}"
-            )
-        elif action == "fuck":
-            consent = 0
-        elif action == "dinner":
-            endtext = (
-                f":ramen: {ctx.author.mention} took {member.mention} on a fancy dinner"
-            )
-        elif action == "date":
-            endtext = (
-                f":relaxed: {ctx.author.mention} took {member.mention} on a nice date"
-            )
-        elif action == "gift":
-            gifts = [
-                "flower",
-                "sweets",
-                "alcohol",
-                "loveletter",
-                "food",
-                "makeup",
-                "car",
-                "yacht",
-                "house",
-            ]
-            if item not in gifts:
-                return await ctx.send(f"Available gifts are: {humanize_list(gifts)}")
-            endtext = (
-                f":gift: {ctx.author.mention} has gifted one {item} to {member.mention}"
-            )
-        else:
-            return await ctx.send(
-                "Available actions are: `flirt`, `fuck`, `dinner`, `date`, and `gift`"
-            )
-        if action == "gift":
-            author_gift = await mc(ctx.author).gifts.get_raw(item)
-            member_gift = await mc(member).gifts.get_raw(item)
-            action = await gc(ctx.guild).shit.get_raw(item)
-            temper = action[0]
-            price = action[1]
-        else:
-            action = await gc(ctx.guild).shit.get_raw(action)
-            temper = action[0]
-            price = action[1]
+
+        if action in actions:
+            action = await gc(ctx.guild).actions.get_raw(action)
+            endtext = action.get("description").format(ctx.author.mention, member.mention)
+
             author_gift = 0
             member_gift = -1
+
+        elif action == "gift":
+            action = await gc(ctx.guild).gifts.get_raw(item)
+
+            if item not in gifts:
+                return await ctx.send(f"Available gifts are: {humanize_list(gifts)}")
+
+            endtext = await gc(ctx.guild).gifts.get_raw("text").format(ctx.author.mention, item, member.mention)
+
+            author_gift = await mc(ctx.author).gifts.get_raw(item)
+            member_gift = await mc(member).gifts.get_raw(item)
+
+        else:
+            return await ctx.send(
+                f"Available actions are: {humanize_list(actions)}"
+            )
+
+        temper = action.get("temper")
+        price = action.get("price")
+
         if author_gift == 0:
             price = int(round(price))
             if await self.config.guild(ctx.guild).currency() == 0:
@@ -672,10 +751,8 @@ class Marriage(commands.Cog):
             await mc(ctx.author).gifts.set_raw(item, value=author_gift)
         if member_gift > 0:
             await mc(member).gifts.set_raw(item, value=member_gift)
-        if consent == 0:
-            await ctx.send(
-                f"{ctx.author.mention} wants to bang you, {member.mention}, give consent?"
-            )
+        if action.get("require_consent")
+            await ctx.send(action.get("consent_description"))
             pred = MessagePredicate.yes_or_no(ctx, ctx.channel, member)
             try:
                 await self.bot.wait_for("message", timeout=60, check=pred)
@@ -772,5 +849,19 @@ class Marriage(commands.Cog):
                                 spouse
                             ).cookies.set(spouse_cookies + author_cookies)
                         endtext = f"{endtext}\n:broken_heart: {ctx.author.mention} has made {spouse.mention} completely unhappy "
-                        "with their actions so {spouse.mention} left them and took all their money!"
+                        f"with their actions so {spouse.mention} left them and took all their money!"
         await ctx.send(endtext)
+
+    async def _get_actions(self, ctx):
+        actions = await self.config.guild(ctx.guild).actions()
+        return list(actions.keys())
+
+    async def _get_gifts(self, ctx):
+        gifts = await self.config.guild(ctx.guild).gifts()
+        return list(gifts.keys())
+
+    async def _get_all(self, ctx):
+        all_items = list()
+        all_items.extend(await self._get_actions(ctx))
+        all_items.extend(await self._get_gifts(ctx))
+        return all_items
