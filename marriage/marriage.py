@@ -766,7 +766,11 @@ class Marriage(commands.Cog):
         if member_gift > 0:
             await mc(member).gifts.set_raw(item, value=member_gift)
         if action.get("require_consent"):
-            await ctx.send(action.get("consent_description"))
+            await ctx.send(
+                action.get("consent_description").format(
+                    ctx.author.mention, member.mention
+                )
+            )
             pred = MessagePredicate.yes_or_no(ctx, ctx.channel, member)
             try:
                 await self.bot.wait_for("message", timeout=60, check=pred)
