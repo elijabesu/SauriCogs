@@ -223,15 +223,16 @@ class Marriage(commands.Cog):
         """Add custom action."""
         if await self.config.guild(ctx.guild).actions.get_raw(action):
             return await ctx.send("Uh oh, that's already a registered action.")
-        actions = await self.config.guild(ctx.guild).actions()
-        actions[action] = {
-            "temper": temper,
-            "price": price,
-            "require_consent": consent,
-            "consent_description": consent_description,
-            "description": description,
-        }
-        await self.config.guild(ctx.guild).actions.set(actions)
+        await self.config.guild(ctx.guild).actions.set_raw(
+            action,
+            value={
+                "temper": temper,
+                "price": price,
+                "require_consent": consent,
+                "consent_description": consent_description,
+                "description": description,
+            },
+        )
         await ctx.tick()
 
     @marriage_actions.command(name="remove")
@@ -239,9 +240,7 @@ class Marriage(commands.Cog):
         """Remove custom action."""
         if not await self.config.guild(ctx.guild).actions.get_raw(action):
             return await ctx.send("Uh oh, that's not a registered action.")
-        actions = await self.config.guild(ctx.guild).actions()
-        actions.pop(action)
-        await self.config.guild(ctx.guild).actions.set(actions)
+        await self.config.guild(ctx.guild).actions.clear_raw(action)
         await ctx.tick()
 
     @marriage_actions.command(name="show")
@@ -277,9 +276,9 @@ class Marriage(commands.Cog):
         """Add custom gift."""
         if await self.config.guild(ctx.guild).gifts.get_raw(gift):
             return await ctx.send("Uh oh, that's already a registered gift.")
-        gifts = await self.config.guild(ctx.guild).gifts()
-        gifts[gift] = {"temper": temper, "price": price}
-        await self.config.guild(ctx.guild).gifts.set(gifts)
+        await self.config.guild(ctx.guild).gifts.set_raw(
+            gift, value={"temper": temper, "price": price}
+        )
         await ctx.tick()
 
     @marriage_gifts.command(name="remove")
@@ -287,9 +286,7 @@ class Marriage(commands.Cog):
         """Remove custom gift."""
         if not await self.config.guild(ctx.guild).gifts.get_raw(gift):
             return await ctx.send("Uh oh, that's not a registered gift.")
-        gifts = await self.config.guild(ctx.guild).gifts()
-        gifts.pop(gift)
-        await self.config.guild(ctx.guild).gifts.set(gifts)
+        await self.config.guild(ctx.guild).gifts.clear_raw(gift)
         await ctx.tick()
 
     @marriage_gifts.command(name="show")
