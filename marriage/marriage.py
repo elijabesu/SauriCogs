@@ -137,10 +137,12 @@ class Marriage(commands.Cog):
     @marryset.command(name="multiple")
     async def marryset_multiple(self, ctx: commands.Context, state: bool):
         """Enable/disable whether members can be married to multiple people at once."""
-        if not state:
-            text = "Members cannot marry multiple people."
-        else:
-            text = "Members can marry multiple people."
+        text = (
+            "Members can marry multiple people."
+            if state
+            else "Members cannot marry multiple people."
+        )
+
         await self.config.guild(ctx.guild).multi.set(state)
         await ctx.send(text)
 
@@ -173,25 +175,44 @@ class Marriage(commands.Cog):
         else:
             currency_used = "SauriCogs' cookies"
 
-        shit = data["shit"]
-        actions = (
-            f"Flirt: {str(shit['flirt'][0])} temper, {str(shit['flirt'][1])} price\n"
-            f"Fuck: {str(shit['fuck'][0])} temper, {str(shit['fuck'][1])} price\n"
-            f"Dinner: {str(shit['dinner'][0])} temper, {str(shit['dinner'][1])} price\n"
-            f"Date: {str(shit['date'][0])} temper, {str(shit['date'][1])} price"
-        )
+        actions_keys = await self._get_actions(ctx)
+        gifts_keys = await self._get_gifts(ctx)
 
-        gifts = (
-            f"Flower: {str(shit['flower'][0])} temper, {str(shit['flower'][1])} price\n"
-            f"Sweets: {str(shit['sweets'][0])} temper, {str(shit['sweets'][1])} price\n"
-            f"Alcohol: {str(shit['alcohol'][0])} temper, {str(shit['alcohol'][1])} price\n"
-            f"Love letter: {str(shit['loveletter'][0])} temper, {str(shit['loveletter'][1])} price\n"
-            f"Food: {str(shit['food'][0])} temper, {str(shit['food'][1])} price\n"
-            f"Makeup: {str(shit['makeup'][0])} temper, {str(shit['makeup'][1])} price\n"
-            f"Car: {str(shit['car'][0])} temper, {str(shit['car'][1])} price\n"
-            f"Yacht: {str(shit['yacht'][0])} temper, {str(shit['yacht'][1])} price\n"
-            f"House: {str(shit['house'][0])} temper, {str(shit['house'][1])} price"
-        )
+        custom_actions = await self.config.guild(ctx.guild).custom_actions()
+        custom_gifts = await self.config.guild(ctx.guild).custom_gifts()
+
+        actions, gifts = "", ""
+
+        if len(actions) == 0:
+            actions = "None"
+        else:
+            for key in actions_keys:
+                actions += f"{key.capitalize()}: "
+                if await self._is_custom(ctx, key):
+                    actions += (
+                        f"{custom_actions.get(key).get('temper')} temper, "
+                        f"{custom_actions.get(key).get('price')} price\n"
+                    )
+                else:
+                    actions += (
+                        f"{self._DEFAULT_ACTIONS.get(key).get('temper')} temper, "
+                        f"{self._DEFAULT_ACTIONS.get(key).get('price')} price\n"
+                    )
+        if len(gifts) == 0:
+            gifts = "None"
+        else:
+            for key in gifts_keys:
+                gifts += f"{key.capitalize()}: "
+                if await self._is_custom(ctx, key):
+                    gifts += (
+                        f"{custom_gifts.get(key).get('temper')} temper, "
+                        f"{custom_gifts.get(key).get('price')} price\n"
+                    )
+                else:
+                    actions += (
+                        f"{self._DEFAULT_GIFTS.get(key).get('temper')} temper, "
+                        f"{self._DEFAULT_GIFTS.get(key).get('price')} price\n"
+                    )
 
         embed = discord.Embed(
             colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
@@ -204,8 +225,8 @@ class Marriage(commands.Cog):
         embed.add_field(name="Marriage price:", value=str(data["marprice"]))
         embed.add_field(name="Divorce price:", value=str(data["divprice"]))
         embed.add_field(name="Multiple spouses:", value=str(data["multi"]))
-        embed.add_field(name="Actions:", value=actions)
-        embed.add_field(name="Gifts:", value=gifts)
+        embed.add_field(name="Actions:", value=actions.strip())
+        embed.add_field(name="Gifts:", value=gifts.strip())
         embed.set_footer(text="*required to function properly")
         await ctx.send(embed=embed)
 
@@ -760,9 +781,7 @@ class Marriage(commands.Cog):
                 return await ctx.send(f"Available gifts are: {humanize_list(gifts)}")
 
             endtext_format = await gc(ctx.guild).gift_text()
-            endtext = endtext_format.format(
-                ctx.author.mention, item, member.mention
-            )
+            endtext = endtext_format.format(ctx.author.mention, item, member.mention)
 
             author_gift = await mc(ctx.author).gifts.get_raw(item, default=0)
             member_gift = await mc(member).gifts.get_raw(item, default=0)
