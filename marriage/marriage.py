@@ -209,7 +209,7 @@ class Marriage(commands.Cog):
                         f"{custom_gifts.get(key).get('price')} price\n"
                     )
                 else:
-                    actions += (
+                    gifts += (
                         f"{self._DEFAULT_GIFTS.get(key).get('temper')} temper, "
                         f"{self._DEFAULT_GIFTS.get(key).get('price')} price\n"
                     )
