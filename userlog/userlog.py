@@ -23,15 +23,17 @@ class UserLog(commands.Cog):
         self.config.register_guild(channel=None, join=True, leave=True)
 
     @commands.max_concurrency(1, commands.BucketType.guild, wait=True)
-    @commands.group(autohelp=True)
+    @commands.group(autohelp=True, aliases=["userlog"])
     @commands.guild_only()
     @checks.admin_or_permissions(manage_guild=True)
-    async def userlogset(self, ctx):
+    async def userlogset(self, ctx: commands.Context):
         """Manage user log settings."""
         pass
 
     @userlogset.command(name="channel")
-    async def user_channel_log(self, ctx, channel: discord.TextChannel = None):
+    async def user_channel_log(
+        self, ctx: commands.Context, channel: discord.TextChannel = None
+    ):
         """Set the channel for logs.
 
         If the channel is not provided, logging will be disabled."""
@@ -71,6 +73,7 @@ class UserLog(commands.Cog):
 
     @userlogset.command(name="settings")
     async def user_settings(self, ctx: commands.Context):
+        """See current settings."""
         data = await self.config.guild(ctx.guild).all()
         channel = ctx.guild.get_channel(await self.config.guild(ctx.guild).channel())
         if not channel:

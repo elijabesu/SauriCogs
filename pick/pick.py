@@ -38,7 +38,7 @@ class Pick(commands.Cog):
     @commands.command()
     @commands.guild_only()
     @checks.admin_or_permissions(manage_guild=True)
-    async def pickrole(self, ctx, role: discord.Role):
+    async def pickrole(self, ctx: commands.Context, role: discord.Role):
         """Set a role winners should have."""
         await self.config.guild(ctx.guild).role.set(role.id)
         await ctx.send(f"Role has been set to {role.name}.")

@@ -32,8 +32,8 @@ class LevelUpCookies(commands.Cog):
 
     @checks.admin_or_permissions(manage_guild=True)
     @commands.guild_only()
-    @commands.group(autohelp=True)
-    async def lvlupcookies(self, ctx):
+    @commands.group(autohelp=True, aliases=["lvlupcookies"])
+    async def lvlupcookiesset(self, ctx: commands.Context):
         """Cookie rewards for roles."""
         pass
 
