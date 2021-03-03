@@ -183,7 +183,7 @@ class Marriage(commands.Cog):
 
         actions, gifts = "", ""
 
-        if len(actions) == 0:
+        if len(actions_keys) == 0:
             actions = "None"
         else:
             for key in actions_keys:
@@ -198,7 +198,7 @@ class Marriage(commands.Cog):
                         f"{self._DEFAULT_ACTIONS.get(key).get('temper')} temper, "
                         f"{self._DEFAULT_ACTIONS.get(key).get('price')} price\n"
                     )
-        if len(gifts) == 0:
+        if len(gifts_keys) == 0:
             gifts = "None"
         else:
             for key in gifts_keys:
