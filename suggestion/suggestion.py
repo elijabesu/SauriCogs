@@ -491,7 +491,7 @@ class Suggestion(commands.Cog):
         await self.config.guild(ctx.guild).delete_suggestion.set(delete)
 
     @suggestset.command(name="settings")
-    async def suggestset_settings(self, ctx: command.Context):
+    async def suggestset_settings(self, ctx: commands.Context):
         data = await self.config.guild(ctx.guild).all()
         suggest_channel = ctx.guild.get_channel(
             await self.config.guild(ctx.guild).suggest_id()
@@ -612,7 +612,7 @@ class Suggestion(commands.Cog):
             await ctx.send(f"{server.name} already isn't in the ignored list.")
 
     @globalset.command(name="settings")
-    async def suggestset_globalset_settings(self, ctx: command.Context):
+    async def suggestset_globalset_settings(self, ctx: commands.Context):
         data = await self.config.all()
         global_guild = self.bot.get_guild(data["server_id"])
         if not global_guild:
