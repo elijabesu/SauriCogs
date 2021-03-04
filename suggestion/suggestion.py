@@ -669,7 +669,7 @@ class Suggestion(commands.Cog):
         else:
             await ctx.send("Auto deletion is now disabled.")
 
-    @suggestset.coomand(name="settings")
+    @suggestset.command(name="settings")
     async def suggestset_settings(self, ctx: command.Context):
         data = await self.config.guild(ctx.guild).all()
         suggest_channel = ctx.guild.get_channel(
@@ -790,7 +790,7 @@ class Suggestion(commands.Cog):
         else:
             await ctx.send(f"{server.name} already isn't in the ignored list.")
 
-    @globalset.coomand(name="settings")
+    @globalset.command(name="settings")
     async def suggestset_globalset_settings(self, ctx: command.Context):
         data = await self.config.all()
         global_guild = self.bot.get_guild(data["server_id"])
