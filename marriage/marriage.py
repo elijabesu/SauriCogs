@@ -35,7 +35,7 @@ class Marriage(commands.Cog):
             about="I'm mysterious",
             crush=None,
             marcount=0,
-            temper=100,
+            contentment=100,
             gifts={
                 # "gift": owned pcs
             },
@@ -57,26 +57,26 @@ class Marriage(commands.Cog):
     def _DEFAULT_ACTIONS(self):
         return {
             "flirt": {
-                "temper": 5,
+                "contentment": 5,
                 "price": 0,
                 "require_consent": False,
                 "description": ":heart_eyes: {0} is flirting with {1}",
             },
             "fuck": {
-                "temper": 15,
+                "contentment": 15,
                 "price": 0,
                 "require_consent": True,
                 "consent_description": "{0} wants to bang you, {1}, give consent?",
                 "description": ":smirk: {0} banged {1}",
             },
             "dinner": {
-                "temper": 15,
+                "contentment": 15,
                 "price": 0,
                 "require_consent": False,
                 "description": ":ramen: {0} took {1} on a fancy dinner",
             },
             "date": {
-                "temper": 10,
+                "contentment": 10,
                 "price": 0,
                 "require_consent": False,
                 "description": ":relaxed: {0} took {1} on a nice date",
@@ -86,15 +86,15 @@ class Marriage(commands.Cog):
     @property
     def _DEFAULT_GIFTS(self):
         return {
-            "flower": {"temper": 5, "price": 5},
-            "sweets": {"temper": 5, "price": 5},
-            "alcohol": {"temper": 5, "price": 5},
-            "loveletter": {"temper": 5, "price": 1},
-            "food": {"temper": 5, "price": 10},
-            "makeup": {"temper": 5, "price": 20},
-            "car": {"temper": 15, "price": 500},
-            "yacht": {"temper": 30, "price": 1000},
-            "house": {"temper": 60, "price": 25000},
+            "flower": {"contentment": 5, "price": 5},
+            "sweets": {"contentment": 5, "price": 5},
+            "alcohol": {"contentment": 5, "price": 5},
+            "loveletter": {"contentment": 5, "price": 1},
+            "food": {"contentment": 5, "price": 10},
+            "makeup": {"contentment": 5, "price": 20},
+            "car": {"contentment": 15, "price": 500},
+            "yacht": {"contentment": 30, "price": 1000},
+            "house": {"contentment": 60, "price": 25000},
         }
 
     @commands.max_concurrency(1, commands.BucketType.guild, wait=True)
@@ -186,12 +186,12 @@ class Marriage(commands.Cog):
                 actions += f"{key.capitalize()}: "
                 if await self._is_custom(ctx, key):
                     actions += (
-                        f"{custom_actions.get(key).get('temper')} temper, "
+                        f"{custom_actions.get(key).get('contentment')} contentment, "
                         f"{custom_actions.get(key).get('price')} price\n"
                     )
                 else:
                     actions += (
-                        f"{self._DEFAULT_ACTIONS.get(key).get('temper')} temper, "
+                        f"{self._DEFAULT_ACTIONS.get(key).get('contentment')} contentment, "
                         f"{self._DEFAULT_ACTIONS.get(key).get('price')} price\n"
                     )
         if len(gifts_keys) == 0:
@@ -201,12 +201,12 @@ class Marriage(commands.Cog):
                 gifts += f"{key.capitalize()}: "
                 if await self._is_custom(ctx, key):
                     gifts += (
-                        f"{custom_gifts.get(key).get('temper')} temper, "
+                        f"{custom_gifts.get(key).get('contentment')} contentment, "
                         f"{custom_gifts.get(key).get('price')} price\n"
                     )
                 else:
                     gifts += (
-                        f"{self._DEFAULT_GIFTS.get(key).get('temper')} temper, "
+                        f"{self._DEFAULT_GIFTS.get(key).get('contentment')} contentment, "
                         f"{self._DEFAULT_GIFTS.get(key).get('price')} price\n"
                     )
 
@@ -236,7 +236,7 @@ class Marriage(commands.Cog):
         self,
         ctx: commands.Context,
         action: str,
-        temper: int,
+        contentment: int,
         price: int,
         consent_description: typing.Optional[str] = None,
         consent: typing.Optional[int] = False,
@@ -249,7 +249,7 @@ class Marriage(commands.Cog):
         await self.config.guild(ctx.guild).custom_actions.set_raw(
             action,
             value={
-                "temper": temper,
+                "contentment": contentment,
                 "price": price,
                 "require_consent": consent,
                 "consent_description": consent_description,
@@ -286,7 +286,7 @@ class Marriage(commands.Cog):
         await ctx.send(
             box(
                 f"""= {action.capitalize()} =
-temper:: {data.get('temper')}
+contentment:: {data.get('contentment')}
 price:: {data.get('price')}
 require_consent:: {data.get('require_consent')}
 consent_description:: {data.get('consent_description')}
@@ -308,13 +308,13 @@ description:: {data.get('description')}""",
 
     @marryset_gifts.command(name="add")
     async def marryset_gifts_add(
-        self, ctx: commands.Context, gift: str, temper: int, price: int
+        self, ctx: commands.Context, gift: str, contentment: int, price: int
     ):
         """Add a custom gift."""
         if gift in await self._get_gifts(ctx):
             return await ctx.send("Uh oh, that's already a registered gift.")
         await self.config.guild(ctx.guild).custom_gifts.set_raw(
-            gift, value={"temper": temper, "price": price}
+            gift, value={"contentment": contentment, "price": price}
         )
         await ctx.tick()
 
@@ -346,7 +346,7 @@ description:: {data.get('description')}""",
         await ctx.send(
             box(
                 f"""= {gift.capitalize()} =
-temper:: {data.get('temper')}
+contentment:: {data.get('contentment')}
 price:: {data.get('price')}""",
                 lang="asciidoc",
             )
@@ -427,7 +427,7 @@ price:: {data.get('price')}""",
         if is_married:
             e.add_field(name=spouse_header, value=spouse_text)
         e.add_field(name="Crush:", value=crush)
-        e.add_field(name="Temper:", value=await conf.temper())
+        e.add_field(name="Contentment:", value=await conf.contentment())
         e.add_field(name="Been married:", value=been_married)
         if await conf.marcount() != 0:
             e.add_field(name="Ex spouses:", value=ex_text)
@@ -477,8 +477,8 @@ price:: {data.get('price')}""",
         for s_id in spouses_ids:
             spouse = ctx.guild.get_member(s_id)
             if spouse:
-                sp_temper = await self.config.member(spouse).temper()
-                sp_text += f"{spouse.name}:: {sp_temper}\n"
+                sp_contentment = await self.config.member(spouse).contentment()
+                sp_text += f"{spouse.name}:: {sp_contentment}\n"
         if sp_text == "":
             sp_text = "None"
         await ctx.send(
@@ -542,8 +542,10 @@ price:: {data.get('price')}""",
             if author_multiplier <= target_multiplier
             else author_multiplier
         )
-        amount = int(
-            round(default_amount * multiplier if multiplier != 0 else default_amount)
+        amount = (
+            int(round(default_amount * multiplier))
+            if multiplier != 0
+            else int(round(default_amount))
         )
         if await self.config.guild(ctx.guild).currency() == 0:
             currency = await bank.get_currency_name(ctx.guild)
@@ -589,8 +591,8 @@ price:: {data.get('price')}""",
             acurrent.append(member.id)
         async with self.config.member(member).current() as tcurrent:
             tcurrent.append(ctx.author.id)
-        await self.config.member(ctx.author).temper.set(100)
-        await self.config.member(member).temper.set(100)
+        await self.config.member(ctx.author).contentment.set(100)
+        await self.config.member(member).contentment.set(100)
 
         await ctx.send(
             f":church: {ctx.author.mention} and {member.mention} are now a happy married couple! "
@@ -631,12 +633,10 @@ price:: {data.get('price')}""",
                     if author_multiplier <= target_multiplier
                     else author_multiplier
                 )
-                amount = int(
-                    round(
-                        default_amount * multiplier * default_multiplier
-                        if multiplier != 0
-                        else default_amount * default_multiplier
-                    )
+                amount = (
+                    int(round(default_amount * multiplier * default_multiplier))
+                    if multiplier != 0
+                    else int(round(default_amount * default_multiplier))
                 )
                 if await self.config.guild(ctx.guild).currency() == 0:
                     currency = await bank.get_currency_name(ctx.guild)
@@ -766,7 +766,7 @@ price:: {data.get('price')}""",
         else:
             return await ctx.send(f"Available actions are: {humanize_list(actions)}")
 
-        temper, price = exertion.get("temper"), exertion.get("price")
+        contentment, price = exertion.get("contentment"), exertion.get("price")
 
         if await self.config.guild(ctx.guild).currency() == 0:
             if await bank.can_spend(ctx.author, price):
@@ -795,52 +795,54 @@ price:: {data.get('price')}""",
                 await self.bot.wait_for("message", timeout=60, check=pred)
             except asyncio.TimeoutError:
                 return await ctx.send(
-                    "They took too long. Try again later, please. (You didn't lose any temper.)"
+                    "They took too long. Try again later, please. (You didn't lose any contentment.)"
                 )
             if pred.result:
-                t_temp = await mc(member).temper()
+                t_temp = await mc(member).contentment()
                 t_missing = 100 - t_temp
                 if t_missing != 0:
-                    if temper <= t_missing:
-                        await mc(member).temper.set(t_temp + temper)
+                    if contentment <= t_missing:
+                        await mc(member).contentment.set(t_temp + contentment)
                     else:
-                        await mc(member).temper.set(100)
-                a_temp = await mc(ctx.author).temper()
+                        await mc(member).contentment.set(100)
+                a_temp = await mc(ctx.author).contentment()
                 a_missing = 100 - a_temp
                 if a_missing != 0:
-                    if temper <= a_missing:
-                        await mc(ctx.author).temper.set(a_temp + temper)
+                    if contentment <= a_missing:
+                        await mc(ctx.author).contentment.set(a_temp + contentment)
                     else:
-                        await mc(ctx.author).temper.set(100)
+                        await mc(ctx.author).contentment.set(100)
                 endtext = f":smirk: {ctx.author.mention} banged {member.mention}"
             else:
-                a_temp = await mc(ctx.author).temper()
-                if temper < a_temp:
-                    await mc(ctx.author).temper.set(a_temp - temper)
+                a_temp = await mc(ctx.author).contentment()
+                if contentment < a_temp:
+                    await mc(ctx.author).contentment.set(a_temp - contentment)
                 else:
-                    await mc(ctx.author).temper.set(0)
+                    await mc(ctx.author).contentment.set(0)
                 endtext = "They refused to bang you."
         else:
-            t_temp = await mc(member).temper()
+            t_temp = await mc(member).contentment()
             t_missing = 100 - t_temp
             if t_missing != 0:
-                if temper <= t_missing:
-                    await mc(member).temper.set(t_temp + temper)
+                if contentment <= t_missing:
+                    await mc(member).contentment.set(t_temp + contentment)
                 else:
-                    await mc(member).temper.set(100)
-            a_temp = await mc(ctx.author).temper()
+                    await mc(member).contentment.set(100)
+            a_temp = await mc(ctx.author).contentment()
             a_missing = 100 - a_temp
             if a_missing != 0:
-                if temper <= a_missing:
-                    await mc(ctx.author).temper.set(a_temp + temper)
+                if contentment <= a_missing:
+                    await mc(ctx.author).contentment.set(a_temp + contentment)
                 else:
-                    await mc(ctx.author).temper.set(100)
+                    await mc(ctx.author).contentment.set(100)
         spouses = await mc(ctx.author).current()
         if member.id not in spouses:
             if await mc(ctx.author).married():
                 for sid in spouses:
                     spouse = ctx.guild.get_member(sid)
-                    endtext = await self._maybe_divorce(ctx, spouse, endtext, temper)
+                    endtext = await self._maybe_divorce(
+                        ctx, spouse, endtext, contentment
+                    )
         await ctx.send(endtext)
 
     @commands.max_concurrency(1, commands.BucketType.channel, wait=True)
@@ -875,7 +877,7 @@ price:: {data.get('price')}""",
         author_gift = await mc(ctx.author).gifts.get_raw(item, default=0)
         member_gift = await mc(member).gifts.get_raw(item, default=0)
 
-        temper, price = exertion.get("temper"), exertion.get("price")
+        contentment, price = exertion.get("contentment"), exertion.get("price")
 
         if author_gift == 0:
             if await self.config.guild(ctx.guild).currency() == 0:
@@ -907,27 +909,29 @@ price:: {data.get('price')}""",
         if member_gift > 0:
             await mc(member).gifts.set_raw(item, value=member_gift)
 
-        t_temp = await mc(member).temper()
+        t_temp = await mc(member).contentment()
         t_missing = 100 - t_temp
         if t_missing != 0:
-            if temper <= t_missing:
-                await mc(member).temper.set(t_temp + temper)
+            if contentment <= t_missing:
+                await mc(member).contentment.set(t_temp + contentment)
             else:
-                await mc(member).temper.set(100)
-        a_temp = await mc(ctx.author).temper()
+                await mc(member).contentment.set(100)
+        a_temp = await mc(ctx.author).contentment()
         a_missing = 100 - a_temp
         if a_missing != 0:
-            if temper <= a_missing:
-                await mc(ctx.author).temper.set(a_temp + temper)
+            if contentment <= a_missing:
+                await mc(ctx.author).contentment.set(a_temp + contentment)
             else:
-                await mc(ctx.author).temper.set(100)
+                await mc(ctx.author).contentment.set(100)
 
         spouses = await mc(ctx.author).current()
         if member.id not in spouses:
             if await mc(ctx.author).married():
                 for sid in spouses:
                     spouse = ctx.guild.get_member(sid)
-                    endtext = await self._maybe_divorce(ctx, spouse, endtext, temper)
+                    endtext = await self._maybe_divorce(
+                        ctx, spouse, endtext, contentment
+                    )
         await ctx.send(endtext)
 
     async def _get_actions(self, ctx):
@@ -995,11 +999,11 @@ price:: {data.get('price')}""",
     async def _set_user_cookies(self, ctx, user, amount):
         return await self.bot.get_cog("Cookies").config.member(user).cookies.set(amount)
 
-    async def _maybe_divorce(self, ctx, spouse, endtext, temper):
+    async def _maybe_divorce(self, ctx, spouse, endtext, contentment):
         mc = self.config.member
-        s_temp = await mc(spouse).temper()
-        new_s_temp = 0 if s_temp < temper else s_temp - temper
-        await mc(spouse).temper.set(new_s_temp)
+        s_temp = await mc(spouse).contentment()
+        new_s_temp = 0 if s_temp < contentment else s_temp - contentment
+        await mc(spouse).contentment.set(new_s_temp)
         if new_s_temp <= 0:
             async with mc(ctx.author).current() as acurrent:
                 acurrent.remove(spouse.id)
