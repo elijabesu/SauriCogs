@@ -12,7 +12,7 @@ class Forwarding(commands.Cog):
     You can also DM someone as the bot with `[p]pm <user_ID> <message>`."""
 
     __author__ = "saurichable"
-    __version__ = "2.3.1"
+    __version__ = "2.4.0"
 
     def __init__(self, bot):
         self.bot = bot
@@ -104,12 +104,12 @@ class Forwarding(commands.Cog):
     @commands.group()
     @checks.is_owner()
     @commands.guild_only()
-    async def setforward(self, ctx: commands.Context):
+    async def forwardset(self, ctx: commands.Context):
         """Configuration commands for forwarding."""
         pass
 
-    @setforward.command(name="channel")
-    async def setforward_channel(
+    @forwardset.command(name="channel")
+    async def forwardset_channel(
         self, ctx: commands.Context, *, channel: Union[discord.TextChannel, int]
     ):
         """Set a channel in the current guild to be used for forwarding.
@@ -125,8 +125,8 @@ class Forwarding(commands.Cog):
         await self.config.channel_id.set(channel.id)
         await ctx.send(f"I will forward all DMs to {channel.mention}.")
 
-    @setforward.command(name="role")
-    async def setforward_role(
+    @forwardset.command(name="role")
+    async def forwardset_role(
         self, ctx: commands.Context, *, role: Union[discord.Role, int]
     ):
         """Set a role to be pinged for forwarding.
@@ -140,8 +140,8 @@ class Forwarding(commands.Cog):
         await self.config.ping_role_id.set(role.id)
         await ctx.send(f"I will ping {role.mention}.")
 
-    @setforward.command(name="user")
-    async def setforward_user(
+    @forwardset.command(name="user")
+    async def forwardset_user(
         self, ctx: commands.Context, *, member: Union[discord.Member, int]
     ):
         """Set a role to be pinged for forwarding.
