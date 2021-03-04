@@ -114,10 +114,7 @@ class Marriage(commands.Cog):
             on_off if on_off else not (await self.config.guild(ctx.guild).toggle())
         )
         await self.config.guild(ctx.guild).toggle.set(target_state)
-        if target_state:
-            await ctx.send("Marriage is now enabled.")
-        else:
-            await ctx.send("Marriage is now disabled.")
+        await ctx.send("Marriage is now enabled." if target_state else "Marriage is now disabled.")
 
     @checks.is_owner()
     @marryset.command(name="currency")
@@ -126,8 +123,7 @@ class Marriage(commands.Cog):
         if currency != 0:
             if currency != 1:
                 return await ctx.send("Uh oh, currency can only be 0 or 1.")
-            loaded = self.bot.get_cog("Cookies")
-            if not loaded:
+            if not self.bot.get_cog("Cookies"):
                 return await ctx.send(
                     f"Uh oh, Cookies isn't loaded. Load it using `{ctx.clean_prefix}load cookies`"
                 )
@@ -137,14 +133,8 @@ class Marriage(commands.Cog):
     @marryset.command(name="multiple")
     async def marryset_multiple(self, ctx: commands.Context, state: bool):
         """Enable/disable whether members can be married to multiple people at once."""
-        text = (
-            "Members can marry multiple people."
-            if state
-            else "Members cannot marry multiple people."
-        )
-
         await self.config.guild(ctx.guild).multi.set(state)
-        await ctx.send(text)
+        await ctx.send("Members can marry multiple people." if state else "Members cannot marry multiple people.")
 
     @marryset.command(name="marprice")
     async def marryset_marprice(self, ctx: commands.Context, price: int):
@@ -170,13 +160,9 @@ class Marriage(commands.Cog):
     async def marryset_settings(self, ctx: commands.Context):
         """See current settings."""
         data = await self.config.guild(ctx.guild).all()
-        if data["currency"] == 0:
-            currency_used = "Red's economy"
-        else:
-            currency_used = "SauriCogs' cookies"
+        currency_used = "Red's economy" if data["currency"] == 0 else "SauriCogs' cookies"
 
-        actions_keys = await self._get_actions(ctx)
-        gifts_keys = await self._get_gifts(ctx)
+        actions_keys, gifts_keys = await self._get_actions(ctx), await self._get_gifts(ctx)
 
         custom_actions = await self.config.guild(ctx.guild).custom_actions()
         custom_gifts = await self.config.guild(ctx.guild).custom_gifts()
@@ -356,19 +342,8 @@ class Marriage(commands.Cog):
         gifts = await self._get_gifts(ctx)
         await ctx.send(humanize_list(gifts))
 
+    @commands.group(invoke_without_command=True)
     @commands.guild_only()
-    @commands.command()
-    async def addabout(self, ctx: commands.Context, *, about: str):
-        """Add your about text"""
-        if not await self.config.guild(ctx.guild).toggle():
-            return await ctx.send("Marriage is not enabled!")
-        if len(about) > 1000:
-            return await ctx.send("Uh oh, this is not an essay.")
-        await self.config.member(ctx.author).about.set(about)
-        await ctx.tick()
-
-    @commands.guild_only()
-    @commands.command()
     async def about(self, ctx: commands.Context, member: discord.Member = None):
         """Display your or someone else's about"""
         if not await self.config.guild(ctx.guild).toggle():
@@ -379,56 +354,38 @@ class Marriage(commands.Cog):
 
         is_married = await conf.married()
         if not is_married:
-            is_divorced = await conf.married()
-            if not is_divorced:
-                rs_status = "Single"
-            else:
-                rs_status = "Divorced"
+            rs_status = "Single" if not await conf.divorced() else "Divorced"
         else:
             rs_status = "Married"
             spouse_ids = await conf.current()
-            spouses = []
+            spouses = list()
             for spouse_id in spouse_ids:
                 spouse = ctx.guild.get_member(spouse_id)
-                if not spouse:
-                    continue
-                spouse = spouse.name
-                spouses.append(spouse)
+                if spouse:
+                    spouses.append(spouse.name)
             if spouses == []:
                 spouse_header = "Spouse:"
                 spouse_text = "None"
             else:
                 spouse_text = humanize_list(spouses)
-                if len(spouses) == 1:
-                    spouse_header = "Spouse:"
-                else:
-                    spouse_header = "Spouses:"
+                spouse_header = "Spouse:" if len(spouses) == 1 else "Spouses:"
         marcount = await conf.marcount()
-        if marcount == 1:
-            been_married = f"{marcount} time"
-        else:
-            been_married = f"{marcount} times"
+        been_married = f"{marcount} time" if marcount == 1 else been_married = f"{marcount} times"
         if marcount != 0:
             exes_ids = await conf.exes()
             if exes_ids == []:
                 ex_text = "None"
             else:
-                exes = []
+                exes = list()
                 for ex_id in exes_ids:
                     ex = ctx.guild.get_member(ex_id)
                     if not ex:
                         continue
                     ex = ex.name
                     exes.append(ex)
-                if exes == []:
-                    ex_text = "None"
-                else:
-                    ex_text = humanize_list(exes)
+                ex_text = "None" if exes == [] else humanize_list(exes)
         crush = ctx.guild.get_member(await conf.crush())
-        if not crush:
-            crush = "None"
-        else:
-            crush = crush.name
+        crush = "None" if not crush else crush.name
         if await self.config.guild(ctx.guild).currency() == 0:
             currency = await bank.get_currency_name(ctx.guild)
             bal = await bank.get_balance(member)
@@ -436,21 +393,13 @@ class Marriage(commands.Cog):
             bal = int(await self.bot.get_cog("Cookies").config.member(member).cookies())
             currency = ":cookie:"
         gifts = await conf.gifts.get_raw()
-        giftos = []
+        giftos = list()
         for gift in gifts:
             amount = gifts.get(gift)
             if amount > 0:
-                if amount == 1:
-                    textos = f"{gift} - {amount} pc"
-                else:
-                    textos = f"{gift} - {amount} pcs"
+                textos = f"{gift} - {amount} pc" if amount == 1 else textos = f"{gift} - {amount} pcs"
                 giftos.append(textos)
-            else:
-                continue
-        if giftos == []:
-            gift_text = "None"
-        else:
-            gift_text = humanize_list(giftos)
+        gift_text = "None" if giftos == [] else gift_text = humanize_list(giftos)
         e = discord.Embed(colour=member.color)
         e.set_author(name=f"{member.name}'s Profile", icon_url=member.avatar_url)
         e.set_footer(text=f"{member.name}#{member.discriminator} ({member.id})")
@@ -469,6 +418,18 @@ class Marriage(commands.Cog):
 
         await ctx.send(embed=e)
 
+    @about.command(name="add")
+    async def about_add(self, ctx: commands.Context, *, about: str):
+        """Add your about text
+        
+        Maximum is 1000 characters."""
+        if not await self.config.guild(ctx.guild).toggle():
+            return await ctx.send("Marriage is not enabled!")
+        if len(about) > 1000:
+            return await ctx.send("Uh oh, this is not an essay.")
+        await self.config.member(ctx.author).about.set(about)
+        await ctx.tick()
+
     @commands.guild_only()
     @commands.command()
     async def exes(self, ctx: commands.Context, member: discord.Member = None):
@@ -478,17 +439,13 @@ class Marriage(commands.Cog):
         if not member:
             member = ctx.author
         exes_ids = await self.config.member(member).exes()
-        exes = []
+        exes = list()
         for ex_id in exes_ids:
             ex = ctx.guild.get_member(ex_id)
-            if not ex:
-                continue
-            ex = ex.name
-            exes.append(ex)
-        if exes == []:
-            ex_text = "unknown"
-        else:
-            ex_text = humanize_list(exes)
+            if ex:
+                ex = ex.name
+                exes.append(ex)
+        ex_text = "unknown" if exes == [] else humanize_list(exes)
         await ctx.send(f"{member.mention}'s exes are: {ex_text}")
 
     @commands.guild_only()
@@ -539,15 +496,8 @@ class Marriage(commands.Cog):
         author_multiplier = author_marcount / 2 + 1
         target_multiplier = target_marcount / 2 + 1
 
-        if author_multiplier <= target_multiplier:
-            multiplier = target_multiplier
-        else:
-            multiplier = author_multiplier
-        if multiplier != 0:
-            amount = default_amount * multiplier
-        else:
-            amount = default_amount
-        amount = int(round(amount))
+        multiplier = target_multiplier if author_multiplier <= target_multiplier else author_multiplier
+        amount = int(round(default_amount * multiplier if multiplier != 0 else default_amount))
         if await self.config.guild(ctx.guild).currency() == 0:
             currency = await bank.get_currency_name(ctx.guild)
             end_amount = f"{amount} {currency}"
@@ -629,15 +579,8 @@ class Marriage(commands.Cog):
                 author_multiplier = author_marcount / 2 + 1
                 target_multiplier = target_marcount / 2 + 1
 
-                if author_multiplier <= target_multiplier:
-                    multiplier = target_multiplier
-                else:
-                    multiplier = author_multiplier
-                if multiplier != 0:
-                    amount = default_amount * multiplier * default_multiplier
-                else:
-                    amount = default_amount * default_multiplier
-                amount = int(round(amount))
+                multiplier = target_multiplier if author_multiplier <= target_multiplier else author_multiplier
+                amount = int(round(default_amount * multiplier * default_multiplier)) if multiplier != 0 else int(round(default_amount * default_multiplier))
                 if await self.config.guild(ctx.guild).currency() == 0:
                     currency = await bank.get_currency_name(ctx.guild)
                     end_amount = f"You both paid {amount} {currency}"
@@ -745,15 +688,10 @@ class Marriage(commands.Cog):
         member: discord.Member,
         item: str = None,
     ):
-        """Do something with someone
-
-        Available actions are: flirt, fuck, dinner, date, and gift
-        Available gifts are: flower, sweets, alcohol, loveletter, food, makeup, car, yacht, and house
-        """
+        """Do something with someone"""
         gc = self.config.guild
         mc = self.config.member
-        actions = await self._get_actions(ctx)
-        gifts = await self._get_gifts(ctx)
+        actions, gifts = await self._get_actions(ctx), await self._get_gifts(ctx)
 
         if not await gc(ctx.guild).toggle():
             return await ctx.send("Marriage is not enabled!")
@@ -769,8 +707,7 @@ class Marriage(commands.Cog):
                 ctx.author.mention, member.mention
             )
 
-            author_gift = 0
-            member_gift = -1
+            author_gift, member_gift = 0, -1
 
         elif action == "gift":
             exertion = await gc(ctx.guild).custom_gifts.get_raw(item, default=None)
@@ -789,8 +726,7 @@ class Marriage(commands.Cog):
         else:
             return await ctx.send(f"Available actions are: {humanize_list(actions)}")
 
-        temper = exertion.get("temper")
-        price = exertion.get("price")
+        temper, price = exertion.get("temper"), exertion.get("price")
 
         if author_gift == 0:
             price = int(round(price))
@@ -874,9 +810,7 @@ class Marriage(commands.Cog):
                 else:
                     await mc(ctx.author).temper.set(100)
         spouses = await mc(ctx.author).current()
-        if member.id in spouses:
-            pass
-        else:
+        if member.id not in spouses:
             if await mc(ctx.author).married():
                 for sid in spouses:
                     spouse = ctx.guild.get_member(sid)
