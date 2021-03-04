@@ -739,21 +739,19 @@ class Marriage(commands.Cog):
 
         temper, price = exertion.get("temper"), exertion.get("price")
 
-         if await self.config.guild(ctx.guild).currency() == 0:
+        if await self.config.guild(ctx.guild).currency() == 0:
             if await bank.can_spend(ctx.author, price):
                 await bank.withdraw_credits(ctx.author, price)
             else:
                 return await ctx.send("Uh oh, you cannot afford this.")
         else:
             author_cookies = int(
-                await self.bot.get_cog("Cookies")
-                .config.member(ctx.author)
-                .cookies()
+                await self.bot.get_cog("Cookies").config.member(ctx.author).cookies()
             )
             if price <= author_cookies:
-                await self.bot.get_cog("Cookies").config.member(
-                    ctx.author
-                ).cookies.set(author_cookies - price)
+                await self.bot.get_cog("Cookies").config.member(ctx.author).cookies.set(
+                    author_cookies - price
+                )
             else:
                 return await ctx.send("Uh oh, you cannot afford this.")
 
@@ -983,6 +981,8 @@ class Marriage(commands.Cog):
                 author_cookies = await self._get_user_cookies(ctx, ctx.author)
                 spouse_cookies = await self._get_user_cookies(ctx, spouse)
                 await self._set_user_cookies(ctx, ctx.author, 0)
-                await self._set_user_cookies(ctx, spouse, spouse_cookies + author_cookies)
+                await self._set_user_cookies(
+                    ctx, spouse, spouse_cookies + author_cookies
+                )
             endtext = f"{endtext}\n:broken_heart: {ctx.author.mention} has made {spouse.mention} completely unhappy "
             f"with their actions so {spouse.mention} left them and took all their money!"
