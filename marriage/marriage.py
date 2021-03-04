@@ -811,7 +811,7 @@ class Marriage(commands.Cog):
             if await mc(ctx.author).married():
                 for sid in spouses:
                     spouse = ctx.guild.get_member(sid)
-                    endtext = await self._maybe_divorce(ctx, spouse, endtext)
+                    endtext = await self._maybe_divorce(ctx, spouse, endtext, temper)
         await ctx.send(endtext)
 
     @commands.max_concurrency(1, commands.BucketType.channel, wait=True)
@@ -883,7 +883,7 @@ class Marriage(commands.Cog):
             if await mc(ctx.author).married():
                 for sid in spouses:
                     spouse = ctx.guild.get_member(sid)
-                    endtext = await self._maybe_divorce(ctx, spouse, endtext)
+                    endtext = await self._maybe_divorce(ctx, spouse, endtext, temper)
         await ctx.send(endtext)
 
     async def _get_actions(self, ctx):
@@ -951,7 +951,7 @@ class Marriage(commands.Cog):
     async def _set_user_cookies(self, ctx, user, amount):
         return await self.bot.get_cog("Cookies").config.member(user).cookies.set(amount)
 
-    async def _maybe_divorce(self, ctx, spouse, endtext):
+    async def _maybe_divorce(self, ctx, spouse, endtext, temper):
         mc = self.config.member
         s_temp = await mc(spouse).temper()
         if s_temp < temper:
