@@ -985,3 +985,4 @@ class Marriage(commands.Cog):
                 )
             endtext = f"{endtext}\n:broken_heart: {ctx.author.mention} has made {spouse.mention} completely unhappy "
             f"with their actions so {spouse.mention} left them and took all their money!"
+        return endtext
