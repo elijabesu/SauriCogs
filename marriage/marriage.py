@@ -954,8 +954,7 @@ class Marriage(commands.Cog):
     async def _maybe_divorce(self, ctx, spouse, endtext, temper):
         mc = self.config.member
         s_temp = await mc(spouse).temper()
-        if s_temp < temper:
-            new_s_temp = 0 if s_temp < temper else s_temp - temper
+        new_s_temp = 0 if s_temp < temper else s_temp - temper
         await mc(spouse).temper.set(new_s_temp)
         if new_s_temp <= 0:
             async with mc(ctx.author).current() as acurrent:
