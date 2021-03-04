@@ -629,6 +629,7 @@ class Suggestion(commands.Cog):
             server = self.bot.get_guild(sid)
             if server:
                 servers.append(server.name)
+        servers_text = "None" if servers == [] else humanize_list(servers)
 
         embed = discord.Embed(
             colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
@@ -639,9 +640,7 @@ class Suggestion(commands.Cog):
         embed.set_footer(text="*required to function properly")
         embed.add_field(name="Enabled*:", value=data["toggle"])
         embed.add_field(name="Channel*:", value=channel)
-        embed.add_field(
-            name="Ignored servers:", value=humanize_list(servers), inline=False
-        )
+        embed.add_field(name="Ignored servers:", value=servers_text, inline=False)
 
         await ctx.send(embed=embed)
 
