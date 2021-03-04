@@ -387,205 +387,6 @@ class Suggestion(commands.Cog):
         """Various Suggestion settings"""
         pass
 
-    @suggestset.command(name="setup")
-    async def suggestset_setup(self, ctx: commands.Context):
-        """ Go through the initial setup process. """
-        await self.config.guild(ctx.guild).same.set(False)
-        await self.config.guild(ctx.guild).suggest_id.set(None)
-        await self.config.guild(ctx.guild).approve_id.set(None)
-        await self.config.guild(ctx.guild).reject_id.set(None)
-        await self.config.guild(ctx.guild).delete_suggestion.set(True)
-
-        predchan = MessagePredicate.valid_text_channel(ctx)
-        overwrites = {
-            ctx.guild.default_role: discord.PermissionOverwrite(send_messages=False),
-            ctx.guild.me: discord.PermissionOverwrite(send_messages=True),
-        }
-
-        msg = await ctx.send("Do you already have your channel(s) done?")
-        start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
-        pred = ReactionPredicate.yes_or_no(msg, ctx.author)
-        try:
-            await self.bot.wait_for("reaction_add", timeout=30, check=pred)
-        except asyncio.TimeoutError:
-            await msg.delete()
-            return await ctx.send("You took too long. Try again, please.")
-        if not pred.result:
-            await msg.delete()
-            suggestions = get(ctx.guild.text_channels, name="suggestions")
-            if not suggestions:
-                suggestions = await ctx.guild.create_text_channel(
-                    "suggestions", overwrites=overwrites, reason="Suggestion cog setup"
-                )
-            await self.config.guild(ctx.guild).suggest_id.set(suggestions.id)
-
-            msg = await ctx.send(
-                "Do you want to use the same channel for approved and rejected suggestions? (If yes, they won't be reposted anywhere, only their title will change accordingly.)"
-            )
-            start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
-            pred = ReactionPredicate.yes_or_no(msg, ctx.author)
-            try:
-                await self.bot.wait_for("reaction_add", timeout=30, check=pred)
-            except asyncio.TimeoutError:
-                await msg.delete()
-                return await ctx.send("You took too long. Try again, please.")
-            if pred.result:
-                await msg.delete()
-                await self.config.guild(ctx.guild).same.set(True)
-            else:
-                await msg.delete()
-                approved = get(ctx.guild.text_channels, name="approved-suggestions")
-                if not approved:
-                    msg = await ctx.send(
-                        "Do you want to have an approved suggestions channel?"
-                    )
-                    start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
-                    pred = ReactionPredicate.yes_or_no(msg, ctx.author)
-                    try:
-                        await self.bot.wait_for("reaction_add", timeout=30, check=pred)
-                    except asyncio.TimeoutError:
-                        await msg.delete()
-                        return await ctx.send("You took too long. Try again, please.")
-                    if pred.result:
-                        approved = await ctx.guild.create_text_channel(
-                            "approved-suggestions",
-                            overwrites=overwrites,
-                            reason="Suggestion cog setup",
-                        )
-                        await self.config.guild(ctx.guild).approve_id.set(approved.id)
-                    await msg.delete()
-                else:
-                    await self.config.guild(ctx.guild).approve_id.set(approved.id)
-                rejected = get(ctx.guild.text_channels, name="rejected-suggestions")
-                if not rejected:
-                    msg = await ctx.send(
-                        "Do you want to have a rejected suggestions channel?"
-                    )
-                    start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
-                    pred = ReactionPredicate.yes_or_no(msg, ctx.author)
-                    try:
-                        await self.bot.wait_for("reaction_add", timeout=30, check=pred)
-                    except asyncio.TimeoutError:
-                        await msg.delete()
-                        return await ctx.send("You took too long. Try again, please.")
-                    if pred.result:
-                        rejected = await ctx.guild.create_text_channel(
-                            "rejected-suggestions",
-                            overwrites=overwrites,
-                            reason="Suggestion cog setup",
-                        )
-                        await self.config.guild(ctx.guild).reject_id.set(rejected.id)
-                    await msg.delete()
-                else:
-                    await self.config.guild(ctx.guild).reject_id.set(rejected.id)
-
-                msg = await ctx.send(
-                    "Do you want to keep suggestions in the original suggestion channel after being approved/rejected?"
-                )
-                start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
-                pred = ReactionPredicate.yes_or_no(msg, ctx.author)
-                try:
-                    await self.bot.wait_for("reaction_add", timeout=30, check=pred)
-                except asyncio.TimeoutError:
-                    await msg.delete()
-                    return await ctx.send("You took too long. Try again, please.")
-                if pred.result:
-                    await self.config.guild(ctx.guild).delete_suggestion.set(False)
-                await msg.delete()
-        else:
-            await msg.delete()
-            msg = await ctx.send(
-                "Mention the channel where you want me to post new suggestions."
-            )
-            try:
-                await self.bot.wait_for("message", timeout=30, check=predchan)
-            except asyncio.TimeoutError:
-                await msg.delete()
-                return await ctx.send("You took too long. Try again, please.")
-            suggestion = predchan.result
-            await self.config.guild(ctx.guild).suggest_id.set(suggestion.id)
-            await msg.delete()
-
-            msg = await ctx.send(
-                "Do you want to use the same channel for approved and rejected suggestions? (If yes, they won't be reposted anywhere, only their title will change accordingly.)"
-            )
-            start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
-            pred = ReactionPredicate.yes_or_no(msg, ctx.author)
-            try:
-                await self.bot.wait_for("reaction_add", timeout=30, check=pred)
-            except asyncio.TimeoutError:
-                await msg.delete()
-                return await ctx.send("You took too long. Try again, please.")
-            if pred.result:
-                await msg.delete()
-                await self.config.guild(ctx.guild).same.set(True)
-            else:
-                await msg.delete()
-                msg = await ctx.send(
-                    "Do you want to have an approved suggestions channel?"
-                )
-                start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
-                pred = ReactionPredicate.yes_or_no(msg, ctx.author)
-                try:
-                    await self.bot.wait_for("reaction_add", timeout=30, check=pred)
-                except asyncio.TimeoutError:
-                    await msg.delete()
-                    return await ctx.send("You took too long. Try again, please.")
-                if pred.result:
-                    await msg.delete()
-                    msg = await ctx.send(
-                        "Mention the channel where you want me to post approved suggestions."
-                    )
-                    try:
-                        await self.bot.wait_for("message", timeout=30, check=predchan)
-                    except asyncio.TimeoutError:
-                        await msg.delete()
-                        return await ctx.send("You took too long. Try again, please.")
-                    approved = predchan.result
-                    await self.config.guild(ctx.guild).approve_id.set(approved.id)
-                await msg.delete()
-
-                msg = await ctx.send(
-                    "Do you want to have a rejected suggestions channel?"
-                )
-                start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
-                pred = ReactionPredicate.yes_or_no(msg, ctx.author)
-                try:
-                    await self.bot.wait_for("reaction_add", timeout=30, check=pred)
-                except asyncio.TimeoutError:
-                    await msg.delete()
-                    return await ctx.send("You took too long. Try again, please.")
-                if pred.result:
-                    await msg.delete()
-                    msg = await ctx.send(
-                        "Mention the channel where you want me to post rejected suggestions."
-                    )
-                    try:
-                        await self.bot.wait_for("message", timeout=30, check=predchan)
-                    except asyncio.TimeoutError:
-                        await msg.delete()
-                        return await ctx.send("You took too long. Try again, please.")
-                    rejected = predchan.result
-                    await self.config.guild(ctx.guild).reject_id.set(rejected.id)
-                await msg.delete()
-
-                msg = await ctx.send(
-                    "Do you want to keep suggestions in the original suggestion channel after being approved/rejected?"
-                )
-                start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
-                pred = ReactionPredicate.yes_or_no(msg, ctx.author)
-                try:
-                    await self.bot.wait_for("reaction_add", timeout=30, check=pred)
-                except asyncio.TimeoutError:
-                    await msg.delete()
-                    return await ctx.send("You took too long. Try again, please.")
-                if pred.result:
-                    await self.config.guild(ctx.guild).delete_suggestion.set(False)
-                await msg.delete()
-        await ctx.send(
-            "You have finished the setup! Please, move your channels to the category you want them in."
-        )
-
     @suggestset.command(name="channel")
     async def suggestset_channel(
         self, ctx: commands.Context, channel: discord.TextChannel = None
@@ -625,6 +426,16 @@ class Suggestion(commands.Cog):
             await self.config.guild(ctx.guild).reject_id.set(None)
         await ctx.tick()
 
+    @suggestset.command(name="same")
+    async def suggestset_same(self, ctx: commands.Context, same: bool):
+        """Set whether to use the same channel for new and finished suggestions."""
+        await ctx.send(
+            "Suggestions won't be reposted anywhere, only their title will change accordingly."
+            if same
+            else "Suggestions will go to their appropriate channels upon approving/rejecting."
+        )
+        await self.config.guild(ctx.guild).same.set(same)
+
     @suggestset.command(name="upemoji")
     async def suggestset_upemoji(
         self, ctx: commands.Context, up_emoji: discord.Emoji = None
@@ -646,7 +457,7 @@ class Suggestion(commands.Cog):
     ):
         """ Set custom reactions emoji instead of ❎. """
         if not down_emoji:
-            await self.config.guild(ctx.guild).up_emoji.set(None)
+            await self.config.guild(ctx.guild).down_emoji.set(None)
         else:
             try:
                 await ctx.message.add_reaction(down_emoji)
@@ -657,7 +468,7 @@ class Suggestion(commands.Cog):
 
     @suggestset.command(name="autodelete")
     async def suggestset_autodelete(self, ctx: commands.Context, on_off: bool = None):
-        """ Toggle whether after `[p]suggest`, the bot deletes the message. """
+        """ Toggle whether after `[p]suggest`, the bot deletes the command message. """
         target_state = (
             on_off
             if on_off
@@ -668,6 +479,16 @@ class Suggestion(commands.Cog):
             await ctx.send("Auto deletion is now enabled.")
         else:
             await ctx.send("Auto deletion is now disabled.")
+
+    @suggestset.command(name="delete")
+    async def suggestset_delete(self, ctx: commands.Context, delete: bool):
+        """Set whether suggestions in the original suggestion channel get deleted after being approved/rejected."""
+        await ctx.send(
+            "Suggestions will be deleted upon approving/rejecting from the original suggestion channel."
+            if delete
+            else "Suggestions will stay in the original channel after approving/rejecting."
+        )
+        await self.config.guild(ctx.guild).delete_suggestion.set(delete)
 
     @suggestset.command(name="settings")
     async def suggestset_settings(self, ctx: command.Context):
