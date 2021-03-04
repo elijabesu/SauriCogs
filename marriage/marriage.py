@@ -243,7 +243,7 @@ class Marriage(commands.Cog):
         *,
         description: str,
     ):
-        """Add custom action."""
+        """Add a custom action."""
         if action in await self._get_actions(ctx):
             return await ctx.send("Uh oh, that's already a registered action.")
         await self.config.guild(ctx.guild).custom_actions.set_raw(
@@ -260,7 +260,7 @@ class Marriage(commands.Cog):
 
     @marryset_actions.command(name="remove")
     async def marryset_actions_remove(self, ctx: commands.Context, action: str):
-        """Remove custom action."""
+        """Remove a custom action."""
         if action not in await self._get_actions(ctx):
             return await ctx.send("Uh oh, that's not a registered action.")
         if await self._is_custom(ctx, action):
@@ -272,7 +272,7 @@ class Marriage(commands.Cog):
 
     @marryset_actions.command(name="show")
     async def marryset_actions_show(self, ctx: commands.Context, action: str):
-        """Show custom action."""
+        """Show a custom action."""
         if await self._is_removed(ctx, action):
             return await ctx.send("Uh oh, that's not a registered action.")
 
@@ -307,7 +307,7 @@ class Marriage(commands.Cog):
     async def marryset_gifts_add(
         self, ctx: commands.Context, gift: str, temper: int, price: int
     ):
-        """Add custom gift."""
+        """Add a custom gift."""
         if gift in await self._get_gifts(ctx):
             return await ctx.send("Uh oh, that's already a registered gift.")
         await self.config.guild(ctx.guild).custom_gifts.set_raw(
@@ -317,7 +317,7 @@ class Marriage(commands.Cog):
 
     @marryset_gifts.command(name="remove")
     async def marryset_gifts_remove(self, ctx: commands.Context, gift: str):
-        """Remove custom gift."""
+        """Remove a custom gift."""
         if gift not in await self._get_gifts(ctx):
             return await ctx.send("Uh oh, that's not a registered gift.")
         if await self._is_custom(ctx, gift):
@@ -329,7 +329,7 @@ class Marriage(commands.Cog):
 
     @marryset_gifts.command(name="show")
     async def marryset_gifts_show(self, ctx: commands.Context, gift: str):
-        """Show custom gift."""
+        """Show a custom gift."""
         if await self._is_removed(ctx, gift):
             return await ctx.send("Uh oh, that's not a registered gift.")
 
@@ -714,12 +714,11 @@ class Marriage(commands.Cog):
         ctx: commands.Context,
         action: str,
         member: discord.Member,
-        item: str = None,
     ):
         """Do something with someone"""
         gc = self.config.guild
         mc = self.config.member
-        actions, gifts = await self._get_actions(ctx), await self._get_gifts(ctx)
+        actions = await self._get_actions(ctx)
 
         if not await gc(ctx.guild).toggle():
             return await ctx.send("Marriage is not enabled!")
@@ -735,57 +734,29 @@ class Marriage(commands.Cog):
                 ctx.author.mention, member.mention
             )
 
-            author_gift, member_gift = 0, -1
-
-        elif action == "gift":
-            exertion = await gc(ctx.guild).custom_gifts.get_raw(item, default=None)
-            if not exertion:
-                exertion = self._DEFAULT_GIFTS.get(item)
-
-            if item not in gifts:
-                return await ctx.send(f"Available gifts are: {humanize_list(gifts)}")
-
-            endtext_format = await gc(ctx.guild).gift_text()
-            endtext = endtext_format.format(ctx.author.mention, item, member.mention)
-
-            author_gift = await mc(ctx.author).gifts.get_raw(item, default=0)
-            member_gift = await mc(member).gifts.get_raw(item, default=0)
-
         else:
             return await ctx.send(f"Available actions are: {humanize_list(actions)}")
 
         temper, price = exertion.get("temper"), exertion.get("price")
 
-        if author_gift == 0:
-            price = int(round(price))
-            if await self.config.guild(ctx.guild).currency() == 0:
-                if await bank.can_spend(ctx.author, price):
-                    await bank.withdraw_credits(ctx.author, price)
-                    member_gift += 1
-                    author_gift -= 1
-                else:
-                    return await ctx.send("Uh oh, you cannot afford this.")
+         if await self.config.guild(ctx.guild).currency() == 0:
+            if await bank.can_spend(ctx.author, price):
+                await bank.withdraw_credits(ctx.author, price)
             else:
-                author_cookies = int(
-                    await self.bot.get_cog("Cookies")
-                    .config.member(ctx.author)
-                    .cookies()
-                )
-                if price <= author_cookies:
-                    await self.bot.get_cog("Cookies").config.member(
-                        ctx.author
-                    ).cookies.set(author_cookies - price)
-                    member_gift += 1
-                    author_gift -= 1
-                else:
-                    return await ctx.send("Uh oh, you cannot afford this.")
+                return await ctx.send("Uh oh, you cannot afford this.")
         else:
-            author_gift -= 1
-            member_gift += 1
-        if author_gift >= 0:
-            await mc(ctx.author).gifts.set_raw(item, value=author_gift)
-        if member_gift > 0:
-            await mc(member).gifts.set_raw(item, value=member_gift)
+            author_cookies = int(
+                await self.bot.get_cog("Cookies")
+                .config.member(ctx.author)
+                .cookies()
+            )
+            if price <= author_cookies:
+                await self.bot.get_cog("Cookies").config.member(
+                    ctx.author
+                ).cookies.set(author_cookies - price)
+            else:
+                return await ctx.send("Uh oh, you cannot afford this.")
+
         if exertion.get("require_consent"):
             await ctx.send(
                 exertion.get("consent_description").format(
@@ -842,51 +813,79 @@ class Marriage(commands.Cog):
             if await mc(ctx.author).married():
                 for sid in spouses:
                     spouse = ctx.guild.get_member(sid)
-                    s_temp = await mc(spouse).temper()
-                    if s_temp < temper:
-                        new_s_temp = 0
-                    else:
-                        new_s_temp = s_temp - temper
-                    await mc(spouse).temper.set(new_s_temp)
-                    if new_s_temp <= 0:
-                        async with self.config.member(ctx.author).current() as acurrent:
-                            acurrent.remove(spouse.id)
-                        async with self.config.member(spouse).current() as tcurrent:
-                            tcurrent.remove(ctx.author.id)
-                        async with self.config.member(ctx.author).exes() as aexes:
-                            aexes.append(spouse.id)
-                        async with self.config.member(spouse).exes() as texes:
-                            texes.append(ctx.author.id)
-                        if len(await self.config.member(ctx.author).current()) == 0:
-                            await self.config.member(ctx.author).married.set(False)
-                            await self.config.member(ctx.author).divorced.set(True)
-                        if len(await self.config.member(spouse).current()) == 0:
-                            await self.config.member(spouse).married.set(False)
-                            await self.config.member(spouse).divorced.set(True)
-                        if await self.config.guild(ctx.guild).currency() == 0:
-                            abal = await bank.get_balance(ctx.author)
-                            tamount = int(round(tbal * court_multiplier))
-                            await bank.withdraw_credits(ctx.author, abal)
-                            await bank.deposit_credits(spouse, abal)
-                        else:
-                            author_cookies = int(
-                                await self.bot.get_cog("Cookies")
-                                .config.member(ctx.author)
-                                .cookies()
-                            )
-                            spouse_cookies = int(
-                                await self.bot.get_cog("Cookies")
-                                .config.member(spouse)
-                                .cookies()
-                            )
-                            await self.bot.get_cog("Cookies").config.member(
-                                ctx.author
-                            ).cookies.set(0)
-                            await self.bot.get_cog("Cookies").config.member(
-                                spouse
-                            ).cookies.set(spouse_cookies + author_cookies)
-                        endtext = f"{endtext}\n:broken_heart: {ctx.author.mention} has made {spouse.mention} completely unhappy "
-                        f"with their actions so {spouse.mention} left them and took all their money!"
+                    endtext = await self._maybe_divorce(ctx, spouse, endtext)
+        await ctx.send(endtext)
+
+    @commands.max_concurrency(1, commands.BucketType.channel, wait=True)
+    @commands.guild_only()
+    @commands.command()
+    async def mgift(
+        self,
+        ctx: commands.Context,
+        member: discord.Member,
+        item: str,
+    ):
+        gc = self.config.guild
+        mc = self.config.member
+        gifts = await self._get_gifts(ctx)
+
+        if not await gc(ctx.guild).toggle():
+            return await ctx.send("Marriage is not enabled!")
+
+        if member.id == ctx.author.id:
+            return await ctx.send("You cannot perform anything with yourself!")
+
+        exertion = await gc(ctx.guild).custom_gifts.get_raw(item, default=None)
+        if not exertion:
+            exertion = self._DEFAULT_GIFTS.get(item)
+
+        if item not in gifts:
+            return await ctx.send(f"Available gifts are: {humanize_list(gifts)}")
+
+        endtext_format = await gc(ctx.guild).gift_text()
+        endtext = endtext_format.format(ctx.author.mention, item, member.mention)
+
+        author_gift = await mc(ctx.author).gifts.get_raw(item, default=0)
+        member_gift = await mc(member).gifts.get_raw(item, default=0)
+
+        temper, price = exertion.get("temper"), exertion.get("price")
+
+        if author_gift == 0:
+            if await self.config.guild(ctx.guild).currency() == 0:
+                if await bank.can_spend(ctx.author, price):
+                    await bank.withdraw_credits(ctx.author, price)
+                    member_gift += 1
+                    author_gift -= 1
+                else:
+                    return await ctx.send("Uh oh, you cannot afford this.")
+            else:
+                author_cookies = int(
+                    await self.bot.get_cog("Cookies")
+                    .config.member(ctx.author)
+                    .cookies()
+                )
+                if price <= author_cookies:
+                    await self.bot.get_cog("Cookies").config.member(
+                        ctx.author
+                    ).cookies.set(author_cookies - price)
+                    member_gift += 1
+                    author_gift -= 1
+                else:
+                    return await ctx.send("Uh oh, you cannot afford this.")
+        else:
+            author_gift -= 1
+            member_gift += 1
+        if author_gift >= 0:
+            await mc(ctx.author).gifts.set_raw(item, value=author_gift)
+        if member_gift > 0:
+            await mc(member).gifts.set_raw(item, value=member_gift)
+
+        spouses = await mc(ctx.author).current()
+        if member.id not in spouses:
+            if await mc(ctx.author).married():
+                for sid in spouses:
+                    spouse = ctx.guild.get_member(sid)
+                    endtext = await self._maybe_divorce(ctx, spouse, endtext)
         await ctx.send(endtext)
 
     async def _get_actions(self, ctx):
@@ -947,3 +946,43 @@ class Marriage(commands.Cog):
         gifts = await self.config.guild(ctx.guild).removed_gifts()
 
         return item in actions or item in gifts
+
+    async def _get_user_cookies(self, ctx, user):
+        return await self.bot.get_cog("Cookies").config.member(user).cookies()
+
+    async def _set_user_cookies(self, ctx, user, amount):
+        return await self.bot.get_cog("Cookies").config.member(user).cookies.set(amount)
+
+    async def _maybe_divorce(self, ctx, spouse, endtext):
+        mc = self.config.member
+        s_temp = await mc(spouse).temper()
+        if s_temp < temper:
+            new_s_temp = 0 if s_temp < temper else s_temp - temper
+        await mc(spouse).temper.set(new_s_temp)
+        if new_s_temp <= 0:
+            async with mc(ctx.author).current() as acurrent:
+                acurrent.remove(spouse.id)
+            async with mc(spouse).current() as tcurrent:
+                tcurrent.remove(ctx.author.id)
+            async with mc(ctx.author).exes() as aexes:
+                aexes.append(spouse.id)
+            async with mc(spouse).exes() as texes:
+                texes.append(ctx.author.id)
+            if len(await mc(ctx.author).current()) == 0:
+                await mc(ctx.author).married.set(False)
+                await mc(ctx.author).divorced.set(True)
+            if len(await mc(spouse).current()) == 0:
+                await mc(spouse).married.set(False)
+                await mc(spouse).divorced.set(True)
+            if await self.config.guild(ctx.guild).currency() == 0:
+                abal = await bank.get_balance(ctx.author)
+                tamount = int(round(tbal * court_multiplier))
+                await bank.withdraw_credits(ctx.author, abal)
+                await bank.deposit_credits(spouse, abal)
+            else:
+                author_cookies = await self._get_user_cookies(ctx, ctx.author)
+                spouse_cookies = await self._get_user_cookies(ctx, spouse)
+                await self._set_user_cookies(ctx, ctx.author, 0)
+                await self._set_user_cookies(ctx, spouse, spouse_cookies + author_cookies)
+            endtext = f"{endtext}\n:broken_heart: {ctx.author.mention} has made {spouse.mention} completely unhappy "
+            f"with their actions so {spouse.mention} left them and took all their money!"
