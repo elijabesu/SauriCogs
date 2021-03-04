@@ -285,7 +285,7 @@ class Marriage(commands.Cog):
                 return await ctx.send("Uh oh, that's not a registered action.")
         await ctx.send(
             box(
-                f"""= {action} =
+                f"""= {action.capitalize()} =
 temper:: {data.get('temper')}
 price:: {data.get('price')}
 require_consent:: {data.get('require_consent')}
@@ -345,7 +345,7 @@ description:: {data.get('description')}""",
                 return await ctx.send("Uh oh, that's not a registered gift.")
         await ctx.send(
             box(
-                f"""= {gift} =
+                f"""= {gift.capitalize()} =
 temper:: {data.get('temper')}
 price:: {data.get('price')}""",
                 lang="asciidoc",
@@ -906,6 +906,21 @@ price:: {data.get('price')}""",
             await mc(ctx.author).gifts.set_raw(item, value=author_gift)
         if member_gift > 0:
             await mc(member).gifts.set_raw(item, value=member_gift)
+
+        t_temp = await mc(member).temper()
+        t_missing = 100 - t_temp
+        if t_missing != 0:
+            if temper <= t_missing:
+                await mc(member).temper.set(t_temp + temper)
+            else:
+                await mc(member).temper.set(100)
+        a_temp = await mc(ctx.author).temper()
+        a_missing = 100 - a_temp
+        if a_missing != 0:
+            if temper <= a_missing:
+                await mc(ctx.author).temper.set(a_temp + temper)
+            else:
+                await mc(ctx.author).temper.set(100)
 
         spouses = await mc(ctx.author).current()
         if member.id not in spouses:
