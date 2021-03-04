@@ -1,7 +1,6 @@
 import asyncio
 import discord
-
-from discord.utils import get
+import datetime
 
 from redbot.core import Config, checks, commands
 from redbot.core.utils.chat_formatting import humanize_list
