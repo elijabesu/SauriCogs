@@ -5,7 +5,7 @@ import datetime
 import typing
 
 from redbot.core import Config, checks, commands, bank
-from redbot.core.utils.chat_formatting import humanize_list
+from redbot.core.utils.chat_formatting import humanize_list, box
 from redbot.core.utils.predicates import MessagePredicate
 
 from redbot.core.bot import Red
@@ -284,12 +284,15 @@ class Marriage(commands.Cog):
             if not data:
                 return await ctx.send("Uh oh, that's not a registered action.")
         await ctx.send(
-            f"**{action}**\n"
-            f"- temper: {data.get('temper')}\n"
-            f"- price: {data.get('price')}\n"
-            f"- require_consent: {data.get('require_consent')}\n"
-            f"- consent_description: {data.get('consent_description')}\n"
-            f"- description: {data.get('description')}"
+            box(
+                f"""= {action} =
+temper:: {data.get('temper')}
+price:: {data.get('price')}
+require_consent:: {data.get('require_consent')}
+consent_description:: {data.get('consent_description')}
+description:: {data.get('description')}""",
+                lang="asciidoc",
+            )
         )
 
     @marryset_actions.command(name="all")
@@ -341,9 +344,12 @@ class Marriage(commands.Cog):
             if not data:
                 return await ctx.send("Uh oh, that's not a registered gift.")
         await ctx.send(
-            f"**{gift}**\n"
-            f"- temper: {data.get('temper')}\n"
-            f"- price: {data.get('price')}"
+            box(
+                f"""= {gift} =
+temper:: {data.get('temper')}
+price:: {data.get('price')}""",
+                lang="asciidoc",
+            )
         )
 
     @marryset_gifts.command(name="all")
@@ -455,10 +461,33 @@ class Marriage(commands.Cog):
         for ex_id in exes_ids:
             ex = ctx.guild.get_member(ex_id)
             if ex:
-                ex = ex.name
-                exes.append(ex)
-        ex_text = "unknown" if exes == [] else humanize_list(exes)
+                exes.append(ex.name)
+        ex_text = "None" if exes == [] else humanize_list(exes)
         await ctx.send(f"{member.mention}'s exes are: {ex_text}")
+
+    @commands.guild_only()
+    @commands.command()
+    async def spouses(self, ctx: commands.Context, member: discord.Member = None):
+        if not await self.config.guild(ctx.guild).toggle():
+            return await ctx.send("Marriage is not enabled!")
+        if not member:
+            member = ctx.author
+        spouses_ids = await self.config.member(member).current()
+        sp_text = ""
+        for s_id in spouses_ids:
+            spouse = ctx.guild.get_member(s_id)
+            if spouse:
+                sp_temper = await self.config.member(spouse).temper()
+                sp_text += f"{spouse.name}:: {sp_temper}\n"
+        if sp_text == "":
+            sp_text = "None"
+        await ctx.send(
+            box(
+                f"""= {member.name}'s spouses =
+{sp_text.strip()}""",
+                lang="asciidoc",
+            )
+        )
 
     @commands.guild_only()
     @commands.command()
