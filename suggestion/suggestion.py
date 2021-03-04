@@ -622,7 +622,7 @@ class Suggestion(commands.Cog):
             if not channel:
                 channel = "None"
             else:
-                channel = channel.name(global_guild.name)
+                channel = f"{channel.name} ({global_guild.name})"
 
         servers = list()
         for sid in data["ignore"]:
