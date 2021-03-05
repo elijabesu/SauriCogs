@@ -13,7 +13,7 @@ class Gallery(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.2.1"
+    __version__ = "1.3.0"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -23,11 +23,16 @@ class Gallery(commands.Cog):
 
         self.config.register_guild(channels=[], whitelist=None, time=0)
 
-    @commands.command()
+    @commands.group(autohelp=True)
     @commands.guild_only()
     @checks.admin_or_permissions(manage_guild=True)
     @checks.bot_has_permissions(manage_messages=True)
-    async def addgallery(self, ctx: commands.Context, channel: discord.TextChannel):
+    async def galleryset(self, ctx: commands.Context):
+        """Various Gallery settings"""
+        pass
+
+    @galleryset.command(name="add")
+    async def galleryset_add(self, ctx: commands.Context, channel: discord.TextChannel):
         """Add a channel to the list of Gallery channels."""
         if channel.id not in await self.config.guild(ctx.guild).channels():
             async with self.config.guild(ctx.guild).channels() as channels:
@@ -40,11 +45,10 @@ class Gallery(commands.Cog):
                 f"{channel.mention} is already in the Gallery channels list."
             )
 
-    @commands.command()
-    @commands.guild_only()
-    @checks.admin_or_permissions(manage_guild=True)
-    @checks.bot_has_permissions(manage_messages=True)
-    async def rmgallery(self, ctx: commands.Context, channel: discord.TextChannel):
+    @galleryset.command(name="remove")
+    async def galleryset_remove(
+        self, ctx: commands.Context, channel: discord.TextChannel
+    ):
         """Remove a channel from the list of Gallery channels."""
         if channel.id in await self.config.guild(ctx.guild).channels():
             async with self.config.guild(ctx.guild).channels() as channels:
@@ -53,16 +57,11 @@ class Gallery(commands.Cog):
                 f"{channel.mention} has been removed from the Gallery channels list."
             )
         else:
-            await ctx.send(
-                f"{channel.mention} already isn't in the Gallery channels list."
-            )
+            await ctx.send(f"{channel.mention} isn't in the Gallery channels list.")
 
-    @commands.command()
-    @commands.guild_only()
-    @checks.admin_or_permissions(manage_guild=True)
-    @checks.bot_has_permissions(manage_messages=True)
-    async def galleryrole(self, ctx: commands.Context, role: discord.Role = None):
-        """Add a whitelisted role."""
+    @galleryset.command(name="role")
+    async def galleryset_role(self, ctx: commands.Context, role: discord.Role = None):
+        """Add or remove a whitelisted role."""
         if not role:
             await self.config.guild(ctx.guild).whitelist.set(None)
             await ctx.send(f"Whitelisted role has been deleted.")
@@ -70,11 +69,8 @@ class Gallery(commands.Cog):
             await self.config.guild(ctx.guild).whitelist.set(role.id)
             await ctx.send(f"{role.name} has been whitelisted.")
 
-    @commands.command()
-    @commands.guild_only()
-    @checks.admin_or_permissions(manage_guild=True)
-    @checks.bot_has_permissions(manage_messages=True)
-    async def gallerytime(self, ctx: commands.Context, time: int):
+    @galleryset.command(name="time")
+    async def galleryset_time(self, ctx: commands.Context, time: int):
         """Set how long (in seconds!!) the bot should wait before deleting non images.
 
         0 to reset (default time)"""
