@@ -50,7 +50,7 @@ class UniqueName(commands.Cog):
     @uniquenameset.command(name="roles")
     async def unset_roles(self, ctx: commands.Context):
         """View the protected roles."""
-        roles = []
+        roles = list()
         for rid in await self.config.guild(guild).roles():
             role = guild.get_role(rid)
             if role:
@@ -193,7 +193,7 @@ class UniqueName(commands.Cog):
                 await member.edit(nick=name, reason="UniqueName cog")
 
     async def _build_name_list(self, guild):
-        names = []
+        names = list()
         for rid in await self.config.guild(guild).roles():
             role = guild.get_role(rid)
             if role:
