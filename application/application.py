@@ -140,7 +140,6 @@ class Application(commands.Cog):
             "Your application has been sent to the Admins, thank you!"
         )
 
-    @commands.max_concurrency(1, commands.BucketType.guild, wait=True)
     @checks.admin_or_permissions(administrator=True)
     @commands.group(autohelp=True, aliases=["setapply", "applicationset"])
     @commands.guild_only()

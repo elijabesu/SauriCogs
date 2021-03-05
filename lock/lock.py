@@ -24,7 +24,6 @@ class Lock(commands.Cog):
 
         self.config.register_guild(moderator=None, everyone=True, ignore=[])
 
-    @commands.max_concurrency(1, commands.BucketType.guild, wait=True)
     @commands.group(autohelp=True)
     @commands.guild_only()
     @checks.admin_or_permissions(manage_guild=True)

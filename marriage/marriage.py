@@ -97,7 +97,6 @@ class Marriage(commands.Cog):
             "house": {"contentment": 60, "price": 25000},
         }
 
-    @commands.max_concurrency(1, commands.BucketType.guild, wait=True)
     @commands.group(autohelp=True, aliases=["marriage"])
     @commands.guild_only()
     @checks.admin_or_permissions(manage_guild=True)
@@ -842,7 +841,6 @@ price:: {data.get('price')}""",
                     )
         await ctx.send(endtext)
 
-    @commands.max_concurrency(1, commands.BucketType.channel, wait=True)
     @commands.guild_only()
     @commands.command()
     async def mgift(

@@ -23,7 +23,6 @@ class Pingable(commands.Cog):
 
         self.config.register_role(pingable=False, channel=None)
 
-    @commands.max_concurrency(1, commands.BucketType.guild, wait=True)
     @commands.group(autohelp=True)
     @checks.admin_or_permissions(manage_roles=True)
     @commands.guild_only()

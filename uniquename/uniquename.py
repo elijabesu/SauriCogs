@@ -22,7 +22,6 @@ class UniqueName(commands.Cog):
         )
         self.config.register_global(guilds=[])
 
-    @commands.max_concurrency(1, commands.BucketType.guild, wait=True)
     @commands.group(autohelp=True, aliases=["unset", "uniquename"])
     @checks.admin_or_permissions(manage_guild=True)
     @commands.guild_only()
