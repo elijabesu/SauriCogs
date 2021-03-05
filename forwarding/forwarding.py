@@ -1,10 +1,10 @@
 import discord
+import datetime
+import typing
 
 from discord.utils import get
 
 from redbot.core import Config, commands, checks
-
-from typing import Union
 
 
 class Forwarding(commands.Cog):
@@ -110,47 +110,56 @@ class Forwarding(commands.Cog):
 
     @forwardset.command(name="channel")
     async def forwardset_channel(
-        self, ctx: commands.Context, *, channel: Union[discord.TextChannel, int]
+        self, ctx: commands.Context, *, channel: discord.TextChannel = None]
     ):
-        """Set a channel in the current guild to be used for forwarding.
+        """Set a channel in the current guild to be used for forwarding."""
+        if channel:
+            await self.config.channel_id.set(channel.id)
+            await ctx.send(f"I will forward all DMs to {channel.mention}.")
+        else:
+            await self.config.channel_id.set(None)
+            await ctx.send("I will forward all DMs to you.")
 
-        Use 0 to reset."""
-        if isinstance(channel, int):
-            if channel == 0:
-                await self.config.guild_id.set(0)
-                await self.config.channel_id.set(0)
-                return await ctx.send("I will forward all DMs to you.")
-            return await ctx.send("Invalid value.")
-        await self.config.guild_id.set(ctx.guild.id)
-        await self.config.channel_id.set(channel.id)
-        await ctx.send(f"I will forward all DMs to {channel.mention}.")
-
-    @forwardset.command(name="role")
-    async def forwardset_role(
-        self, ctx: commands.Context, *, role: Union[discord.Role, int]
+    @forwardset.command(name="ping")
+    async def forwardset_ping(
+        self, ctx: commands.Context, *, ping: typing.Union[discord.Role, discord.Member, None]
     ):
-        """Set a role to be pinged for forwarding.
+        """Set a role or a member to be pinged for forwarding."""
+        if ping:
+            if isinstance(ping, discord.Role):
+                await self.config.ping_role_id.set(ping.id)
+            else:
+                await self.config.ping_user_id(ping.id)
+            await ctx.send(f"I will ping {ping.name}.\n"
+            f"Remember to `{ctx.clean_prefix}forwardset channel`")
+        else:
+            await self.config.ping_role_id.set(None)
+            await self.config.ping_user_id.set(None)
+            await ctx.send("I will not ping any role nor member.")
 
-        Use 0 to reset."""
-        if isinstance(role, int):
-            if role == 0:
-                await self.config.ping_role_id.set(0)
-                return await ctx.send("I will not ping any role.")
-            return await ctx.send("Invalid value.")
-        await self.config.ping_role_id.set(role.id)
-        await ctx.send(f"I will ping {role.mention}.")
+    @forwardset.command(name="settings")
+    async def forwardset_settings(self, ctx: commands.Context):
+        """See current settings."""
+        data = await self.config.all()
 
-    @forwardset.command(name="user")
-    async def forwardset_user(
-        self, ctx: commands.Context, *, member: Union[discord.Member, int]
-    ):
-        """Set a role to be pinged for forwarding.
+        channel = ctx.guild.get_channel(data["channel_id"])
+        channel = "None" if not channel else channel.mention
 
-        Use 0 to reset."""
-        if isinstance(member, int):
-            if member == 0:
-                await self.config.ping_user_id.set(0)
-                return await ctx.send("I will not ping anyone.")
-            return await ctx.send("Invalid value.")
-        await self.config.ping_user_id.set(member.id)
-        await ctx.send(f"I will ping {member.mention}.")
+        role = ctx.guild.get_role(data["ping_role_id"])
+        role = "None" if not role else role.name
+
+        user = ctx.guild.get_member(data["ping_user_id"])
+        user = "None" if not user else user.name
+
+        embed = discord.Embed(
+            colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
+        )
+        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
+        embed.title = "**__Unique Name settings:__**"
+        embed.set_footer(text="*required to function properly")
+
+        embed.add_field(name="Forwarding to channel:", value=channel)
+        embed.add_field(name="Pinged role:", value=role)
+        embed.add_field(name="Pinged member:", value=user)
+
+        await ctx.send(embed=embed)
