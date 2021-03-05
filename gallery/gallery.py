@@ -79,6 +79,34 @@ class Gallery(commands.Cog):
             f"I will wait {time} seconds before deleting messages that are not images."
         )
 
+    @galleryset.command(name="settings")
+    async def galleryset_settings(self, ctx: commands.Context):
+        """See current settings."""
+        data = await self.config.guild(ctx.guild).all()
+
+        channels = list()
+        for c_id in data["channels"]:
+            c = ctx.guild.get_channel(c_id)
+            if c:
+                channels.append(c.mention)
+        channels = "None" if channels == [] else humanize_list(channels)
+
+        role = ctx.guild.get_role(data["whitelist"])
+        role = "None" if not role else role.name
+
+        embed = discord.Embed(
+            colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
+        )
+        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
+        embed.title = "**__Unique Name settings:__**"
+        embed.set_footer(text="*required to function properly")
+
+        embed.add_field(name="Gallery channels*:", value=channels)
+        embed.add_field(name="Whitelisted role:", value=role)
+        embed.add_field(name="Wait time:", value=str(data["time"]))
+
+        await ctx.send(embed=embed)
+
     @commands.Cog.listener()
     async def on_message(self, message):
         if not message.guild:
