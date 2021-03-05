@@ -28,7 +28,6 @@ class UserLog(commands.Cog):
     @checks.admin_or_permissions(manage_guild=True)
     async def userlogset(self, ctx: commands.Context):
         """Manage user log settings."""
-        pass
 
     @userlogset.command(name="channel")
     async def user_channel_log(

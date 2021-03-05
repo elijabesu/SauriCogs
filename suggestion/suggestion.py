@@ -385,7 +385,6 @@ class Suggestion(commands.Cog):
     @commands.guild_only()
     async def suggestset(self, ctx: commands.Context):
         """Various Suggestion settings"""
-        pass
 
     @suggestset.command(name="channel")
     async def suggestset_channel(
@@ -492,6 +491,7 @@ class Suggestion(commands.Cog):
 
     @suggestset.command(name="settings")
     async def suggestset_settings(self, ctx: commands.Context):
+        """See current settings."""
         data = await self.config.guild(ctx.guild).all()
         suggest_channel = ctx.guild.get_channel(
             await self.config.guild(ctx.guild).suggest_id()
@@ -552,7 +552,6 @@ class Suggestion(commands.Cog):
         """Global suggestions settings.
 
         There is nothing like approved or rejected channels because global suggestions are meant to be for the bot only and will only work if it is sent in a server where normal suggestions are disabled."""
-        pass
 
     @globalset.command(name="toggle")
     async def suggestset_globalset_toggle(
@@ -613,6 +612,7 @@ class Suggestion(commands.Cog):
 
     @globalset.command(name="settings")
     async def suggestset_globalset_settings(self, ctx: commands.Context):
+        """See current settings."""
         data = await self.config.all()
         global_guild = self.bot.get_guild(data["server_id"])
         if not global_guild:

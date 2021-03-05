@@ -106,7 +106,6 @@ class Forwarding(commands.Cog):
     @commands.guild_only()
     async def forwardset(self, ctx: commands.Context):
         """Configuration commands for forwarding."""
-        pass
 
     @forwardset.command(name="channel")
     async def forwardset_channel(

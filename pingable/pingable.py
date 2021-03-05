@@ -30,7 +30,6 @@ class Pingable(commands.Cog):
     @checks.bot_has_permissions(manage_roles=True)
     async def pingableset(self, ctx: commands.Context):
         """Various Pingable settings."""
-        pass
 
     @pingableset.command(name="ping")
     async def pingableset_ping(self, ctx: commands.Context, *, role: discord.Role):
@@ -57,6 +56,7 @@ class Pingable(commands.Cog):
 
     @pingableset.command(name="settings")
     async def pingableset_settings(self, ctx: commands.Context):
+        """See current settings."""
         roles_nochannel = ""
         roles_channel = ""
 

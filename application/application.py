@@ -147,7 +147,6 @@ class Application(commands.Cog):
     @checks.bot_has_permissions(manage_channels=True, manage_roles=True)
     async def applyset(self, ctx: commands.Context):
         """Application settings"""
-        pass
 
     @applyset.command(name="questions")
     async def applyset_questions(self, ctx: commands.Context):

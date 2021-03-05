@@ -103,7 +103,6 @@ class Marriage(commands.Cog):
     @checks.admin_or_permissions(manage_guild=True)
     async def marryset(self, ctx: commands.Context):
         """Various Marriage settings."""
-        pass
 
     @marryset.command(name="toggle")
     async def marryset_toggle(self, ctx: commands.Context, on_off: bool = None):
@@ -229,7 +228,6 @@ class Marriage(commands.Cog):
     @marryset.group(autohelp=True, name="actions")
     async def marryset_actions(self, ctx: commands.Context):
         """Custom actions"""
-        pass
 
     @marryset_actions.command(name="add")
     async def marryset_actions_add(
@@ -304,7 +302,6 @@ description:: {data.get('description')}""",
     @marryset.group(autohelp=True, name="gifts")
     async def marryset_gifts(self, ctx: commands.Context):
         """Custom gifts"""
-        pass
 
     @marryset_gifts.command(name="add")
     async def marryset_gifts_add(

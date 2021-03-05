@@ -29,7 +29,6 @@ class UniqueName(commands.Cog):
     @checks.bot_has_permissions(manage_nicknames=True)
     async def uniquenameset(self, ctx: commands.Context):
         """Admin settings for ModName."""
-        pass
 
     @uniquenameset.command(name="role")
     async def unset_role(self, ctx: commands.Context, role: discord.Role):
@@ -134,9 +133,7 @@ class UniqueName(commands.Cog):
         config_roles = await self.config.guild(before.guild).roles()
         if len(config_roles) == 0:
             return
-        if len(before.roles) == 0:
-            pass
-        else:
+        if len(before.roles) != 0:
             for role in before.roles:
                 if role.id in config_roles:
                     return

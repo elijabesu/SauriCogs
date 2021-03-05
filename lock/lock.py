@@ -30,7 +30,6 @@ class Lock(commands.Cog):
     @checks.admin_or_permissions(manage_guild=True)
     async def lockset(self, ctx: commands.Context):
         """Manage lock settings."""
-        pass
 
     @lockset.command(name="role")
     async def lockset_role(self, ctx: commands.Context, role: discord.Role):
