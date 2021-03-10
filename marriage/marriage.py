@@ -237,7 +237,6 @@ class Marriage(commands.Cog):
         price: int,
         consent_description: typing.Optional[str],
         consent: typing.Optional[bool],
-        *,
         description: str,
     ):
         """Add a custom action.
