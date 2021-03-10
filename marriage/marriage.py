@@ -235,8 +235,8 @@ class Marriage(commands.Cog):
         action: str,
         contentment: int,
         price: int,
-        consent_description: typing.Optional[str] = None,
-        consent: typing.Optional[int] = False,
+        consent_description: typing.Optional[str],
+        consent: typing.Optional[int],
         *,
         description: str,
     ):
