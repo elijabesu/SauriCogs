@@ -812,14 +812,16 @@ price:: {data.get('price')}""",
                         await mc(ctx.author).contentment.set(a_temp + contentment)
                     else:
                         await mc(ctx.author).contentment.set(100)
-                endtext = f":smirk: {ctx.author.mention} banged {member.mention}"
+                endtext = exertion.get("description").format(
+                    author=ctx.author.mention, target=member.mention
+                )
             else:
                 a_temp = await mc(ctx.author).contentment()
                 if contentment < a_temp:
                     await mc(ctx.author).contentment.set(a_temp - contentment)
                 else:
                     await mc(ctx.author).contentment.set(0)
-                endtext = "They refused to bang you."
+                endtext = "They do not wish to do that."
         else:
             t_temp = await mc(member).contentment()
             t_missing = 100 - t_temp
