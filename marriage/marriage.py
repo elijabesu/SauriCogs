@@ -50,7 +50,7 @@ class Marriage(commands.Cog):
             custom_gifts={},
             removed_actions=[],
             removed_gifts=[],
-            gift_text=":gift: {0} has gifted one {1} to {2}",
+            gift_text=":gift: {author} has gifted one {item} to {target}",
         )
 
     @property
@@ -60,26 +60,26 @@ class Marriage(commands.Cog):
                 "contentment": 5,
                 "price": 0,
                 "require_consent": False,
-                "description": ":heart_eyes: {0} is flirting with {1}",
+                "description": ":heart_eyes: {author} is flirting with {target}",
             },
             "fuck": {
                 "contentment": 15,
                 "price": 0,
                 "require_consent": True,
-                "consent_description": "{0} wants to bang you, {1}, give consent?",
-                "description": ":smirk: {0} banged {1}",
+                "consent_description": "{author} wants to bang you, {target}, give consent?",
+                "description": ":smirk: {author} banged {target}",
             },
             "dinner": {
                 "contentment": 15,
                 "price": 0,
                 "require_consent": False,
-                "description": ":ramen: {0} took {1} on a fancy dinner",
+                "description": ":ramen: {author} took {target} on a fancy dinner",
             },
             "date": {
                 "contentment": 10,
                 "price": 0,
                 "require_consent": False,
-                "description": ":relaxed: {0} took {1} on a nice date",
+                "description": ":relaxed: {author} took {target} on a nice date",
             },
         }
 
@@ -240,7 +240,9 @@ class Marriage(commands.Cog):
         *,
         description: str,
     ):
-        """Add a custom action."""
+        """Add a custom action.
+
+        Available parametres are `{author}` and `{target}`"""
         if action in await self._get_actions(ctx):
             return await ctx.send("Uh oh, that's already a registered action.")
         await self.config.guild(ctx.guild).custom_actions.set_raw(
@@ -306,7 +308,9 @@ description:: {data.get('description')}""",
     async def marryset_gifts_add(
         self, ctx: commands.Context, gift: str, contentment: int, price: int
     ):
-        """Add a custom gift."""
+        """Add a custom gift.
+
+        Available parametres are `{author}` and `{target}`"""
         if gift in await self._get_gifts(ctx):
             return await ctx.send("Uh oh, that's already a registered gift.")
         await self.config.guild(ctx.guild).custom_gifts.set_raw(
@@ -756,7 +760,7 @@ price:: {data.get('price')}""",
             if not exertion:
                 exertion = self._DEFAULT_ACTIONS.get(action)
             endtext = exertion.get("description").format(
-                ctx.author.mention, member.mention
+                author=ctx.author.mention, target=member.mention
             )
 
         else:
@@ -783,7 +787,7 @@ price:: {data.get('price')}""",
         if exertion.get("require_consent"):
             await ctx.send(
                 exertion.get("consent_description").format(
-                    ctx.author.mention, member.mention
+                    author=ctx.author.mention, target=member.mention
                 )
             )
             pred = MessagePredicate.yes_or_no(ctx, ctx.channel, member)
@@ -867,7 +871,9 @@ price:: {data.get('price')}""",
             return await ctx.send(f"Available gifts are: {humanize_list(gifts)}")
 
         endtext_format = await gc(ctx.guild).gift_text()
-        endtext = endtext_format.format(ctx.author.mention, item, member.mention)
+        endtext = endtext_format.format(
+            author=ctx.author.mention, item=item, target=member.mention
+        )
 
         author_gift = await mc(ctx.author).gifts.get_raw(item, default=0)
         member_gift = await mc(member).gifts.get_raw(item, default=0)
