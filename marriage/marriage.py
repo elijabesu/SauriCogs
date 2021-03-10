@@ -236,7 +236,7 @@ class Marriage(commands.Cog):
         contentment: int,
         price: int,
         consent_description: typing.Optional[str],
-        consent: typing.Optional[int],
+        consent: typing.Optional[bool],
         *,
         description: str,
     ):
@@ -294,8 +294,8 @@ description:: {data.get('description')}""",
             )
         )
 
-    @marryset_actions.command(name="all")
-    async def marryset_actions_all(self, ctx: commands.Context):
+    @marryset_actions.command(name="list")
+    async def marryset_actions_list(self, ctx: commands.Context):
         """Show custom action."""
         actions = await self._get_actions(ctx)
         await ctx.send(humanize_list(actions))
@@ -352,8 +352,8 @@ price:: {data.get('price')}""",
             )
         )
 
-    @marryset_gifts.command(name="all")
-    async def marryset_gifts_all(self, ctx: commands.Context):
+    @marryset_gifts.command(name="list")
+    async def marryset_gifts_list(self, ctx: commands.Context):
         """Show custom gift."""
         gifts = await self._get_gifts(ctx)
         await ctx.send(humanize_list(gifts))
