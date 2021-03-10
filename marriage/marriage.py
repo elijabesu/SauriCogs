@@ -18,7 +18,7 @@ class Marriage(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.5.1"
+    __version__ = "1.5.2"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -174,9 +174,8 @@ class Marriage(commands.Cog):
         action: str,
         temper: int,
         price: int,
-        consent_description: typing.Optional[str] = None,
-        consent: typing.Optional[int] = False,
-        *,
+        consent_description: typing.Optional[str],
+        consent: typing.Optional[bool],
         description: str,
     ):
         """Add custom action.
@@ -230,8 +229,8 @@ class Marriage(commands.Cog):
             f"- description: {data.get('description')}"
         )
 
-    @marriage_actions.command(name="all")
-    async def marriage_actions_all(self, ctx: commands.Context):
+    @marriage_actions.command(name="list")
+    async def marriage_actions_list(self, ctx: commands.Context):
         """Show custom action."""
         actions = await self._get_actions(ctx)
         await ctx.send(humanize_list(actions))
@@ -286,8 +285,8 @@ class Marriage(commands.Cog):
             f"- price: {data.get('price')}"
         )
 
-    @marriage_gifts.command(name="all")
-    async def marriage_gifts_all(self, ctx: commands.Context):
+    @marriage_gifts.command(name="list")
+    async def marriage_gifts_list(self, ctx: commands.Context):
         """Show custom gift."""
         gifts = await self._get_gifts(ctx)
         await ctx.send(humanize_list(gifts))
@@ -781,14 +780,16 @@ class Marriage(commands.Cog):
                         await mc(ctx.author).temper.set(a_temp + temper)
                     else:
                         await mc(ctx.author).temper.set(100)
-                endtext = f":smirk: {ctx.author.mention} banged {member.mention}"
+                endtext = exertion.get("description").format(
+                    author=ctx.author.mention, target=member.mention
+                )
             else:
                 a_temp = await mc(ctx.author).temper()
                 if temper < a_temp:
                     await mc(ctx.author).temper.set(a_temp - temper)
                 else:
                     await mc(ctx.author).temper.set(0)
-                endtext = "They refused to bang you."
+                endtext = "They do not wish to do that."
         else:
             t_temp = await mc(member).temper()
             t_missing = 100 - t_temp
