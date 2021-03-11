@@ -1,6 +1,7 @@
 import asyncio
 import discord
 import datetime
+import typing
 
 from redbot.core import Config, checks, commands
 from redbot.core.utils.chat_formatting import humanize_list
@@ -26,9 +27,9 @@ class Lock(commands.Cog):
 
     @commands.group(autohelp=True)
     @commands.guild_only()
-    @checks.admin_or_permissions(manage_guild=True)
+    @checks.admin()
     async def lockset(self, ctx: commands.Context):
-        """Manage lock settings."""
+        """Various Lock settings."""
 
     @lockset.command(name="role")
     async def lockset_role(self, ctx: commands.Context, role: discord.Role):
@@ -105,7 +106,7 @@ class Lock(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @checks.mod_or_permissions(manage_roles=True)
+    @checks.mod()
     @checks.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
     @commands.group(invoke_without_command=True)
@@ -130,7 +131,7 @@ class Lock(commands.Cog):
         await ctx.send(":lock: Channel locked. Only Moderators can type.")
 
     @lock.command(name="server")
-    async def lock_server(self, ctx: commands.Context, confirmation: bool = False):
+    async def lock_server(self, ctx: commands.Context, confirmation: typing.Optional[bool]):
         """ Lock `@everyone` from sending messages in the entire server."""
         if not confirmation:
             return await ctx.send(
@@ -162,7 +163,7 @@ class Lock(commands.Cog):
                 )
         await ctx.send(":lock: Server locked. Only Moderators can type.")
 
-    @checks.mod_or_permissions(manage_roles=True)
+    @checks.mod()
     @checks.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
     @commands.group(invoke_without_command=True)

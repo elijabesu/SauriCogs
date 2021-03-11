@@ -24,7 +24,7 @@ class Pingable(commands.Cog):
         self.config.register_role(pingable=False, channel=None)
 
     @commands.group(autohelp=True)
-    @checks.admin_or_permissions(manage_roles=True)
+    @checks.admin()
     @commands.guild_only()
     @checks.bot_has_permissions(manage_roles=True)
     async def pingableset(self, ctx: commands.Context):
@@ -34,14 +34,14 @@ class Pingable(commands.Cog):
     async def pingableset_ping(self, ctx: commands.Context, *, role: discord.Role):
         """Make a role pingable."""
         await self.config.role(role).pingable.set(True)
-        await self.config.role(role).channel.set(None)
+        await self.config.role(role).channel.clear()
         await ctx.send(f"{role.name} set as pingable.")
 
     @pingableset.command(name="unping")
     async def pingableset_unping(self, ctx: commands.Context, *, role: discord.Role):
         """Make a role unpingable."""
-        await self.config.role(role).pingable.set(False)
-        await self.config.role(role).channel.set(None)
+        await self.config.role(role).pingable.clear()
+        await self.config.role(role).channel.clear()
         await ctx.send(f"{role.name} removed from the pingable roles.")
 
     @pingableset.command(name="pingin")

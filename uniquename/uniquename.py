@@ -1,5 +1,6 @@
 import discord
 import datetime
+import typing
 
 from redbot.core import Config, checks, commands
 from redbot.core.utils.chat_formatting import humanize_list
@@ -23,11 +24,11 @@ class UniqueName(commands.Cog):
         self.config.register_global(guilds=[])
 
     @commands.group(autohelp=True, aliases=["unset", "uniquename"])
-    @checks.admin_or_permissions(manage_guild=True)
+    @checks.admin()
     @commands.guild_only()
     @checks.bot_has_permissions(manage_nicknames=True)
     async def uniquenameset(self, ctx: commands.Context):
-        """Admin settings for ModName."""
+        """Various Unique Name settings."""
 
     @uniquenameset.command(name="role")
     async def unset_role(self, ctx: commands.Context, role: discord.Role):
@@ -58,7 +59,7 @@ class UniqueName(commands.Cog):
 
     @uniquenameset.command(name="channel")
     async def unset_channel(
-        self, ctx: commands.Context, channel: discord.TextChannel = None
+        self, ctx: commands.Context, channel: typing.Optional[discord.TextChannel]
     ):
         """Set the channel for warnings.
 
@@ -66,7 +67,7 @@ class UniqueName(commands.Cog):
         if channel:
             await self.config.guild(ctx.guild).channel.set(channel.id)
         else:
-            await self.config.guild(ctx.guild).channel.set(None)
+            await self.config.guild(ctx.guild).channel.clear()
         await ctx.tick()
 
     @uniquenameset.command(name="name")
@@ -76,7 +77,7 @@ class UniqueName(commands.Cog):
         await ctx.tick()
 
     @uniquenameset.command(name="toggle")
-    async def unset_toggle(self, ctx: commands.Context, on_off: bool = None):
+    async def unset_toggle(self, ctx: commands.Context, on_off: typing.Optional[bool]):
         """Toggle UniqueName for this server.
 
         If `on_off` is not provided, the state will be flipped."""

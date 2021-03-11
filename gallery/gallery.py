@@ -1,6 +1,7 @@
 import asyncio
 import discord
 import re
+import typing
 
 from redbot.core import Config, checks, commands
 
@@ -25,7 +26,7 @@ class Gallery(commands.Cog):
 
     @commands.group(autohelp=True)
     @commands.guild_only()
-    @checks.admin_or_permissions(manage_guild=True)
+    @checks.admin()
     @checks.bot_has_permissions(manage_messages=True)
     async def galleryset(self, ctx: commands.Context):
         """Various Gallery settings"""
@@ -59,10 +60,10 @@ class Gallery(commands.Cog):
             await ctx.send(f"{channel.mention} isn't in the Gallery channels list.")
 
     @galleryset.command(name="role")
-    async def galleryset_role(self, ctx: commands.Context, role: discord.Role = None):
+    async def galleryset_role(self, ctx: commands.Context, role: typing.Optional[discord.Role]):
         """Add or remove a whitelisted role."""
         if not role:
-            await self.config.guild(ctx.guild).whitelist.set(None)
+            await self.config.guild(ctx.guild).whitelist.clear()
             await ctx.send(f"Whitelisted role has been deleted.")
         else:
             await self.config.guild(ctx.guild).whitelist.set(role.id)

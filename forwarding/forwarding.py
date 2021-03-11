@@ -92,7 +92,7 @@ class Forwarding(commands.Cog):
         await destination.send(message)
         await ctx.send(f"Sent message to {destination}.")
 
-    @checks.admin()
+    @checks.is_owner()
     @commands.command()
     @commands.guild_only()
     @checks.bot_has_permissions(add_reactions=True)
@@ -101,22 +101,22 @@ class Forwarding(commands.Cog):
         await ctx.author.send(message)
         await ctx.tick()
 
-    @commands.group()
+    @commands.group(autohelp=True, aliases=["forwarding"])
     @checks.is_owner()
     @commands.guild_only()
     async def forwardset(self, ctx: commands.Context):
-        """Configuration commands for forwarding."""
+        """Various Forwarding settings."""
 
     @forwardset.command(name="channel")
     async def forwardset_channel(
-        self, ctx: commands.Context, *, channel: discord.TextChannel = None]
+        self, ctx: commands.Context, *, channel: typing.Optional[discord.TextChannel]
     ):
         """Set a channel in the current guild to be used for forwarding."""
         if channel:
             await self.config.channel_id.set(channel.id)
             await ctx.send(f"I will forward all DMs to {channel.mention}.")
         else:
-            await self.config.channel_id.set(None)
+            await self.config.channel_id.clear()
             await ctx.send("I will forward all DMs to you.")
 
     @forwardset.command(name="ping")
@@ -132,8 +132,8 @@ class Forwarding(commands.Cog):
             await ctx.send(f"I will ping {ping.name}.\n"
             f"Remember to `{ctx.clean_prefix}forwardset channel`")
         else:
-            await self.config.ping_role_id.set(None)
-            await self.config.ping_user_id.set(None)
+            await self.config.ping_role_id.clear()
+            await self.config.ping_user_id.clear()
             await ctx.send("I will not ping any role nor member.")
 
     @forwardset.command(name="settings")

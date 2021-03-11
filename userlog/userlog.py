@@ -1,5 +1,6 @@
 import datetime
 import discord
+import typing
 
 from redbot.core import checks, commands, Config
 
@@ -24,13 +25,13 @@ class UserLog(commands.Cog):
 
     @commands.group(autohelp=True, aliases=["userlog"])
     @commands.guild_only()
-    @checks.admin_or_permissions(manage_guild=True)
+    @checks.admin()
     async def userlogset(self, ctx: commands.Context):
-        """Manage user log settings."""
+        """Various User Log settings."""
 
     @userlogset.command(name="channel")
     async def user_channel_log(
-        self, ctx: commands.Context, channel: discord.TextChannel = None
+        self, ctx: commands.Context, channel: typing.Optional[discord.TextChannel]
     ):
         """Set the channel for logs.
 
@@ -38,11 +39,11 @@ class UserLog(commands.Cog):
         if channel:
             await self.config.guild(ctx.guild).channel.set(channel.id)
         else:
-            await self.config.guild(ctx.guild).channel.set(None)
+            await self.config.guild(ctx.guild).channel.clear()
         await ctx.tick()
 
     @userlogset.command(name="join")
-    async def user_join_log(self, ctx: commands.Context, on_off: bool = None):
+    async def user_join_log(self, ctx: commands.Context, on_off: typing.Optional[bool]):
         """Toggle logging when users join the current server.
 
         If `on_off` is not provided, the state will be flipped."""
@@ -56,7 +57,7 @@ class UserLog(commands.Cog):
             await ctx.send("Logging users joining is now disabled.")
 
     @userlogset.command(name="leave")
-    async def user_leave_log(self, ctx: commands.Context, on_off: bool = None):
+    async def user_leave_log(self, ctx: commands.Context, on_off: typing.Optional[bool]):
         """Toggle logging when users leave the current server.
 
         If `on_off` is not provided, the state will be flipped."""

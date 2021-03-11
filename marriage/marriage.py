@@ -99,12 +99,12 @@ class Marriage(commands.Cog):
 
     @commands.group(autohelp=True, aliases=["marriage"])
     @commands.guild_only()
-    @checks.admin_or_permissions(manage_guild=True)
+    @checks.admin()
     async def marryset(self, ctx: commands.Context):
         """Various Marriage settings."""
 
     @marryset.command(name="toggle")
-    async def marryset_toggle(self, ctx: commands.Context, on_off: bool = None):
+    async def marryset_toggle(self, ctx: commands.Context, on_off: typing.Optional[bool]):
         """Toggle Marriage for current server.
 
         If `on_off` is not provided, the state will be flipped."""
@@ -235,14 +235,14 @@ class Marriage(commands.Cog):
         action: str,
         contentment: int,
         price: int,
-        consent_description: typing.Optional[str] = None,
-        consent: typing.Optional[int] = False,
+        consent_description: typing.Optional[str],
+        consent: typing.Optional[int],
         *,
         description: str,
     ):
         """Add a custom action.
 
-        Available parametres are `{author}` and `{target}`"""
+        Available parameters are `{author}` and `{target}`"""
         if action in await self._get_actions(ctx):
             return await ctx.send("Uh oh, that's already a registered action.")
         await self.config.guild(ctx.guild).custom_actions.set_raw(
@@ -310,7 +310,7 @@ description:: {data.get('description')}""",
     ):
         """Add a custom gift.
 
-        Available parametres are `{author}` and `{target}`"""
+        Available parameters are `{author}` and `{target}`"""
         if gift in await self._get_gifts(ctx):
             return await ctx.send("Uh oh, that's already a registered gift.")
         await self.config.guild(ctx.guild).custom_gifts.set_raw(
@@ -360,7 +360,7 @@ price:: {data.get('price')}""",
 
     @commands.group(invoke_without_command=True)
     @commands.guild_only()
-    async def about(self, ctx: commands.Context, member: discord.Member = None):
+    async def about(self, ctx: commands.Context, member: typing.Optional[discord.Member]):
         """Display your or someone else's about"""
         if not await self.config.guild(ctx.guild).toggle():
             return await ctx.send("Marriage is not enabled!")
@@ -450,7 +450,7 @@ price:: {data.get('price')}""",
 
     @commands.guild_only()
     @commands.command()
-    async def exes(self, ctx: commands.Context, member: discord.Member = None):
+    async def exes(self, ctx: commands.Context, member: typing.Optional[discord.Member]):
         """Display your or someone else's exes"""
         if not await self.config.guild(ctx.guild).toggle():
             return await ctx.send("Marriage is not enabled!")
@@ -467,7 +467,7 @@ price:: {data.get('price')}""",
 
     @commands.guild_only()
     @commands.command()
-    async def spouses(self, ctx: commands.Context, member: discord.Member = None):
+    async def spouses(self, ctx: commands.Context, member: typing.Optional[discord.Member]):
         if not await self.config.guild(ctx.guild).toggle():
             return await ctx.send("Marriage is not enabled!")
         if not member:
@@ -491,12 +491,12 @@ price:: {data.get('price')}""",
 
     @commands.guild_only()
     @commands.command()
-    async def crush(self, ctx: commands.Context, member: discord.Member = None):
+    async def crush(self, ctx: commands.Context, member: typing.Optional[discord.Member]):
         """Tell us who you have a crush on"""
         if not await self.config.guild(ctx.guild).toggle():
             return await ctx.send("Marriage is not enabled!")
         if not member:
-            await self.config.member(ctx.author).crush.set(None)
+            await self.config.member(ctx.author).crush.clear()
         else:
             if member.id == ctx.author.id:
                 return await ctx.send("You cannot have a crush on yourself!")
@@ -584,8 +584,8 @@ price:: {data.get('price')}""",
         await self.config.member(ctx.author).married.set(True)
         await self.config.member(member).married.set(True)
 
-        await self.config.member(ctx.author).divorced.set(False)
-        await self.config.member(member).divorced.set(False)
+        await self.config.member(ctx.author).divorced.clear()
+        await self.config.member(member).divorced.clear()
 
         async with self.config.member(ctx.author).current() as acurrent:
             acurrent.append(member.id)
@@ -726,10 +726,10 @@ price:: {data.get('price')}""",
         async with self.config.member(member).exes() as texes:
             texes.append(ctx.author.id)
         if len(await self.config.member(ctx.author).current()) == 0:
-            await self.config.member(ctx.author).married.set(False)
+            await self.config.member(ctx.author).married.clear()
             await self.config.member(ctx.author).divorced.set(True)
         if len(await self.config.member(member).current()) == 0:
-            await self.config.member(member).married.set(False)
+            await self.config.member(member).married.clear()
             await self.config.member(member).divorced.set(True)
         await ctx.send(
             f":broken_heart: {ctx.author.mention} and {member.mention} got divorced...\n*{end_amount}.*"
