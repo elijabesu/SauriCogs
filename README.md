@@ -1,8 +1,8 @@
-[![](https://img.shields.io/badge/SauriCogs-by_elijabesu-ffb8d7.svg?style=popout-square&logo=python&logoColor=ffb8d7)](https://cogs.saurich.com/) [![](https://discord.com/api/guilds/816336417797570631/widget.png)](https://discord.gg/rrJVJddnVv)[![](https://img.shields.io/badge/Red%20DiscordBot-V3-red.svg)](https://github.com/Cog-Creators/Red-DiscordBot) [![](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
+[![](https://img.shields.io/badge/SauriCogs-by_elijabesu-ffb8d7.svg?style=popout-square&logo=python&logoColor=ffb8d7)](https://cogs.saurich.com/) [![](https://discord.com/api/guilds/816336417797570631/widget.png)](https://support.saurich.com/)[![](https://img.shields.io/badge/Red%20DiscordBot-V3-red.svg)](https://github.com/Cog-Creators/Red-DiscordBot) [![](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
 
 ## Contact me
 
-If you have any issues with any of the cogs, <a href="https://discord.gg/rrJVJddnVv">join my support Discord</a> or <a href="https://github.com/elijabesu/SauriCogs/issues">open an issue on GitHub</a>.
+If you have any issues with any of the cogs, <a href="https://support.saurich.com/">join my support Discord</a> or <a href="https://github.com/elijabesu/SauriCogs/issues">open an issue on GitHub</a>.
 
 ## How to install
 

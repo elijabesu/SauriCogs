@@ -26,7 +26,7 @@ Welcome to SauriCogs' documentation!
 .. Badges and artwork
 
 .. image:: https://discord.com/api/guilds/816336417797570631/widget.png
-    :target: https://discord.gg/rrJVJddnVv
+    :target: https://support.saurich.com/
     :alt: SaurBot's Harem
 
 .. image:: https://img.shields.io/badge/Red%20DiscordBot-V3-red.svg
