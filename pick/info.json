@@ -1,8 +1,8 @@
 {
     "author" : ["saurichable"],
-    "install_msg" : "Thank you for installing my cog! Note that **the output is user ID.** I suggest using it along with [nestedcommands](https://github.com/tmercswims/tmerc-cogs) and [scheduler](https://github.com/mikeshardmind/SinbadCogs).",
+    "install_msg" : "Thank you for installing my cog! Note that **the output is user ID.**",
     "name" : "Pick",
     "short" : "Pick a random user or a user with a specified role.",
-    "description" : "Pick a random user or a user with a specified role. For the latter, use `[p]pickrole <role>` first.",
+    "description" : "Pick a random user or a user with a specified role.",
     "tags" : ["pick"]
 }

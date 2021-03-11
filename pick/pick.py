@@ -8,9 +8,7 @@ from redbot.core import checks, commands
 
 
 class Pick(commands.Cog):
-    """Pick a random user or a user with a specified role. For the latter, use `[p]pickrole <role>` first.
-    **Output is a user ID.**
-    I suggest using it along with [nestedcommands](https://github.com/tmercswims/tmerc-cogs) and [scheduler](https://github.com/mikeshardmind/SinbadCogs)."""
+    """Pick a random user or a user with a specified role."""
 
     __author__ = "saurichable"
     __version__ = "1.2.0"
