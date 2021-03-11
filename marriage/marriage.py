@@ -104,7 +104,9 @@ class Marriage(commands.Cog):
         """Various Marriage settings."""
 
     @marryset.command(name="toggle")
-    async def marryset_toggle(self, ctx: commands.Context, on_off: typing.Optional[bool]):
+    async def marryset_toggle(
+        self, ctx: commands.Context, on_off: typing.Optional[bool]
+    ):
         """Toggle Marriage for current server.
 
         If `on_off` is not provided, the state will be flipped."""
@@ -236,8 +238,7 @@ class Marriage(commands.Cog):
         contentment: int,
         price: int,
         consent_description: typing.Optional[str],
-        consent: typing.Optional[int],
-        *,
+        consent: typing.Optional[bool],
         description: str,
     ):
         """Add a custom action.
@@ -294,8 +295,8 @@ description:: {data.get('description')}""",
             )
         )
 
-    @marryset_actions.command(name="all")
-    async def marryset_actions_all(self, ctx: commands.Context):
+    @marryset_actions.command(name="list")
+    async def marryset_actions_list(self, ctx: commands.Context):
         """Show custom action."""
         actions = await self._get_actions(ctx)
         await ctx.send(humanize_list(actions))
@@ -352,15 +353,17 @@ price:: {data.get('price')}""",
             )
         )
 
-    @marryset_gifts.command(name="all")
-    async def marryset_gifts_all(self, ctx: commands.Context):
+    @marryset_gifts.command(name="list")
+    async def marryset_gifts_list(self, ctx: commands.Context):
         """Show custom gift."""
         gifts = await self._get_gifts(ctx)
         await ctx.send(humanize_list(gifts))
 
     @commands.group(invoke_without_command=True)
     @commands.guild_only()
-    async def about(self, ctx: commands.Context, member: typing.Optional[discord.Member]):
+    async def about(
+        self, ctx: commands.Context, member: typing.Optional[discord.Member]
+    ):
         """Display your or someone else's about"""
         if not await self.config.guild(ctx.guild).toggle():
             return await ctx.send("Marriage is not enabled!")
@@ -450,7 +453,9 @@ price:: {data.get('price')}""",
 
     @commands.guild_only()
     @commands.command()
-    async def exes(self, ctx: commands.Context, member: typing.Optional[discord.Member]):
+    async def exes(
+        self, ctx: commands.Context, member: typing.Optional[discord.Member]
+    ):
         """Display your or someone else's exes"""
         if not await self.config.guild(ctx.guild).toggle():
             return await ctx.send("Marriage is not enabled!")
@@ -467,7 +472,9 @@ price:: {data.get('price')}""",
 
     @commands.guild_only()
     @commands.command()
-    async def spouses(self, ctx: commands.Context, member: typing.Optional[discord.Member]):
+    async def spouses(
+        self, ctx: commands.Context, member: typing.Optional[discord.Member]
+    ):
         if not await self.config.guild(ctx.guild).toggle():
             return await ctx.send("Marriage is not enabled!")
         if not member:
@@ -491,7 +498,9 @@ price:: {data.get('price')}""",
 
     @commands.guild_only()
     @commands.command()
-    async def crush(self, ctx: commands.Context, member: typing.Optional[discord.Member]):
+    async def crush(
+        self, ctx: commands.Context, member: typing.Optional[discord.Member]
+    ):
         """Tell us who you have a crush on"""
         if not await self.config.guild(ctx.guild).toggle():
             return await ctx.send("Marriage is not enabled!")
@@ -812,14 +821,16 @@ price:: {data.get('price')}""",
                         await mc(ctx.author).contentment.set(a_temp + contentment)
                     else:
                         await mc(ctx.author).contentment.set(100)
-                endtext = f":smirk: {ctx.author.mention} banged {member.mention}"
+                endtext = exertion.get("description").format(
+                    author=ctx.author.mention, target=member.mention
+                )
             else:
                 a_temp = await mc(ctx.author).contentment()
                 if contentment < a_temp:
                     await mc(ctx.author).contentment.set(a_temp - contentment)
                 else:
                     await mc(ctx.author).contentment.set(0)
-                endtext = "They refused to bang you."
+                endtext = "They do not wish to do that."
         else:
             t_temp = await mc(member).contentment()
             t_missing = 100 - t_temp
