@@ -23,7 +23,7 @@ class Pick(commands.Cog):
         """Pick a random user. *Output is a user ID.*
 
         I suggest using [nestedcommands by tmerc](https://github.com/tmercswims/tmerc-cogs) (Example of usage `[p]say Congratulations <@$(pick)>! You won!`)"""
-        if not (role or role.members):
+        if not role or not role.members:
             winner = random.choice(ctx.guild.members)
         else:
             winner = random.choice(role.members)
