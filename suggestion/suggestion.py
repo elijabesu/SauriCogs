@@ -1,14 +1,9 @@
-import asyncio
 import discord
 import datetime
 import typing
 
-from discord.utils import get
-
 from redbot.core import Config, checks, commands
 from redbot.core.utils.chat_formatting import humanize_list
-from redbot.core.utils.predicates import MessagePredicate, ReactionPredicate
-from redbot.core.utils.menus import start_adding_reactions
 
 from redbot.core.bot import Red
 
@@ -45,7 +40,7 @@ class Suggestion(commands.Cog):
         self.config.init_custom("SUGGESTION", 2)  # server_id, suggestion_id
         self.config.register_custom(
             "SUGGESTION",
-            author=[],
+            author=[],  # id, name, discriminator
             msg_id=0,
             finished=False,
             approved=False,
@@ -66,13 +61,11 @@ class Suggestion(commands.Cog):
                 if ctx.guild.id in await self.config.ignore():
                     return await ctx.send("Uh oh, suggestions aren't enabled.")
                 global_guild = self.bot.get_guild(await self.config.server_id())
-                channel = get(
-                    global_guild.text_channels, id=await self.config.channel_id()
-                )
+                channel = global_guild.get_channel(await self.config.channel_id())
             else:
                 return await ctx.send("Uh oh, suggestions aren't enabled.")
         else:
-            channel = get(ctx.guild.text_channels, id=suggest_id)
+            channel = ctx.guild.get_channel(suggest_id)
         if not channel:
             return await ctx.send(
                 "Uh oh, looks like your Admins haven't added the required channel."
@@ -132,81 +125,7 @@ class Suggestion(commands.Cog):
             is_global: typing.Optional[bool],
     ):
         """Approve a suggestion."""
-        if is_global:
-            if await self.config.toggle():
-                if ctx.author.id not in self.bot.owner_ids:
-                    return await ctx.send("Uh oh, you're not my owner.")
-                server = 1
-                global_guild = self.bot.get_guild(await self.config.server_id())
-                oldchannel = get(
-                    global_guild.text_channels, id=await self.config.channel_id()
-                )
-            else:
-                return await ctx.send("Global suggestions aren't enabled.")
-        else:
-            server = ctx.guild.id
-            oldchannel = get(
-                ctx.guild.text_channels,
-                id=await self.config.guild(ctx.guild).suggest_id(),
-            )
-            channel = get(
-                ctx.guild.text_channels,
-                id=await self.config.guild(ctx.guild).approve_id(),
-            )
-        msg_id = await self.config.custom("SUGGESTION", server, suggestion_id).msg_id()
-        if msg_id != 0:
-            if await self.config.custom("SUGGESTION", server, suggestion_id).finished():
-                return await ctx.send("This suggestion has been finished already.")
-        try:
-            oldmsg = await oldchannel.fetch_message(id=msg_id)
-        except discord.NotFound:
-            return await ctx.send("Uh oh, message with this ID doesn't exist.")
-        if not oldmsg:
-            return await ctx.send("Uh oh, message with this ID doesn't exist.")
-        embed = oldmsg.embeds[0]
-        content = oldmsg.content
-
-        op_info = await self.config.custom("SUGGESTION", server, suggestion_id).author()
-        op_id = int(op_info[0])
-        op = await self.bot.fetch_user(op_id)
-        op_name = op.name
-        op_avatar = op.avatar_url
-        if not op:
-            op_name = str(op_info[1])
-            op_avatar = ctx.guild.icon_url
-        embed.set_author(name=f"Approved suggestion by {op_name}", icon_url=op_avatar)
-
-        embed.add_field(
-            name="Results:", value=await self._get_results(ctx, oldmsg), inline=False
-        )
-
-        if is_global:
-            await oldmsg.edit(content=content, embed=embed)
-        else:
-            if channel:
-                if await self.config.guild(ctx.guild).delete_suggestion():
-                    await oldmsg.delete()
-                nmsg = await channel.send(content=content, embed=embed)
-                await self.config.custom(
-                    "SUGGESTION", server, suggestion_id
-                ).msg_id.set(nmsg.id)
-            else:
-                if not await self.config.guild(ctx.guild).same():
-                    if await self.config.guild(ctx.guild).delete_suggestion():
-                        await oldmsg.delete()
-                    await self.config.custom(
-                        "SUGGESTION", server, suggestion_id
-                    ).msg_id.set(1)
-                else:
-                    await oldmsg.edit(content=content, embed=embed)
-        await self.config.custom("SUGGESTION", server, suggestion_id).finished.set(True)
-        await self.config.custom("SUGGESTION", server, suggestion_id).approved.set(True)
-        await ctx.tick()
-
-        try:
-            await op.send(content="Your suggestion has been approved!", embed=embed)
-        except discord.Forbidden:
-            pass
+        await self._finish_suggestion(ctx, suggestion_id, is_global, True, None)
 
     @checks.admin()
     @commands.command()
@@ -218,92 +137,10 @@ class Suggestion(commands.Cog):
             suggestion_id: int,
             is_global: typing.Optional[bool],
             *,
-            reason="",
+            reason: typing.Optional[str],
     ):
         """Reject a suggestion. Reason is optional."""
-        if is_global:
-            if await self.config.toggle():
-                if ctx.author.id not in self.bot.owner_ids:
-                    return await ctx.send("Uh oh, you're not my owner.")
-                server = 1
-                global_guild = self.bot.get_guild(await self.config.server_id())
-                oldchannel = get(
-                    global_guild.text_channels, id=await self.config.channel_id()
-                )
-            else:
-                return await ctx.send("Global suggestions aren't enabled.")
-        else:
-            server = ctx.guild.id
-            oldchannel = get(
-                ctx.guild.text_channels,
-                id=await self.config.guild(ctx.guild).suggest_id(),
-            )
-            channel = get(
-                ctx.guild.text_channels,
-                id=await self.config.guild(ctx.guild).reject_id(),
-            )
-        msg_id = await self.config.custom("SUGGESTION", server, suggestion_id).msg_id()
-        if msg_id != 0:
-            if await self.config.custom("SUGGESTION", server, suggestion_id).finished():
-                return await ctx.send("This suggestion has been finished already.")
-        try:
-            oldmsg = await oldchannel.fetch_message(id=msg_id)
-        except discord.NotFound:
-            return await ctx.send("Uh oh, message with this ID doesn't exist.")
-        if not oldmsg:
-            return await ctx.send("Uh oh, message with this ID doesn't exist.")
-        embed = oldmsg.embeds[0]
-        content = oldmsg.content
-
-        op_info = await self.config.custom("SUGGESTION", server, suggestion_id).author()
-        op_id = int(op_info[0])
-        op = await self.bot.fetch_user(op_id)
-        op_name = op.name
-        op_avatar = op.avatar_url
-        if not op:
-            op_name = str(op_info[1])
-            op_avatar = ctx.guild.icon_url
-        embed.set_author(name=f"Rejected suggestion by {op_name}", icon_url=op_avatar)
-
-        embed.add_field(
-            name="Results:", value=await self._get_results(ctx, oldmsg), inline=False
-        )
-
-        if reason:
-            embed.add_field(name="Reason:", value=reason, inline=False)
-            await self.config.custom("SUGGESTION", server, suggestion_id).reason.set(
-                True
-            )
-            await self.config.custom("SUGGESTION", server, suggestion_id).rtext.set(
-                reason
-            )
-        if is_global:
-            await oldmsg.edit(content=content, embed=embed)
-        else:
-            if channel:
-                if await self.config.guild(ctx.guild).delete_suggestion():
-                    await oldmsg.delete()
-                nmsg = await channel.send(content=content, embed=embed)
-                await self.config.custom(
-                    "SUGGESTION", server, suggestion_id
-                ).msg_id.set(nmsg.id)
-            else:
-                if not await self.config.guild(ctx.guild).same():
-                    if await self.config.guild(ctx.guild).delete_suggestion():
-                        await oldmsg.delete()
-                    await self.config.custom(
-                        "SUGGESTION", server, suggestion_id
-                    ).msg_id.set(1)
-                else:
-                    await oldmsg.edit(content=content, embed=embed)
-        await self.config.custom("SUGGESTION", server, suggestion_id).finished.set(True)
-        await self.config.custom("SUGGESTION", server, suggestion_id).rejected.set(True)
-        await ctx.tick()
-
-        try:
-            await op.send(content="Your suggestion has been rejected!", embed=embed)
-        except discord.Forbidden:
-            pass
+        await self._finish_suggestion(ctx, suggestion_id, is_global, False, reason)
 
     @checks.admin()
     @commands.command()
@@ -321,28 +158,16 @@ class Suggestion(commands.Cog):
 
         Only works for non global suggestions."""
         if is_global:
-            if await self.config.toggle():
-                if ctx.author.id not in self.bot.owner_ids:
-                    return await ctx.send("Uh oh, you're not my owner.")
-                server = 1
-                global_guild = self.bot.get_guild(await self.config.server_id())
-                channel = get(
-                    global_guild.text_channels, id=await self.config.channel_id()
-                )
-            else:
-                return await ctx.send("Global suggestions aren't enabled.")
+            try:
+                server, old_channel = await self._check_global(ctx)
+            except TypeError:
+                return
         else:
             server = ctx.guild.id
             if not await self.config.guild(ctx.guild).same():
-                channel = get(
-                    ctx.guild.text_channels,
-                    id=await self.config.guild(ctx.guild).reject_id(),
-                )
+                channel = ctx.guild.get_channel(await self.config.guild(ctx.guild).reject_id())
             else:
-                channel = get(
-                    ctx.guild.text_channels,
-                    id=await self.config.guild(ctx.guild).suggest_id(),
-                )
+                channel = ctx.guild.get_channel(await self.config.guild(ctx.guild).suggest_id())
         msg_id = await self.config.custom("SUGGESTION", server, suggestion_id).msg_id()
         if msg_id != 0:
             if not await self.config.custom(
@@ -355,7 +180,7 @@ class Suggestion(commands.Cog):
                 ctx, ctx.author.id, ctx.guild.id, suggestion_id, is_global
             )
             embed.add_field(name="Reason:", value=reason, inline=False)
-            msg = await channel.fetch_message(id=msg_id)
+            msg = await channel.fetch_message(msg_id)
             if msg:
                 await msg.edit(content=content, embed=embed)
         await self.config.custom("SUGGESTION", server, suggestion_id).reason.set(True)
@@ -697,16 +522,7 @@ class Suggestion(commands.Cog):
             else:
                 return await ctx.send("Uh oh, that suggestion doesn't seem to exist.")
         op_info = await self.config.custom("SUGGESTION", server, suggestion_id).author()
-        op_id = int(op_info[0])
-        op = await self.bot.fetch_user(op_id)
-        if op:
-            op_name = op.name
-            op_discriminator = op.discriminator
-            op_avatar = op.avatar_url
-        else:
-            op_name = str(op_info[1])
-            op_discriminator = int(op_info[2])
-            op_avatar = ctx.guild.icon_url
+        op, op_name, op_discriminator, op_id, op_avatar = await self._get_op_info(ctx, op_info)
         if not await self.config.custom("SUGGESTION", server, suggestion_id).finished():
             atext = f"Suggestion by {op_name}"
         else:
@@ -760,3 +576,100 @@ class Suggestion(commands.Cog):
         if not down_emoji:
             down_emoji = "❎"
         return up_emoji, down_emoji
+
+    async def _get_op_info(self, ctx, op_info):
+        op_id = op_info[0]
+        op = await self.bot.fetch_user(op_id)
+        if op:
+            op_name = op.name
+            op_discriminator = op.discriminator
+            op_avatar = op.avatar_url
+        else:
+            op_name = op_info[1]
+            op_discriminator = op_info[2]
+            op_avatar = ctx.guild.icon_url
+
+        return op, op_name, op_discriminator, op_id, op_avatar
+
+    async def _check_global(self, ctx):
+        if await self.config.toggle():
+            if ctx.author.id not in self.bot.owner_ids:
+                return await ctx.send("Uh oh, you're not my owner.")
+            server = 1
+            global_guild = self.bot.get_guild(await self.config.server_id())
+            old_channel = global_guild.get_channel(await self.config.channel_id())
+            return server, old_channel
+        else:
+            return await ctx.send("Global suggestions aren't enabled.")
+
+    async def _contact_op(self, op, content, embed):
+        try:
+            await op.send(content=content, embed=embed)
+        except discord.Forbidden:
+            pass
+
+    async def _finish_suggestion(self, ctx, suggestion_id, is_global, approve, reason):
+        if is_global:
+            try:
+                server, old_channel = await self._check_global(ctx)
+            except TypeError:
+                return
+        else:
+            server = ctx.guild.id
+            old_channel = ctx.guild.get_channel(await self.config.guild(ctx.guild).suggest_id())
+            channel = ctx.guild.get_channel(await self.config.guild(ctx.guild).approve_id())
+        msg_id = await self.config.custom("SUGGESTION", server, suggestion_id).msg_id()
+        if msg_id != 0:
+            if await self.config.custom("SUGGESTION", server, suggestion_id).finished():
+                return await ctx.send("This suggestion has been finished already.")
+        try:
+            old_msg = await old_channel.fetch_message(msg_id)
+        except discord.NotFound:
+            return await ctx.send("Uh oh, message with this ID doesn't exist.")
+        if not old_msg:
+            return await ctx.send("Uh oh, message with this ID doesn't exist.")
+        embed = old_msg.embeds[0]
+        content = old_msg.content
+
+        op_info = await self.config.custom("SUGGESTION", server, suggestion_id).author()
+        op, op_name, op_discriminator, op_id, op_avatar = await self._get_op_info(ctx, op_info)
+
+        approved = "Approved" if approve else "Rejected"
+
+        embed.set_author(name=f"{approved} suggestion by {op_name}", icon_url=op_avatar)
+        embed.add_field(
+            name="Results:", value=await self._get_results(ctx, old_msg), inline=False
+        )
+        if reason:
+            embed.add_field(name="Reason:", value=reason, inline=False)
+            await self.config.custom("SUGGESTION", server, suggestion_id).reason.set(
+                True
+            )
+            await self.config.custom("SUGGESTION", server, suggestion_id).rtext.set(
+                reason
+            )
+
+        if is_global:
+            await old_msg.edit(content=content, embed=embed)
+        else:
+            if channel:
+                if await self.config.guild(ctx.guild).delete_suggestion():
+                    await old_msg.delete()
+                nmsg = await channel.send(content=content, embed=embed)
+                await self.config.custom(
+                    "SUGGESTION", server, suggestion_id
+                ).msg_id.set(nmsg.id)
+            else:
+                if not await self.config.guild(ctx.guild).same():
+                    if await self.config.guild(ctx.guild).delete_suggestion():
+                        await old_msg.delete()
+                    await self.config.custom(
+                        "SUGGESTION", server, suggestion_id
+                    ).msg_id.set(1)
+                else:
+                    await old_msg.edit(content=content, embed=embed)
+        await self.config.custom("SUGGESTION", server, suggestion_id).finished.set(True)
+        await self.config.custom("SUGGESTION", server, suggestion_id).approved.set(True)
+        await ctx.tick()
+
+        await self._contact_op(op, f"Your suggestion has been {approved.lower()}!", embed)
