@@ -107,7 +107,7 @@ class UniqueName(commands.Cog):
         else:
             roles = list()
             for rid in config_roles:
-                role = ctx.guild.get_role(id=rid)
+                role = ctx.guild.get_role(rid)
                 if role:
                     roles.append(role.name)
             roles = humanize_list(roles)

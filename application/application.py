@@ -57,10 +57,7 @@ class Application(commands.Cog):
 
         if await self.config.guild(ctx.guild).applicant_id():
             try:
-                role_add = get(
-                    ctx.guild.roles,
-                    id=await self.config.guild(ctx.guild).applicant_id(),
-                )
+                role_add = ctx.guild.get_role(await self.config.guild(ctx.guild).applicant_id())
             except TypeError:
                 role_add = None
             if not role_add:
@@ -70,10 +67,7 @@ class Application(commands.Cog):
                         "Uh oh, the configuration is not correct. Ask the Admins to set it."
                     )
         try:
-            channel = get(
-                ctx.guild.text_channels,
-                id=await self.config.guild(ctx.guild).channel_id(),
-            )
+            channel = ctx.guild.get_channel(await self.config.guild(ctx.guild).channel_id())
         except TypeError:
             channel = None
         if not channel:
@@ -298,9 +292,7 @@ class Application(commands.Cog):
             )
 
         try:
-            accepter = get(
-                ctx.guild.roles, id=await self.config.guild(ctx.guild).accepter_id()
-            )
+            accepter = ctx.guild.get_role(await self.config.guild(ctx.guild).accepter_id())
         except TypeError:
             accepter = None
         if not accepter:
@@ -313,10 +305,7 @@ class Application(commands.Cog):
         role = MessagePredicate.valid_role(ctx)
         if await self.config.guild(ctx.guild).applicant_id():
             try:
-                applicant = get(
-                    ctx.guild.roles,
-                    id=await self.config.guild(ctx.guild).applicant_id(),
-                )
+                applicant = ctx.guild.get_role(await self.config.guild(ctx.guild).applicant_id())
             except TypeError:
                 applicant = None
             if not applicant:
@@ -359,9 +348,7 @@ class Application(commands.Cog):
             )
 
         try:
-            accepter = get(
-                ctx.guild.roles, id=await self.config.guild(ctx.guild).accepter_id()
-            )
+            accepter = ctx.guild.get_role(await self.config.guild(ctx.guild).accepter_id())
         except TypeError:
             accepter = None
         if not accepter:
@@ -373,10 +360,7 @@ class Application(commands.Cog):
 
         if await self.config.guild(ctx.guild).applicant_role():
             try:
-                applicant = get(
-                    ctx.guild.roles,
-                    id=await self.config.guild(ctx.guild).applicant_id(),
-                )
+                applicant = ctx.guild.get_role(await self.config.guild(ctx.guild).applicant_id())
             except TypeError:
                 applicant = None
             if not applicant:
