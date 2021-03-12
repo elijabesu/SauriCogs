@@ -1,11 +1,8 @@
-import asyncio
+import discord
 import random
 import typing
 
-from discord.utils import get
-
 from redbot.core import Config, checks, bank, commands
-from redbot.core.utils.predicates import MessagePredicate
 
 from redbot.core.bot import Red
 
