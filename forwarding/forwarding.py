@@ -4,7 +4,7 @@ from discord.utils import get
 
 from redbot.core import Config, commands, checks
 
-from typing import Union
+from typing import Union, Optional
 
 
 class Forwarding(commands.Cog):
@@ -12,7 +12,7 @@ class Forwarding(commands.Cog):
     You can also DM someone as the bot with `[p]pm <user_ID> <message>`."""
 
     __author__ = "saurichable"
-    __version__ = "2.3.1"
+    __version__ = "2.3.2"
 
     def __init__(self, bot):
         self.bot = bot
@@ -46,7 +46,6 @@ class Forwarding(commands.Cog):
     async def _send_to_owners(self, embed):
         for owner_id in self.bot.owner_ids:
             await self.bot.get_user(owner_id).send(embed=embed)
-
 
     @commands.Cog.listener()
     async def on_message_without_command(self, message):
@@ -111,35 +110,34 @@ class Forwarding(commands.Cog):
 
     @setforward.command(name="channel")
     async def setforward_channel(
-        self, ctx: commands.Context, *, channel: Union[discord.TextChannel, int]
+            self, ctx: commands.Context, *, channel: Optional[discord.TextChannel]
     ):
-        """Set a channel in the current guild to be used for forwarding.
-        
-        Use 0 to reset."""
-        if isinstance(channel, int):
-            if channel == 0:
-                await self.config.guild_id.set(0)
-                await self.config.channel_id.set(0)
-                return await ctx.send("I will forward all DMs to you.")
-            return await ctx.send("Invalid value.")
-        await self.config.guild_id.set(ctx.guild.id)
-        await self.config.channel_id.set(channel.id)
-        await ctx.send(f"I will forward all DMs to {channel.mention}.")
+        """Set a channel in the current guild to be used for forwarding."""
+        if channel:
+            await self.config.guild_id.set(ctx.guild.id)
+            await self.config.channel_id.set(channel.id)
+            await ctx.send(f"I will forward all DMs to {channel.mention}.")
+        else:
+            await self.config.guild_id.clear()
+            await self.config.channel_id.clear()
+            await ctx.send("I will forward all DMs to you.")
 
-    @setforward.command(name="role")
-    async def setforward_role(
-        self, ctx: commands.Context, *, role: Union[discord.Role, int]
+    @setforward.command(name="ping")
+    async def setforward_ping(
+        self, ctx: commands.Context, *, ping: Union[discord.Role, discord.Member, None]
     ):
-        """Set a role to be pinged for forwarding.
-        
-        Use 0 to reset."""
-        if isinstance(role, int):
-            if role == 0:
-                await self.config.ping_role_id.set(0)
-                return await ctx.send("I will not ping any role.")
-            return await ctx.send("Invalid value.")
-        await self.config.ping_role_id.set(role.id)
-        await ctx.send(f"I will ping {role.mention}.")
+        """Set a role or a member to be pinged for forwarding."""
+        if ping:
+            if isinstance(ping, discord.Role):
+                await self.config.ping_role_id.set(ping.id)
+            else:
+                await self.config.ping_user_id(ping.id)
+            await ctx.send(f"I will ping {ping.name}.\n"
+            f"Remember to `{ctx.clean_prefix}setforward channel`")
+        else:
+            await self.config.ping_role_id.clear()
+            await self.config.ping_user_id.clear()
+            await ctx.send("I will not ping any role nor member.")
 
     @setforward.command(name="user")
     async def setforward_user(
