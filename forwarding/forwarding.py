@@ -138,18 +138,3 @@ class Forwarding(commands.Cog):
             await self.config.ping_role_id.clear()
             await self.config.ping_user_id.clear()
             await ctx.send("I will not ping any role nor member.")
-
-    @setforward.command(name="user")
-    async def setforward_user(
-        self, ctx: commands.Context, *, member: Union[discord.Member, int]
-    ):
-        """Set a role to be pinged for forwarding.
-        
-        Use 0 to reset."""
-        if isinstance(member, int):
-            if member == 0:
-                await self.config.ping_user_id.set(0)
-                return await ctx.send("I will not ping anyone.")
-            return await ctx.send("Invalid value.")
-        await self.config.ping_user_id.set(member.id)
-        await ctx.send(f"I will ping {member.mention}.")
