@@ -113,9 +113,11 @@ class Forwarding(commands.Cog):
     ):
         """Set a channel in the current guild to be used for forwarding."""
         if channel:
+            await self.config.guild_id.set(ctx.guild.id)
             await self.config.channel_id.set(channel.id)
             await ctx.send(f"I will forward all DMs to {channel.mention}.")
         else:
+            await self.config.guild_id.clear()
             await self.config.channel_id.clear()
             await ctx.send("I will forward all DMs to you.")
 
