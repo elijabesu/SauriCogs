@@ -184,7 +184,7 @@ class CookieStore(commands.Cog):
 
     @cookiestoreset.command(name="ping")
     async def cookiestoreset_ping(
-        self, ctx: commands.Context, who: typing.Union[discord.Member, discord.Role] = None
+        self, ctx: commands.Context, who: typing.Union[discord.Member, discord.Role, None]
     ):
         """Set the role/member that should be pinged when a member wants to redeem their item.
 
@@ -193,9 +193,9 @@ class CookieStore(commands.Cog):
             ping_id = await self.config.guild(ctx.guild).ping()
             if not ping_id:
                 return await ctx.send("No ping is set.")
-            ping = get(ctx.guild.members, id=ping_id)
+            ping = ctx.guild.get_member(ping_id)
             if not ping:
-                ping = get(ctx.guild.roles, id=ping_id)
+                ping = ctx.guild.get_role(ping_id)
                 if not ping:
                     return await ctx.send(
                         "The role must have been deleted or user must have left."
@@ -356,7 +356,7 @@ class CookieStore(commands.Cog):
                     f"You have bought {item}. You may now redeem it with `{ctx.clean_prefix}redeem {item}`"
                 )
         elif item in games:
-            game_info = await self.config.guild(ctx.guild).games.get_raw(item)
+            game_info = await self._show_thing(ctx, 2, item)
             price = int(game_info.get("price"))
             quantity = int(game_info.get("quantity"))
             redeemable = game_info.get("redeemable")
@@ -410,7 +410,7 @@ class CookieStore(commands.Cog):
 
     @commands.command(name="return")
     @commands.guild_only()
-    async def cookiestoreset_return(self, ctx: commands.Context, *, item: str):
+    async def cookiestore_return(self, ctx: commands.Context, *, item: str):
         """Return an item, you will only get 50% of the price."""
         enabled = await self.config.guild(ctx.guild).enabled()
         if not enabled:
@@ -506,9 +506,9 @@ class CookieStore(commands.Cog):
         ping_id = await self.config.guild(ctx.guild).ping()
         if not ping_id:
             return await ctx.send("Uh oh, your Admins haven't set this yet.")
-        ping = get(ctx.guild.members, id=ping_id)
+        ping = ctx.guild.get_member(ping_id)
         if not ping:
-            ping = get(ctx.guild.roles, id=ping_id)
+            ping = ctx.guild.get_role(ping_id)
             if not ping:
                 return await ctx.send("Uh oh, your Admins haven't set this yet.")
             if not ping.mentionable:
@@ -533,35 +533,23 @@ class CookieStore(commands.Cog):
             )
 
     async def _show_store(self, ctx):
-        items = await self.config.guild(ctx.guild).items.get_raw()
-        roles = await self.config.guild(ctx.guild).roles.get_raw()
-        games = await self.config.guild(ctx.guild).games.get_raw()
+        items = await self._show_thing(ctx, 0, "None")
+        roles = await self._show_thing(ctx, 1, "None")
+        games = await self._show_thing(ctx, 2, "None")
         stuff = list()
-        for i in items:
-            item = await self.config.guild(ctx.guild).items.get_raw(i)
-            price = int(item.get("price"))
-            quantity = int(item.get("quantity"))
-            item_text = f"__Item:__ **{i}** | __Price:__ {price} :cookie: | __Quantity:__ {quantity}"
-            stuff.append(item_text)
-        for g in games:
-            game = await self.config.guild(ctx.guild).games.get_raw(g)
-            price = int(game.get("price"))
-            quantity = int(game.get("quantity"))
-            game_text = f"__Item:__ **{g}** | __Price:__ {price} :cookie: | __Quantity:__ {quantity}"
-            stuff.append(game_text)
-        for r in roles:
-            role_obj = get(ctx.guild.roles, name=r)
-            if not role_obj:
-                continue
-            role = await self.config.guild(ctx.guild).roles.get_raw(r)
-            price = int(role.get("price"))
-            quantity = int(role.get("quantity"))
-            role_text = f"__Role:__ **{role_obj.mention}** | __Price:__ {price} :cookie: | __Quantity:__ {quantity}"
-            stuff.append(role_text)
-        if stuff == []:
-            desc = "Nothing to see here."
-        else:
-            desc = "\n".join(stuff)
+
+        for index, list_of_objects in enumerate(items, roles, games):
+            for _object in list_of_objects:
+                if _object in roles:
+                    role_obj = get(ctx.guild.roles, name=_object)
+                    if not role_obj:
+                        continue
+                thing = await self._show_thing(ctx, index, _object)
+                stuff.append(f"__Item:__ **{thing}** | "
+                             f"__Price:__ {thing.get('price')} :cookie: | "
+                             f"__Quantity:__ {thing.get('quantity')}")
+
+        desc = "Nothing to see here." if stuff == [] else "\n".join(stuff)
         page_list = list()
         for page in pagify(desc, delims=["\n"], page_length=1000):
             embed = discord.Embed(
@@ -575,3 +563,17 @@ class CookieStore(commands.Cog):
             )
             page_list.append(embed)
         return page_list
+
+    async def _show_thing(self, ctx, number, item_name):
+        gc = self.config.guild(ctx.guild)
+        if number == 0:
+            if item_name == "None":
+                return await gc.items.get_raw()
+            return await gc.items.get_raw(item_name)
+        if number == 1:
+            if item_name == "None":
+                return await gc.roles.get_raw()
+            return await gc.roles.get_raw(item_name)
+        if item_name == "None":
+            return await gc.games.get_raw()
+        return await gc.games.get_raw(item_name)
