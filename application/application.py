@@ -405,4 +405,4 @@ class Application(commands.Cog):
         string = "**Default questions:**"
         for question in list_of_questions:
             string += "\n" + question[0]
-        return string
+        return string 
