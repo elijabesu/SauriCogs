@@ -14,7 +14,7 @@ from redbot.core.bot import Red
 class Application(commands.Cog):
     """
     Simple application cog, basically.
-    **Use `[p]applysetup` first.**
+    **Use `[p]setapply` first.**
     """
 
     __author__ = "saurichable"
