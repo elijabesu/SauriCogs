@@ -22,7 +22,7 @@ class Suggestion(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.4.8"
+    __version__ = "1.4.9"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -798,8 +798,7 @@ class Suggestion(commands.Cog):
             if reaction.emoji == down_emoji:
                 down_count = reaction.count - 1 # minus the bot
 
-        results = str(up_count) + "x " + up_emoji + "\n" + str(down_count) + "x " + down_emoji
-        return results
+        return f"{up_count}x {up_emoji}\n{down_count}x {down_emoji}"
 
     async def _get_emojis(self, ctx):
         up_emoji = self.bot.get_emoji(await self.config.guild(ctx.guild).up_emoji())
