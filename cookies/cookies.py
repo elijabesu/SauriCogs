@@ -99,7 +99,7 @@ class Cookies(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    async def csteal(self, ctx: commands.Context, *, target: typing.Optional[discord.Member]):
+    async def steal(self, ctx: commands.Context, *, target: typing.Optional[discord.Member]):
         """Steal cookies from members."""
         cur_time = calendar.timegm(ctx.message.created_at.utctimetuple())
 
@@ -186,7 +186,7 @@ class Cookies(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    async def cgive(self, ctx: commands.Context, target: discord.Member, amount: int):
+    async def give(self, ctx: commands.Context, target: discord.Member, amount: int):
         """Give someone some yummy cookies."""
         um_conf = self.config.user(ctx.author) if await self.config.is_global() else self.config.member(ctx.author)
 
@@ -225,7 +225,7 @@ class Cookies(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    async def cexchange(self, ctx: commands.Context, amount: int, to_currency: typing.Optional[bool] = False):
+    async def exchange(self, ctx: commands.Context, amount: int, to_currency: typing.Optional[bool] = False):
         """Exchange currency into cookies and vice versa."""
         if amount <= 0:
             return await ctx.send("Uh oh, amount has to be more than 0.")
@@ -254,7 +254,7 @@ class Cookies(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    async def cleaderboard(self, ctx: commands.Context):
+    async def leaderboard(self, ctx: commands.Context):
         """Display the server's cookie leaderboard."""
         ids = await self._get_ids(ctx)
         lst = []
