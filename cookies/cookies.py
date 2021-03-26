@@ -474,6 +474,36 @@ class Cookies(commands.Cog):
             f"Set the exchange rate {rate}. This means that 100 {currency} will give you {test_amount} :cookie:"
         )
 
+    @cookieset.command(name="settings")
+    async def cookieset_settings(self, ctx: commands.Context):
+        """See current settings."""
+        is_global = await self.config.is_global()
+        data = await self.config.all() if is_global else await self.config.guild(ctx.guild).all()
+
+        amount = data["amount"]
+        amount = str(amount) if amount != 0 else f"random amount between {data['minimum']} and {data['maximum']}"
+
+        stealing = data["stealing"]
+        stealing = "Enabled" if stealing else "Disabled"
+
+        embed = discord.Embed(
+            colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
+        )
+        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
+        embed.title = "**__Cookies settings:__**"
+        embed.set_footer(text="*required to function properly")
+
+        embed.add_field(name="Global:", value=str(is_global))
+        embed.add_field(name="Exchange rate:", value=str(data['rate']))
+        embed.add_field(name="\u200b", value="\u200b")
+        embed.add_field(name="Amount:", value=amount)
+        embed.add_field(name="Cooldown:", value=self.display_time(data['cooldown']))
+        embed.add_field(name="\u200b", value="\u200b")
+        embed.add_field(name="Stealing:", value=stealing)
+        embed.add_field(name="Cooldown:", value=self.display_time(data['stealcd']))
+
+        await ctx.send(embed=embed)
+
     @cookieset.group(autohelp=True)
     async def role(self, ctx):
         """Cookie rewards for roles."""
