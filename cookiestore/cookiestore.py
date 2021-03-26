@@ -454,7 +454,7 @@ class CookieStore(commands.Cog):
         """See all items you own."""
         inventory = await self.config.member(ctx.author).inventory.get_raw()
 
-        lst = list()
+        lst = []
         for i in inventory:
             info = await self.config.member(ctx.author).inventory.get_raw(i)
             if not info.get("is_role"):
@@ -536,9 +536,10 @@ class CookieStore(commands.Cog):
         items = await self._show_thing(ctx, 0, "None")
         roles = await self._show_thing(ctx, 1, "None")
         games = await self._show_thing(ctx, 2, "None")
-        stuff = list()
+        list_of_lists = [items, roles, games]
+        stuff = []
 
-        for index, list_of_objects in enumerate(items, roles, games):
+        for index, list_of_objects in enumerate(list_of_lists):
             for _object in list_of_objects:
                 if _object in roles:
                     role_obj = get(ctx.guild.roles, name=_object)
@@ -550,7 +551,7 @@ class CookieStore(commands.Cog):
                              f"__Quantity:__ {thing.get('quantity')}")
 
         desc = "Nothing to see here." if stuff == [] else "\n".join(stuff)
-        page_list = list()
+        page_list = []
         for page in pagify(desc, delims=["\n"], page_length=1000):
             embed = discord.Embed(
                 colour=await ctx.embed_colour(),
