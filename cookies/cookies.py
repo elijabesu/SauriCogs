@@ -448,9 +448,9 @@ class Cookies(commands.Cog):
                 f"If you're sure, type `{ctx.clean_prefix}cookieset reset yes`."
             )
         if await self.config.is_global():
-            await config.clear_all_members()
+            await self.config.clear_all_members()
         else:
-            await config.clear_all_members(ctx.guild)
+            await self.config.clear_all_members(ctx.guild)
         await ctx.send("All cookies have been deleted from all members.")
 
     @cookieset.command(name="rate")
