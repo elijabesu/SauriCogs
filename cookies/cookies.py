@@ -563,13 +563,13 @@ class Cookies(commands.Cog):
 
     async def can_spend(self, user, amount):
         if await self.config.is_global():
-            return true if await self.config.user(user).cookies() >= amount else false
-        return true if await self.config.member(user).cookies() >= amount else false
+            return True if await self.config.user(user).cookies() >= amount else False
+        return True if await self.config.member(user).cookies() >= amount else False
 
     async def _can_spend(self, to_currency, user, amount):
         if to_currency:
-            return true if await bank.can_spend(user, amount) else false
-        return true if await self.can_spend(user, amount) else false
+            return True if await bank.can_spend(user, amount) else False
+        return True if await self.can_spend(user, amount) else False
 
     async def withdraw_cookies(self, user, amount):
         if await self.config.is_global():
