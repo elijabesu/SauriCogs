@@ -178,7 +178,10 @@ class Cookies(commands.Cog):
             await ctx.send(
                 f"You got caught while trying to steal {target.display_name}'s :cookie:\nYour penalty is {penalty} :cookie: which they got!"
             )
-        await self.config.member(target).cookies.set(target_cookies)
+        if await self.config.is_global():
+            await self.config.member(target).cookies.set(target_cookies)
+        else:
+            await self.config.user(target).cookies.set(target_cookies)
         await um_conf.cookies.set(author_cookies)
 
     @commands.command()
