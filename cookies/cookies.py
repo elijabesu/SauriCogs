@@ -523,7 +523,10 @@ class Cookies(commands.Cog):
                     await self.config.member(after).cookies.set(new_cookies)
 
     async def _get_ids(self, ctx):
-        data = await self.config.all_members(ctx.guild)
+        if await self.config.is_global():
+            data = await self.config.all_members()
+        else:
+            data = await self.config.all_members(ctx.guild)
         return sorted(data, key=lambda x: data[x]["cookies"], reverse=True)
 
     @staticmethod
