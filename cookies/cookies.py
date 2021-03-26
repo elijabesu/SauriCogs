@@ -211,7 +211,7 @@ class Cookies(commands.Cog):
         um_conf = self.config.user(ctx.author) if await self.config.is_global() else self.config.member(ctx.author)
 
         if not target:
-            cookies = um_conf.cookies()
+            cookies = await um_conf.cookies()
             await ctx.send(f"You have {cookies} :cookie:")
         else:
             cookies = await self.config.member(target).cookies()
