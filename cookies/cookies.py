@@ -568,8 +568,8 @@ class Cookies(commands.Cog):
 
     async def _can_spend(self, to_currency, user, amount):
         if to_currency:
-            return True if await bank.can_spend(user, amount) else False
-        return True if await self.can_spend(user, amount) else False
+            return True if await self.can_spend(user, amount) else False
+        return True if await bank.can_spend(user, amount) else False
 
     async def withdraw_cookies(self, user, amount):
         if await self.config.is_global():
