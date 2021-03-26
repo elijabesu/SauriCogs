@@ -27,7 +27,12 @@ class CookieStore(commands.Cog):
         self.config.register_guild(
             enabled=False, items={}, roles={}, games={}, ping=None
         )
+        self.config.register_global(
+            is_global=False, enabled=False, items={}, roles={}, games={}, ping=None
+        )
+
         self.config.register_member(inventory={})
+        self.config.register_user(inventory={})
 
     @commands.group(autohelp=True, aliases=["cookiestore", "storeset"])
     @checks.admin()
@@ -52,7 +57,9 @@ class CookieStore(commands.Cog):
         """Add purchasable stuff."""
 
     @cookiestoreset_add.command(name="role")
-    async def cookiestoreset_add_role(self, ctx: commands.Context, role: discord.Role, price: int, quantity: int):
+    async def cookiestoreset_add_role(
+        self, ctx: commands.Context, role: discord.Role, price: int, quantity: int
+    ):
         """Add a purchasable (returnable) role."""
         if price <= 0 or quantity <= 0:
             return await ctx.send("Uh oh, price/quantity have to be over 0.")
@@ -64,7 +71,9 @@ class CookieStore(commands.Cog):
         await ctx.tick()
 
     @cookiestoreset_add.command(name="item")
-    async def cookiestoreset_add_item(self, ctx: commands.Context, item: str, price: int, quantity: int, redeem: bool):
+    async def cookiestoreset_add_item(
+        self, ctx: commands.Context, item: str, price: int, quantity: int, redeem: bool
+    ):
         """Add a purchasable (returnable) item."""
         if price <= 0 or quantity <= 0:
             return await ctx.send("Uh oh, price/quantity have to be over 0.")
@@ -81,7 +90,9 @@ class CookieStore(commands.Cog):
         await ctx.tick()
 
     @cookiestoreset_add.command(name="game")
-    async def cookiestoreset_add_game(self, ctx: commands.Context, game: str, price: int, quantity: int, redeem: bool):
+    async def cookiestoreset_add_game(
+        self, ctx: commands.Context, game: str, price: int, quantity: int, redeem: bool
+    ):
         """Add a purchasable (non-returnable) game."""
         if price <= 0 or quantity <= 0:
             return await ctx.send("Uh oh, price/quantity have to be over 0.")
@@ -102,7 +113,9 @@ class CookieStore(commands.Cog):
         """Remove purchasable stuff."""
 
     @cookiestoreset_remove.command(name="role")
-    async def cookiestoreset_remove_role(self, ctx: commands.Context, role: discord.Role):
+    async def cookiestoreset_remove_role(
+        self, ctx: commands.Context, role: discord.Role
+    ):
         """Remove a purchasable role."""
         if not await self.config.guild(ctx.guild).roles.get_raw(role):
             return await ctx.send(f"Uh oh, {role.name} is not registered.")
@@ -154,7 +167,9 @@ class CookieStore(commands.Cog):
         )
 
     @cookiestoreset.command(name="restock")
-    async def cookiestoreset_restock(self, ctx: commands.Context, item: str, quantity: int):
+    async def cookiestoreset_restock(
+        self, ctx: commands.Context, item: str, quantity: int
+    ):
         """Change the quantity of an existing purchasable item."""
         if quantity <= 0:
             return await ctx.send("Uh oh, quantity has to be more than 0.")
@@ -182,7 +197,9 @@ class CookieStore(commands.Cog):
 
     @cookiestoreset.command(name="ping")
     async def cookiestoreset_ping(
-        self, ctx: commands.Context, who: typing.Union[discord.Member, discord.Role, None]
+        self,
+        ctx: commands.Context,
+        who: typing.Union[discord.Member, discord.Role, None],
     ):
         """Set the role/member that should be pinged when a member wants to redeem their item.
 
@@ -205,7 +222,9 @@ class CookieStore(commands.Cog):
         )
 
     @cookiestoreset.group(name="reset", invoke_without_command=True)
-    async def cookiestoreset_reset(self, ctx: commands.Context, confirmation: typing.Optional[bool]):
+    async def cookiestoreset_reset(
+        self, ctx: commands.Context, confirmation: typing.Optional[bool]
+    ):
         """Delete all items from the store."""
         if not confirmation:
             return await ctx.send(
@@ -454,7 +473,9 @@ class CookieStore(commands.Cog):
                 lst.append(role_obj.mention)
         desc = "Nothing to see here." if lst == [] else humanize_list(lst)
         embed = discord.Embed(
-            description=desc, colour=ctx.author.colour, timestamp=datetime.datetime.now()
+            description=desc,
+            colour=ctx.author.colour,
+            timestamp=datetime.datetime.now(),
         )
         embed.set_author(
             name=f"{ctx.author.display_name}'s inventory",
@@ -530,9 +551,11 @@ class CookieStore(commands.Cog):
                     if not role_obj:
                         continue
                 thing = await self._show_thing(ctx, index, _object)
-                stuff.append(f"__Item:__ **{_object}** | "
-                             f"__Price:__ {thing.get('price')} :cookie: | "
-                             f"__Quantity:__ {thing.get('quantity')}")
+                stuff.append(
+                    f"__Item:__ **{_object}** | "
+                    f"__Price:__ {thing.get('price')} :cookie: | "
+                    f"__Quantity:__ {thing.get('quantity')}"
+                )
 
         desc = "Nothing to see here." if stuff == [] else "\n".join(stuff)
         page_list = []
