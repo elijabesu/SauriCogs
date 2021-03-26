@@ -3,9 +3,7 @@ import discord
 import random
 import calendar
 import typing
-
-from discord.utils import get
-from datetime import datetime
+import datetime
 
 from redbot.core import Config, checks, commands, bank
 from redbot.core.utils.chat_formatting import pagify, box
