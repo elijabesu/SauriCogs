@@ -99,7 +99,7 @@ class Cookies(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    async def csteal(self, ctx: commands.Context, target: typing.Optional[discord.Member]):
+    async def csteal(self, ctx: commands.Context, *, target: typing.Optional[discord.Member]):
         """Steal cookies from members."""
         cur_time = calendar.timegm(ctx.message.created_at.utctimetuple())
 
@@ -206,15 +206,15 @@ class Cookies(commands.Cog):
 
     @commands.command(aliases=["jar"])
     @commands.guild_only()
-    async def cookies(self, ctx: commands.Context, target: typing.Optional[discord.Member]):
+    async def cookies(self, ctx: commands.Context, *, target: typing.Optional[discord.Member]):
         """Check how many cookies you have."""
-        um_conf = self.config.user(ctx.author) if await self.config.is_global() else self.config.member(ctx.author)
-
         if not target:
+            um_conf = self.config.user(ctx.author) if await self.config.is_global() else self.config.member(ctx.author)
             cookies = await um_conf.cookies()
             await ctx.send(f"You have {cookies} :cookie:")
         else:
-            cookies = await self.config.member(target).cookies()
+            um_conf = self.config.user(target) if await self.config.is_global() else self.config.member(target)
+            cookies = await um_conf.cookies()
             await ctx.send(f"{target.display_name} has {cookies} :cookie:")
 
     @commands.command()
