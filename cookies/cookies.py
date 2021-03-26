@@ -319,6 +319,7 @@ class Cookies(commands.Cog):
                 f"If you're sure, type `{ctx.clean_prefix}cookieset gg <make_global> yes`."
             )
         await self.config.clear_all_members()
+        await self.config.clear_all_users()
         await self.config.clear_all_guilds()
         await self.config.clear_all_globals()
         await self.config.is_global.set(make_global)
@@ -454,7 +455,7 @@ class Cookies(commands.Cog):
                 f"If you're sure, type `{ctx.clean_prefix}cookieset reset yes`."
             )
         if await self.config.is_global():
-            await self.config.clear_all_members()
+            await self.config.clear_all_users()
         else:
             await self.config.clear_all_members(ctx.guild)
         await ctx.send("All cookies have been deleted from all members.")
@@ -530,7 +531,7 @@ class Cookies(commands.Cog):
 
     async def _get_ids(self, ctx):
         if await self.config.is_global():
-            data = await self.config.all_members()
+            data = await self.config.all_users()
         else:
             data = await self.config.all_members(ctx.guild)
         return sorted(data, key=lambda x: data[x]["cookies"], reverse=True)
