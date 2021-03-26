@@ -128,7 +128,10 @@ class Cookies(commands.Cog):
                 target = ctx.guild.get_member(target_id)
         if target.id == ctx.author.id:
             return await ctx.send("Uh oh, you can't steal from yourself.")
-        target_cookies = await self.config.member(target).cookies()
+        if await self.config.is_global():
+            target_cookies = await self.config.user(target).cookies()
+        else:
+            await self.config.member(target).cookies()
         if target_cookies == 0:
             return await ctx.send(
                 f"Uh oh, {target.display_name} doesn't have any :cookie:"
