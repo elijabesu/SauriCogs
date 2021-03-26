@@ -35,7 +35,7 @@ class Cookies(commands.Cog):
         "amount": 1,
         "minimum": 0,
         "maximum": 0,
-        "cooldown": 86400,
+        "cooldown": 43200,
         "stealing": False,
         "stealcd": 43200,
         "rate": 0.5
@@ -58,10 +58,21 @@ class Cookies(commands.Cog):
     @commands.guild_only()
     async def cookie(self, ctx: commands.Context):
         """Get your daily dose of cookies."""
-        amount = int(await self.config.guild(ctx.guild).amount())
-        cookies = int(await self.config.member(ctx.author).cookies())
         cur_time = calendar.timegm(ctx.message.created_at.utctimetuple())
-        next_cookie = await self.config.member(ctx.author).next_cookie()
+
+        if await self.config.is_global():
+            conf = self.config
+            um_conf = self.config.user(ctx.author)
+        else:
+            conf = self.config.guild(ctx.guild)
+            um_conf = self.config.member(ctx.author)
+
+        amount = await conf.amount()
+        cookies = await um_conf.cookies()
+        next_cookie = await um_conf.next_cookie()
+        minimum = await conf.minimum()
+        maximum = await conf.maximum()
+
         if cur_time >= next_cookie:
             if amount != 0:
                 multipliers = []
@@ -72,17 +83,15 @@ class Cookies(commands.Cog):
                     multipliers.append(role_multiplier)
                 cookies += amount * max(multipliers)
             else:
-                minimum = int(await self.config.guild(ctx.guild).minimum())
-                maximum = int(await self.config.guild(ctx.guild).maximum())
                 amount = int(random.choice(list(range(minimum, maximum))))
                 cookies += amount
             if self._max_balance_check(cookies):
                 return await ctx.send(
                     "Uh oh, you have reached the maximum amount of cookies that you can put in your bag. :frowning:"
                 )
-            next_cookie = cur_time + await self.config.guild(ctx.guild).cooldown()
-            await self.config.member(ctx.author).next_cookie.set(next_cookie)
-            await self.config.member(ctx.author).cookies.set(cookies)
+            next_cookie = cur_time + await conf.cooldown()
+            await um_conf.next_cookie.set(next_cookie)
+            await um_conf.cookies.set(cookies)
             await ctx.send(f"Here is your {amount} :cookie:")
         else:
             dtime = self.display_time(next_cookie - cur_time)
@@ -90,12 +99,20 @@ class Cookies(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    async def csteal(self, ctx: commands.Context, target: discord.Member = None):
+    async def csteal(self, ctx: commands.Context, target: typing.Optional[discord.Member]):
         """Steal cookies from members."""
         cur_time = calendar.timegm(ctx.message.created_at.utctimetuple())
-        next_steal = await self.config.member(ctx.author).next_steal()
-        enabled = await self.config.guild(ctx.guild).stealing()
-        author_cookies = int(await self.config.member(ctx.author).cookies())
+
+        if await self.config.is_global():
+            conf = self.config
+            um_conf = self.config.user(ctx.author)
+        else:
+            conf = self.config.guild(ctx.guild)
+            um_conf = self.config.member(ctx.author)
+
+        next_steal = await um_conf.next_steal()
+        enabled = await conf.stealing()
+        author_cookies = await um_conf.cookies()
 
         if not enabled:
             return await ctx.send("Uh oh, stealing is disabled.")
@@ -104,20 +121,21 @@ class Cookies(commands.Cog):
             return await ctx.send(f"Uh oh, you have to wait {dtime}.")
 
         if not target:
+            # target can only be from the same server
             ids = await self._get_ids(ctx)
             while not target:
                 target_id = random.choice(ids)
                 target = ctx.guild.get_member(target_id)
         if target.id == ctx.author.id:
             return await ctx.send("Uh oh, you can't steal from yourself.")
-        target_cookies = int(await self.config.member(target).cookies())
+        target_cookies = await self.config.member(target).cookies()
         if target_cookies == 0:
             return await ctx.send(
                 f"Uh oh, {target.display_name} doesn't have any :cookie:"
             )
 
-        await self.config.member(ctx.author).next_steal.set(
-            cur_time + await self.config.guild(ctx.guild).stealcd()
+        await um_conf.next_steal.set(
+            cur_time + await conf.stealcd()
         )
 
         success_chance = random.randint(1, 100)
@@ -129,8 +147,8 @@ class Cookies(commands.Cog):
             author_cookies += stolen
             if self._max_balance_check(author_cookies):
                 return await ctx.send(
-                    "Uh oh, you have reached the maximum amount of cookies that you can put in your bag. :frowning:\n"
-                    f"You stole any cookie of {target.display_name}."
+                    "Uh oh, you have reached the maximum amount of cookies that you can put in your jar. :frowning:\n"
+                    f"You didn't steal any :cookie: from {target.display_name}."
                 )
             target_cookies -= stolen
             await ctx.send(f"You stole {stolen} :cookie: from {target.display_name}!")
@@ -158,27 +176,29 @@ class Cookies(commands.Cog):
                 f"You got caught while trying to steal {target.display_name}'s :cookie:\nYour penalty is {penalty} :cookie: which they got!"
             )
         await self.config.member(target).cookies.set(target_cookies)
-        await self.config.member(ctx.author).cookies.set(author_cookies)
+        await um_conf.cookies.set(author_cookies)
 
     @commands.command()
     @commands.guild_only()
     async def cgive(self, ctx: commands.Context, target: discord.Member, amount: int):
         """Give someone some yummy cookies."""
-        author_cookies = int(await self.config.member(ctx.author).cookies())
+        um_conf = self.config.user(ctx.author) if await self.config.is_global() else self.config.member(ctx.author)
+
+        author_cookies = um_conf.cookies()
         if amount <= 0:
             return await ctx.send("Uh oh, amount has to be more than 0.")
         if target.id == ctx.author.id:
             return await ctx.send("Why would you do that?")
         if amount > author_cookies:
             return await ctx.send("You don't have enough cookies yourself!")
-        target_cookies = int(await self.config.member(target).cookies())
+        target_cookies = await self.config.member(target).cookies()
         target_cookies += amount
         if self._max_balance_check(target_cookies):
             return await ctx.send(
-                f"Uh oh, {target.display_name} has reached the maximum amount of cookies that they can have in their bag. :frowning:"
+                f"Uh oh, {target.display_name} has reached the maximum amount of cookies that they can have in their jar. :frowning:"
             )
         author_cookies -= amount
-        await self.config.member(ctx.author).cookies.set(author_cookies)
+        await um_conf.cookies.set(author_cookies)
         await self.config.member(target).cookies.set(target_cookies)
         await ctx.send(
             f"{ctx.author.mention} has gifted {amount} :cookie: to {target.mention}"
@@ -186,13 +206,15 @@ class Cookies(commands.Cog):
 
     @commands.command(aliases=["jar"])
     @commands.guild_only()
-    async def cookies(self, ctx: commands.Context, target: discord.Member = None):
+    async def cookies(self, ctx: commands.Context, target: typing.Optional[discord.Member]):
         """Check how many cookies you have."""
+        um_conf = self.config.user(ctx.author) if await self.config.is_global() else self.config.member(ctx.author)
+
         if not target:
-            cookies = int(await self.config.member(ctx.author).cookies())
+            cookies = um_conf.cookies()
             await ctx.send(f"You have {cookies} :cookie:")
         else:
-            cookies = int(await self.config.member(target).cookies())
+            cookies = await self.config.member(target).cookies()
             await ctx.send(f"{target.display_name} has {cookies} :cookie:")
 
     @commands.command()
@@ -202,7 +224,9 @@ class Cookies(commands.Cog):
         if amount <= 0:
             return await ctx.send("Uh oh, amount has to be more than 0.")
 
-        rate = await self.config.guild(ctx.guild).rate()
+        conf = self.config if await self.config.is_global() else self.config.guild(ctx.guild)
+
+        rate = await conf.rate()
         currency = await bank.get_currency_name(ctx.guild)
 
         if not await self._can_spend(to_currency, ctx.author, amount):
@@ -278,6 +302,22 @@ class Cookies(commands.Cog):
     async def cookieset(self, ctx):
         """Various Cookies settings."""
 
+    @cookieset.command(name="gg")
+    async def cookieset_gg(self, ctx: commands.Context, make_global: bool, confirmation: typing.Optional[bool]):
+        """Switch from per-guild to global cookies and vice versa."""
+        if not confirmation:
+            return await ctx.send(
+                "This will delete **all** current settings. This action **cannot** be undone.\n"
+                f"If you're sure, type `{ctx.clean_prefix}cookieset gg <make_global> yes`."
+            )
+        if await self.config.is_global() == make_global:
+            return await ctx.send("Uh oh, you're not really changing anything.")
+        await self.config.clear_all_members()
+        await self.config.clear_all_guilds()
+        await self.config.clear_all_globals()
+        await self.config.is_global.set(make_global)
+        await ctx.send(f"Cookies are now {'global' if make_global else 'per-guild'}!")
+
     @cookieset.command(name="amount")
     async def cookieset_amount(self, ctx: commands.Context, amount: int):
         """Set the amount of cookies members can obtain.
@@ -289,39 +329,41 @@ class Cookies(commands.Cog):
             return await ctx.send(
                 f"Uh oh, you can't set an amount of cookies greater than {_MAX_BALANCE:,}."
             )
-        await self.config.guild(ctx.guild).amount.set(amount)
+        conf = self.config if await self.config.is_global() else self.config.guild(ctx.guild)
+        await conf.amount.set(amount)
         if amount != 0:
-            await ctx.send(f"Members will receive {amount} cookies.")
-        else:
-            pred = MessagePredicate.valid_int(ctx)
-            await ctx.send("What's the minimum amount of cookies members can obtain?")
-            try:
-                await self.bot.wait_for("message", timeout=30, check=pred)
-            except asyncio.TimeoutError:
-                return await ctx.send("You took too long. Try again, please.")
-            minimum = pred.result
-            await self.config.guild(ctx.guild).minimum.set(minimum)
+            return await ctx.send(f"Members will receive {amount} cookies.")
 
-            await ctx.send("What's the maximum amount of cookies members can obtain?")
-            try:
-                await self.bot.wait_for("message", timeout=30, check=pred)
-            except asyncio.TimeoutError:
-                return await ctx.send("You took too long. Try again, please.")
-            maximum = pred.result
-            await self.config.guild(ctx.guild).maximum.set(maximum)
+        pred = MessagePredicate.valid_int(ctx)
+        await ctx.send("What's the minimum amount of cookies members can obtain?")
+        try:
+            await self.bot.wait_for("message", timeout=30, check=pred)
+        except asyncio.TimeoutError:
+            return await ctx.send("You took too long. Try again, please.")
+        minimum = pred.result
+        await conf.minimum.set(minimum)
 
-            await ctx.send(
-                f"Members will receive a random amount of cookies between {minimum} and {maximum}."
-            )
+        await ctx.send("What's the maximum amount of cookies members can obtain?")
+        try:
+            await self.bot.wait_for("message", timeout=30, check=pred)
+        except asyncio.TimeoutError:
+            return await ctx.send("You took too long. Try again, please.")
+        maximum = pred.result
+        await conf.maximum.set(maximum)
+
+        await ctx.send(
+            f"Members will receive a random amount of cookies between {minimum} and {maximum}."
+        )
 
     @cookieset.command(name="cooldown", aliases=["cd"])
     async def cookieset_cd(self, ctx: commands.Context, seconds: int):
         """Set the cooldown for `[p]cookie`.
 
-        This is in seconds! Default is 86400 seconds (24 hours)."""
+        This is in seconds! Default is 43200 seconds (24 hours)."""
         if seconds <= 0:
             return await ctx.send("Uh oh, cooldown has to be more than 0 seconds.")
-        await self.config.guild(ctx.guild).cooldown.set(seconds)
+        conf = self.config if await self.config.is_global() else self.config.guild(ctx.guild)
+        await conf.cooldown.set(seconds)
         await ctx.send(f"Set the cooldown to {seconds} seconds.")
 
     @cookieset.command(name="stealcooldown", aliases=["stealcd"])
@@ -331,16 +373,18 @@ class Cookies(commands.Cog):
         This is in seconds! Default is 43200 seconds (12 hours)."""
         if seconds <= 0:
             return await ctx.send("Uh oh, cooldown has to be more than 0 seconds.")
-        await self.config.guild(ctx.guild).stealcd.set(seconds)
+        conf = self.config if await self.config.is_global() else self.config.guild(ctx.guild)
+        await conf.stealcd.set(seconds)
         await ctx.send(f"Set the cooldown to {seconds} seconds.")
 
     @cookieset.command(name="steal")
-    async def cookieset_steal(self, ctx: commands.Context, on_off: bool = None):
+    async def cookieset_steal(self, ctx: commands.Context, on_off: typing.Optional[bool]):
         """Toggle cookie stealing for current server.
 
         If `on_off` is not provided, the state will be flipped."""
-        target_state = on_off or not (await self.config.guild(ctx.guild).stealing())
-        await self.config.guild(ctx.guild).stealing.set(target_state)
+        conf = self.config if await self.config.is_global() else self.config.guild(ctx.guild)
+        target_state = on_off or not (await conf.stealing())
+        await conf.stealing.set(target_state)
         if target_state:
             await ctx.send("Stealing is now enabled.")
         else:
@@ -357,7 +401,8 @@ class Cookies(commands.Cog):
             return await ctx.send(
                 f"Uh oh, amount can't be greater than {_MAX_BALANCE:,}."
             )
-        await self.config.member(target).cookies.set(amount)
+        um_conf = self.config.user(target) if await self.config.is_global() else self.config.member(target)
+        await um_conf.cookies.set(amount)
         await ctx.send(f"Set {target.mention}'s balance to {amount} :cookie:")
 
     @cookieset.command(name="add")
@@ -367,13 +412,14 @@ class Cookies(commands.Cog):
         """Add cookies to someone."""
         if amount <= 0:
             return await ctx.send("Uh oh, amount has to be more than 0.")
-        target_cookies = int(await self.config.member(target).cookies())
+        um_conf = self.config.user(target) if await self.config.is_global() else self.config.member(target)
+        target_cookies = await um_conf.cookies()
         target_cookies += amount
         if self._max_balance_check(target_cookies):
             return await ctx.send(
                 f"Uh oh, {target.display_name} has reached the maximum amount of cookies."
             )
-        await self.config.member(target).cookies.set(target_cookies)
+        await um_conf.cookies.set(target_cookies)
         await ctx.send(f"Added {amount} :cookie: to {target.mention}'s balance.")
 
     @cookieset.command(name="take")
@@ -383,28 +429,28 @@ class Cookies(commands.Cog):
         """Take cookies away from someone."""
         if amount <= 0:
             return await ctx.send("Uh oh, amount has to be more than 0.")
-        target_cookies = int(await self.config.member(target).cookies())
+        um_conf = self.config.user(target) if await self.config.is_global() else self.config.member(target)
+        target_cookies = await um_conf.cookies()
         if amount <= target_cookies:
             target_cookies -= amount
-            await self.config.member(target).cookies.set(target_cookies)
-            await ctx.send(
+            await um_conf.cookies.set(target_cookies)
+            return await ctx.send(
                 f"Took away {amount} :cookie: from {target.mention}'s balance."
             )
-        else:
-            await ctx.send(f"{target.mention} doesn't have enough :cookies:")
+        await ctx.send(f"{target.mention} doesn't have enough :cookies:")
 
     @cookieset.command(name="reset")
-    async def cookieset_reset(self, ctx: commands.Context, confirmation: bool = False):
+    async def cookieset_reset(self, ctx: commands.Context, confirmation: typing.Optional[bool]):
         """Delete all cookies from all members."""
         if not confirmation:
             return await ctx.send(
                 "This will delete **all** cookies from all members. This action **cannot** be undone.\n"
                 f"If you're sure, type `{ctx.clean_prefix}cookieset reset yes`."
             )
-        for member in ctx.guild.members:
-            cookies = int(await self.config.member(member).cookies())
-            if cookies != 0:
-                await self.config.member(member).cookies.set(0)
+        if await self.config.is_global():
+            await config.clear_all_members()
+        else:
+            await config.clear_all_members(ctx.guild)
         await ctx.send("All cookies have been deleted from all members.")
 
     @cookieset.command(name="rate")
@@ -412,7 +458,8 @@ class Cookies(commands.Cog):
         """Set the exchange rate for `[p]cookieexchange`."""
         if rate <= 0:
             return await ctx.send("Uh oh, rate has to be more than 0.")
-        await self.config.guild(ctx.guild).rate.set(rate)
+        conf = self.config if await self.config.is_global() else self.config.guild(ctx.guild)
+        await conf.rate.set(rate)
         currency = await bank.get_currency_name(ctx.guild)
         test_amount = 100 * rate
         await ctx.send(
@@ -467,9 +514,9 @@ class Cookies(commands.Cog):
         after_roles = [list(a - b)][0]
         if after_roles:
             for role in after_roles:
-                cookies = int(await self.config.role(role).cookies())
+                cookies = await self.config.role(role).cookies()
                 if cookies != 0:
-                    old_cookies = int(await self.config.member(after).cookies())
+                    old_cookies = await self.config.member(after).cookies()
                     new_cookies = old_cookies + cookies
                     if self._max_balance_check(new_cookies):
                         continue
