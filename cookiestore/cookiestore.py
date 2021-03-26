@@ -546,7 +546,7 @@ class CookieStore(commands.Cog):
                     if not role_obj:
                         continue
                 thing = await self._show_thing(ctx, index, _object)
-                stuff.append(f"__Item:__ **{thing}** | "
+                stuff.append(f"__Item:__ **{_object}** | "
                              f"__Price:__ {thing.get('price')} :cookie: | "
                              f"__Quantity:__ {thing.get('quantity')}")
 
