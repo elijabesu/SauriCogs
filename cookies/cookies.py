@@ -296,7 +296,7 @@ class Cookies(commands.Cog):
             empty = "Nothing to see here."
             await ctx.send(box(empty, lang="md"))
 
-    @commands.group(autohelp=True)
+    @commands.group()
     @checks.admin()
     @commands.guild_only()
     async def cookieset(self, ctx):
