@@ -240,13 +240,13 @@ class Cookies(commands.Cog):
 
         if not to_currency:
             await bank.withdraw_credits(ctx.author, amount)
-            new_cookies = amount * rate
+            new_cookies = int(amount * rate)
             await self.deposit_cookies(ctx.author, new_cookies)
             return await ctx.send(
                 f"You have exchanged {amount} {currency} and got {new_cookies} :cookie:"
             )
         await self.withdraw_cookies(ctx.author, amount)
-        new_currency = amount / rate
+        new_currency = int(amount / rate)
         await bank.deposit_credits(ctx.author, new_currency)
         return await ctx.send(
             f"You have exchanged {amount} :cookie: and got {new_currency} {currency}"
