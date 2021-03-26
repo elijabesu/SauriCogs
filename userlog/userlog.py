@@ -47,9 +47,7 @@ class UserLog(commands.Cog):
         """Toggle logging when users join the current server.
 
         If `on_off` is not provided, the state will be flipped."""
-        target_state = (
-            on_off if on_off else not (await self.config.guild(ctx.guild).join())
-        )
+        target_state = on_off or not (await self.config.guild(ctx.guild).join())
         await self.config.guild(ctx.guild).join.set(target_state)
         if target_state:
             await ctx.send("Logging users joining is now enabled.")
@@ -61,9 +59,7 @@ class UserLog(commands.Cog):
         """Toggle logging when users leave the current server.
 
         If `on_off` is not provided, the state will be flipped."""
-        target_state = (
-            on_off if on_off else not (await self.config.guild(ctx.guild).leave())
-        )
+        target_state = on_off or not (await self.config.guild(ctx.guild).leave())
         await self.config.guild(ctx.guild).leave.set(target_state)
         if target_state:
             await ctx.send("Logging users leaving is now enabled.")
@@ -75,11 +71,7 @@ class UserLog(commands.Cog):
         """See current settings."""
         data = await self.config.guild(ctx.guild).all()
         channel = ctx.guild.get_channel(await self.config.guild(ctx.guild).channel())
-        if not channel:
-            channel = "None"
-        else:
-            channel = channel.mention
-
+        channel = "None" if not channel else channel.mention
         embed = discord.Embed(
             colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
         )

@@ -49,7 +49,7 @@ class UniqueName(commands.Cog):
     @uniquenameset.command(name="roles")
     async def unset_roles(self, ctx: commands.Context):
         """View the protected roles."""
-        roles = list()
+        roles = []
         for rid in await self.config.guild(guild).roles():
             role = guild.get_role(rid)
             if role:
@@ -81,9 +81,7 @@ class UniqueName(commands.Cog):
         """Toggle UniqueName for this server.
 
         If `on_off` is not provided, the state will be flipped."""
-        target_state = (
-            on_off if on_off else not (await self.config.guild(ctx.guild).toggle())
-        )
+        target_state = on_off or not (await self.config.guild(ctx.guild).toggle())
         await self.config.guild(ctx.guild).toggle.set(target_state)
         async with self.config.guilds() as guilds:
             guilds.append(ctx.guild.id)
@@ -97,15 +95,12 @@ class UniqueName(commands.Cog):
         """See current settings."""
         data = await self.config.guild(ctx.guild).all()
         channel = ctx.guild.get_channel(await self.config.guild(ctx.guild).channel())
-        if not channel:
-            channel = "None"
-        else:
-            channel = channel.mention
+        channel = "None" if not channel else channel.mention
         config_roles = await self.config.guild(ctx.guild).roles()
         if len(config_roles) == 0:
             roles = "None"
         else:
-            roles = list()
+            roles = []
             for rid in config_roles:
                 role = ctx.guild.get_role(rid)
                 if role:
@@ -190,7 +185,7 @@ class UniqueName(commands.Cog):
                 await member.edit(nick=name, reason="UniqueName cog")
 
     async def _build_name_list(self, guild):
-        names = list()
+        names = []
         for rid in await self.config.guild(guild).roles():
             role = guild.get_role(rid)
             if role:

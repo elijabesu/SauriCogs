@@ -138,26 +138,25 @@ class Cookies(commands.Cog):
             cookies_penalty = int(author_cookies * 0.25)
             if cookies_penalty == 0:
                 cookies_penalty = 1
-            if cookies_penalty > 0:
-                penalty = random.randint(1, cookies_penalty)
-                if author_cookies < penalty:
-                    penalty = author_cookies
-                if self._max_balance_check(target_cookies + penalty):
-                    return await ctx.send(
-                        f"Uh oh, you got caught while trying to steal {target.display_name}'s :cookie:\n"
-                        f"{target.display_name} has reached the maximum amount of cookies, "
-                        "so you haven't lost any."
-                    )
-                author_cookies -= penalty
-                target_cookies += penalty
-                await ctx.send(
-                    f"You got caught while trying to steal {target.display_name}'s :cookie:\nYour penalty is {penalty} :cookie: which they got!"
-                )
-            else:
+            if cookies_penalty <= 0:
                 return await ctx.send(
                     f"Uh oh, you got caught while trying to steal {target.display_name}'s :cookie:\n"
                     f"You don't have any cookies, so you haven't lost any."
                 )
+            penalty = random.randint(1, cookies_penalty)
+            if author_cookies < penalty:
+                penalty = author_cookies
+            if self._max_balance_check(target_cookies + penalty):
+                return await ctx.send(
+                    f"Uh oh, you got caught while trying to steal {target.display_name}'s :cookie:\n"
+                    f"{target.display_name} has reached the maximum amount of cookies, "
+                    "so you haven't lost any."
+                )
+            author_cookies -= penalty
+            target_cookies += penalty
+            await ctx.send(
+                f"You got caught while trying to steal {target.display_name}'s :cookie:\nYour penalty is {penalty} :cookie: which they got!"
+            )
         await self.config.member(target).cookies.set(target_cookies)
         await self.config.member(ctx.author).cookies.set(author_cookies)
 
@@ -340,9 +339,7 @@ class Cookies(commands.Cog):
         """Toggle cookie stealing for current server.
 
         If `on_off` is not provided, the state will be flipped."""
-        target_state = (
-            on_off if on_off else not (await self.config.guild(ctx.guild).stealing())
-        )
+        target_state = on_off or not (await self.config.guild(ctx.guild).stealing())
         await self.config.guild(ctx.guild).stealing.set(target_state)
         if target_state:
             await ctx.send("Stealing is now enabled.")
@@ -480,8 +477,7 @@ class Cookies(commands.Cog):
 
     async def _get_ids(self, ctx):
         data = await self.config.all_members(ctx.guild)
-        ids = sorted(data, key=lambda x: data[x]["cookies"], reverse=True)
-        return ids
+        return sorted(data, key=lambda x: data[x]["cookies"], reverse=True)
 
     @staticmethod
     def display_time(seconds, granularity=2):

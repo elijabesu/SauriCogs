@@ -130,9 +130,8 @@ class Gallery(commands.Cog):
             time = await self.config.guild(message.guild).time()
             if rid:
                 role = message.guild.get_role(int(rid))
-                if role:
-                    if role in message.author.roles:
-                        return
+                if role and role in message.author.roles:
+                    return
             if time != 0:
                 await asyncio.sleep(time)
             await message.delete()

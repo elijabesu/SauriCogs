@@ -102,9 +102,11 @@ class Pingable(commands.Cog):
         """Ping a role."""
         if not await self.config.role(role).pingable():
             return
-        if await self.config.role(role).channel():
-            if await self.config.role(role).channel() != ctx.channel.id:
-                return
+        if (
+            await self.config.role(role).channel()
+            and await self.config.role(role).channel() != ctx.channel.id
+        ):
+            return
         await ctx.message.delete()
         await role.edit(mentionable=True)
         await ctx.send(f"{role.mention}\n{ctx.author.mention}: {message}")

@@ -130,9 +130,7 @@ class Counting(commands.Cog):
 
         If `on_off` is not provided, the state will be flipped.
         Optionally add how many seconds the bot should wait before deleting the message (0 for not deleting)."""
-        target_state = (
-            on_off if on_off else not (await self.config.guild(ctx.guild).warning())
-        )
+        target_state = on_off or not (await self.config.guild(ctx.guild).warning())
         await self.config.guild(ctx.guild).warning.set(target_state)
         if target_state:
             if not seconds or seconds < 0:
@@ -151,9 +149,7 @@ class Counting(commands.Cog):
         """Toggle counting channel's topic changing.
 
         If `on_off` is not provided, the state will be flipped.="""
-        target_state = (
-            on_off if on_off else not (await self.config.guild(ctx.guild).topic())
-        )
+        target_state = on_off or not (await self.config.guild(ctx.guild).topic())
         await self.config.guild(ctx.guild).topic.set(target_state)
         if target_state:
             await ctx.send("Updating the channel's topic is now enabled.")
@@ -219,9 +215,8 @@ class Counting(commands.Cog):
         rid = await self.config.guild(message.guild).whitelist()
         if rid:
             role = message.guild.get_role(int(rid))
-            if role:
-                if role in message.author.roles:
-                    return
+            if role and role in message.author.roles:
+                return
         if warning:
             if message.author.id != last_id:
                 warn_msg = await message.channel.send(
@@ -264,15 +259,12 @@ class Counting(commands.Cog):
             return
 
     async def _set_topic(self, now, goal, n, channel):
-        if goal == 0:
-            await channel.edit(topic=f"Let's count! | Next message must be {n}!")
+        if goal != 0 and now < goal:
+            await channel.edit(
+                topic=f"Let's count! | Next message must be {n}! | Goal is {goal}!"
+            )
+        elif goal != 0 and now == goal:
+            await channel.send("We did it, we reached the goal! :tada:")
+            await channel.edit(topic=f"Goal reached! :tada:")
         else:
-            if now < goal:
-                await channel.edit(
-                    topic=f"Let's count! | Next message must be {n}! | Goal is {goal}!"
-                )
-            elif now == goal:
-                await channel.send("We did it, we reached the goal! :tada:")
-                await channel.edit(topic=f"Goal reached! :tada:")
-            else:
-                await channel.edit(topic=f"Let's count! | Next message must be {n}!")
+            await channel.edit(topic=f"Let's count! | Next message must be {n}!")

@@ -167,9 +167,9 @@ class Application(commands.Cog):
         except asyncio.TimeoutError:
             return await ctx.send("You took too long. Try again, please.")
 
-        list_of_questions = list()
-        for x in range(int(number_of_questions.content)):
-            question_list = list()
+        list_of_questions = []
+        for _ in range(int(number_of_questions.content)):
+            question_list = []
 
             await ctx.send("Enter question: ")
             try:
@@ -248,24 +248,12 @@ class Application(commands.Cog):
         """See current settings."""
         data = await self.config.guild(ctx.guild).all()
         channel = ctx.guild.get_channel(data["channel_id"])
-        if channel:
-            channel = channel.mention
-        else:
-            channel = "None"
+        channel = channel.mention if channel else "None"
         accepter = ctx.guild.get_role(data["accepter_id"])
-        if accepter:
-            accepter = accepter.name
-        else:
-            accepter = "None (guild admins)"
+        accepter = accepter.name if accepter else "None (guild admins)"
         applicant = ctx.guild.get_role(data["applicant_id"])
-        if applicant:
-            applicant = applicant.name
-        else:
-            applicant = "None"
-        questions = ""
-        for question in data["questions"]:
-            questions += question[0] + "\n"
-
+        applicant = applicant.name if applicant else "None"
+        questions = "".join(question[0] + "\n" for question in data["questions"])
         embed = discord.Embed(
             colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
         )
@@ -295,13 +283,13 @@ class Application(commands.Cog):
             accepter = ctx.guild.get_role(await self.config.guild(ctx.guild).accepter_id())
         except TypeError:
             accepter = None
-        if not accepter:
-            if not ctx.author.guild_permissions.administrator:
-                return await ctx.send("Uh oh, you cannot use this command.")
-        else:
-            if accepter not in ctx.author.roles:
-                return await ctx.send("Uh oh, you cannot use this command.")
-
+        if (
+            not accepter
+            and not ctx.author.guild_permissions.administrator
+            or accepter
+            and accepter not in ctx.author.roles
+        ):
+            return await ctx.send("Uh oh, you cannot use this command.")
         role = MessagePredicate.valid_role(ctx)
         if await self.config.guild(ctx.guild).applicant_id():
             try:
@@ -310,10 +298,10 @@ class Application(commands.Cog):
                 applicant = None
             if not applicant:
                 applicant = get(ctx.guild.roles, name="Staff Applicant")
-                if not applicant:
-                    return await ctx.send(
-                        "Uh oh, the configuration is not correct. Ask the Admins to set it."
-                    )
+            if not applicant:
+                return await ctx.send(
+                    "Uh oh, the configuration is not correct. Ask the Admins to set it."
+                )
             if applicant not in target.roles:
                 await target.remove_roles(applicant)
             else:

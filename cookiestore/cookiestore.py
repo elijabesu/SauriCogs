@@ -40,9 +40,7 @@ class CookieStore(commands.Cog):
         """Toggle store for current server.
 
         If `on_off` is not provided, the state will be flipped."""
-        target_state = (
-            on_off if on_off else not (await self.config.guild(ctx.guild).enabled())
-        )
+        target_state = on_off or not (await self.config.guild(ctx.guild).enabled())
         await self.config.guild(ctx.guild).enabled.set(target_state)
         if target_state:
             await ctx.send("Store is now enabled.")
@@ -196,10 +194,10 @@ class CookieStore(commands.Cog):
             ping = ctx.guild.get_member(ping_id)
             if not ping:
                 ping = ctx.guild.get_role(ping_id)
-                if not ping:
-                    return await ctx.send(
-                        "The role must have been deleted or user must have left."
-                    )
+            if not ping:
+                return await ctx.send(
+                    "The role must have been deleted or user must have left."
+                )
             return await ctx.send(f"{ping.name} is set to be pinged.")
         await self.config.guild(ctx.guild).ping.set(who.id)
         await ctx.send(
@@ -282,9 +280,7 @@ class CookieStore(commands.Cog):
                 quantity = int(role.get("quantity"))
                 if quantity == 0:
                     return await ctx.send("Uh oh, this item is out of stock.")
-                if price <= cookies:
-                    pass
-                else:
+                if price > cookies:
                     return await ctx.send("You don't have enough cookies!")
                 await ctx.author.add_roles(role_obj)
                 cookies -= price
@@ -317,9 +313,7 @@ class CookieStore(commands.Cog):
                 redeemable = False
             if quantity == 0:
                 return await ctx.send("Uh oh, this item is out of stock.")
-            if price <= cookies:
-                pass
-            else:
+            if price > cookies:
                 return await ctx.send("You don't have enough cookies!")
             cookies -= price
             quantity -= 1
@@ -329,19 +323,7 @@ class CookieStore(commands.Cog):
             await self.config.guild(ctx.guild).items.set_raw(
                 item, "quantity", value=quantity
             )
-            if not redeemable:
-                await self.config.member(ctx.author).inventory.set_raw(
-                    item,
-                    value={
-                        "price": price,
-                        "is_role": False,
-                        "is_game": False,
-                        "redeemable": False,
-                        "redeemed": True,
-                    },
-                )
-                await ctx.send(f"You have bought {item}.")
-            else:
+            if redeemable:
                 await self.config.member(ctx.author).inventory.set_raw(
                     item,
                     value={
@@ -355,6 +337,18 @@ class CookieStore(commands.Cog):
                 await ctx.send(
                     f"You have bought {item}. You may now redeem it with `{ctx.clean_prefix}redeem {item}`"
                 )
+            else:
+                await self.config.member(ctx.author).inventory.set_raw(
+                    item,
+                    value={
+                        "price": price,
+                        "is_role": False,
+                        "is_game": False,
+                        "redeemable": False,
+                        "redeemed": True,
+                    },
+                )
+                await ctx.send(f"You have bought {item}.")
         elif item in games:
             game_info = await self._show_thing(ctx, 2, item)
             price = int(game_info.get("price"))
@@ -364,9 +358,7 @@ class CookieStore(commands.Cog):
                 redeemable = False
             if quantity == 0:
                 return await ctx.send("Uh oh, this item is out of stock.")
-            if price <= cookies:
-                pass
-            else:
+            if price > cookies:
                 return await ctx.send("You don't have enough cookies!")
             cookies -= price
             quantity -= 1
@@ -376,19 +368,7 @@ class CookieStore(commands.Cog):
             await self.config.guild(ctx.guild).games.set_raw(
                 item, "quantity", value=quantity
             )
-            if not redeemable:
-                await self.config.member(ctx.author).inventory.set_raw(
-                    item,
-                    value={
-                        "price": price,
-                        "is_role": False,
-                        "is_game": True,
-                        "redeemable": False,
-                        "redeemed": True,
-                    },
-                )
-                await ctx.send(f"You have bought {item}.")
-            else:
+            if redeemable:
                 await self.config.member(ctx.author).inventory.set_raw(
                     item,
                     value={
@@ -402,6 +382,18 @@ class CookieStore(commands.Cog):
                 await ctx.send(
                     f"You have bought {item}. You may now redeem it with `{ctx.clean_prefix}redeem {item}`"
                 )
+            else:
+                await self.config.member(ctx.author).inventory.set_raw(
+                    item,
+                    value={
+                        "price": price,
+                        "is_role": False,
+                        "is_game": True,
+                        "redeemable": False,
+                        "redeemed": True,
+                    },
+                )
+                await ctx.send(f"You have bought {item}.")
         else:
             page_list = await self._show_store(ctx)
             if len(page_list) > 1:
@@ -420,9 +412,7 @@ class CookieStore(commands.Cog):
         )
         inventory = await self.config.member(ctx.author).inventory.get_raw()
 
-        if item in inventory:
-            pass
-        else:
+        if item not in inventory:
             return await ctx.send("You don't own this item.")
         info = await self.config.member(ctx.author).inventory.get_raw(item)
 
@@ -462,10 +452,7 @@ class CookieStore(commands.Cog):
             else:
                 role_obj = get(ctx.guild.roles, name=i)
                 lst.append(role_obj.mention)
-        if lst == []:
-            desc = "Nothing to see here."
-        else:
-            desc = humanize_list(lst)
+        desc = "Nothing to see here." if lst == [] else humanize_list(lst)
         embed = discord.Embed(
             description=desc, colour=ctx.author.colour, timestamp=datetime.datetime.now()
         )
@@ -507,30 +494,27 @@ class CookieStore(commands.Cog):
         if not ping_id:
             return await ctx.send("Uh oh, your Admins haven't set this yet.")
         ping = ctx.guild.get_member(ping_id)
-        if not ping:
+        if ping:
+            await ctx.send(
+                f"{ping.mention}, {ctx.author.mention} would like to redeem {item}."
+            )
+        else:
             ping = ctx.guild.get_role(ping_id)
             if not ping:
                 return await ctx.send("Uh oh, your Admins haven't set this yet.")
-            if not ping.mentionable:
+            if ping.mentionable:
+                await ctx.send(
+                    f"{ping.mention}, {ctx.author.mention} would like to redeem {item}."
+                )
+            else:
                 await ping.edit(mentionable=True)
                 await ctx.send(
                     f"{ping.mention}, {ctx.author.mention} would like to redeem {item}."
                 )
                 await ping.edit(mentionable=False)
-            else:
-                await ctx.send(
-                    f"{ping.mention}, {ctx.author.mention} would like to redeem {item}."
-                )
-            await self.config.member(ctx.author).inventory.set_raw(
-                item, "redeemed", value=True
-            )
-        else:
-            await ctx.send(
-                f"{ping.mention}, {ctx.author.mention} would like to redeem {item}."
-            )
-            await self.config.member(ctx.author).inventory.set_raw(
-                item, "redeemed", value=True
-            )
+        await self.config.member(ctx.author).inventory.set_raw(
+            item, "redeemed", value=True
+        )
 
     async def _show_store(self, ctx):
         items = await self._show_thing(ctx, 0, "None")

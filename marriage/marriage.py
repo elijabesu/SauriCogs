@@ -110,9 +110,7 @@ class Marriage(commands.Cog):
         """Toggle Marriage for current server.
 
         If `on_off` is not provided, the state will be flipped."""
-        target_state = (
-            on_off if on_off else not (await self.config.guild(ctx.guild).toggle())
-        )
+        target_state = on_off or not (await self.config.guild(ctx.guild).toggle())
         await self.config.guild(ctx.guild).toggle.set(target_state)
         await ctx.send(
             "Marriage is now enabled." if target_state else "Marriage is now disabled."
@@ -281,8 +279,8 @@ class Marriage(commands.Cog):
         )
         if not data:
             data = self._DEFAULT_ACTIONS.get(action)
-            if not data:
-                return await ctx.send("Uh oh, that's not a registered action.")
+        if not data:
+            return await ctx.send("Uh oh, that's not a registered action.")
         await ctx.send(
             box(
                 f"""= {action.capitalize()} =
@@ -342,8 +340,8 @@ description:: {data.get('description')}""",
         )
         if not data:
             data = self._DEFAULT_GIFTS.get(gift)
-            if not data:
-                return await ctx.send("Uh oh, that's not a registered gift.")
+        if not data:
+            return await ctx.send("Uh oh, that's not a registered gift.")
         await ctx.send(
             box(
                 f"""= {gift.capitalize()} =
@@ -377,7 +375,7 @@ price:: {data.get('price')}""",
         else:
             rs_status = "Married"
             spouse_ids = await conf.current()
-            spouses = list()
+            spouses = []
             for spouse_id in spouse_ids:
                 spouse = ctx.guild.get_member(spouse_id)
                 if spouse:
@@ -559,14 +557,12 @@ price:: {data.get('price')}""",
         if await self.config.guild(ctx.guild).currency() == 0:
             currency = await bank.get_currency_name(ctx.guild)
             end_amount = f"{amount} {currency}"
-            if await bank.can_spend(ctx.author, amount):
-                if await bank.can_spend(member, amount):
-                    await bank.withdraw_credits(ctx.author, amount)
-                    await bank.withdraw_credits(member, amount)
-                else:
-                    return await ctx.send(f"Uh oh, you two cannot afford this...")
-            else:
+            if not await bank.can_spend(
+                ctx.author, amount
+            ) or not await bank.can_spend(member, amount):
                 return await ctx.send(f"Uh oh, you two cannot afford this...")
+            await bank.withdraw_credits(ctx.author, amount)
+            await bank.withdraw_credits(member, amount)
         else:
             author_cookies = int(
                 await self.bot.get_cog("Cookies").config.member(ctx.author).cookies()
@@ -575,18 +571,14 @@ price:: {data.get('price')}""",
                 await self.bot.get_cog("Cookies").config.member(member).cookies()
             )
             end_amount = f"{amount} :cookie:"
-            if amount <= author_cookies:
-                if amount <= target_cookies:
-                    await self.bot.get_cog("Cookies").config.member(
-                        ctx.author
-                    ).cookies.set(author_cookies - amount)
-                    await self.bot.get_cog("Cookies").config.member(member).cookies.set(
-                        target_cookies - amount
-                    )
-                else:
-                    return await ctx.send(f"Uh oh, you two cannot afford this...")
-            else:
+            if amount > author_cookies or amount > target_cookies:
                 return await ctx.send(f"Uh oh, you two cannot afford this...")
+            await self.bot.get_cog("Cookies").config.member(
+                ctx.author
+            ).cookies.set(author_cookies - amount)
+            await self.bot.get_cog("Cookies").config.member(member).cookies.set(
+                target_cookies - amount
+            )
         await self.config.member(ctx.author).marcount.set(author_marcount + 1)
         await self.config.member(member).marcount.set(target_marcount + 1)
 
@@ -650,20 +642,15 @@ price:: {data.get('price')}""",
                 if await self.config.guild(ctx.guild).currency() == 0:
                     currency = await bank.get_currency_name(ctx.guild)
                     end_amount = f"You both paid {amount} {currency}"
-                    if await bank.can_spend(ctx.author, amount):
-                        if await bank.can_spend(member, amount):
-                            await bank.withdraw_credits(ctx.author, amount)
-                            await bank.withdraw_credits(member, amount)
-                        else:
-                            return await ctx.send(
-                                f"Uh oh, you two cannot afford this... But you can force a court by "
-                                f"doing `{ctx.clean_prefix}divorce {member.mention} yes`"
-                            )
-                    else:
+                    if not await bank.can_spend(
+                        ctx.author, amount
+                    ) or not await bank.can_spend(member, amount):
                         return await ctx.send(
                             f"Uh oh, you two cannot afford this... But you can force a court by "
                             f"doing `{ctx.clean_prefix}divorce {member.mention} yes`"
                         )
+                    await bank.withdraw_credits(ctx.author, amount)
+                    await bank.withdraw_credits(member, amount)
                 else:
                     author_cookies = int(
                         await self.bot.get_cog("Cookies")
@@ -676,24 +663,17 @@ price:: {data.get('price')}""",
                         .cookies()
                     )
                     end_amount = f"You both paid {amount} :cookie:"
-                    if amount <= author_cookies:
-                        if amount <= target_cookies:
-                            await self.bot.get_cog("Cookies").config.member(
-                                ctx.author
-                            ).cookies.set(author_cookies - amount)
-                            await self.bot.get_cog("Cookies").config.member(
-                                member
-                            ).cookies.set(target_cookies - amount)
-                        else:
-                            return await ctx.send(
-                                f"Uh oh, you two cannot afford this... But you can force a court by "
-                                f"doing `{ctx.clean_prefix}divorce {member.mention} yes`"
-                            )
-                    else:
+                    if amount > author_cookies or amount > target_cookies:
                         return await ctx.send(
                             f"Uh oh, you two cannot afford this... But you can force a court by "
                             f"doing `{ctx.clean_prefix}divorce {member.mention} yes`"
                         )
+                    await self.bot.get_cog("Cookies").config.member(
+                        ctx.author
+                    ).cookies.set(author_cookies - amount)
+                    await self.bot.get_cog("Cookies").config.member(
+                        member
+                    ).cookies.set(target_cookies - amount)
             else:
                 court = True
         if court:
@@ -764,16 +744,15 @@ price:: {data.get('price')}""",
         if member.id == ctx.author.id:
             return await ctx.send("You cannot perform anything with yourself!")
 
-        if action in actions:
-            exertion = await gc(ctx.guild).custom_actions.get_raw(action, default=None)
-            if not exertion:
-                exertion = self._DEFAULT_ACTIONS.get(action)
-            endtext = exertion.get("description").format(
-                author=ctx.author.mention, target=member.mention
-            )
-
-        else:
+        if action not in actions:
             return await ctx.send(f"Available actions are: {humanize_list(actions)}")
+
+        exertion = await gc(ctx.guild).custom_actions.get_raw(action, default=None)
+        if not exertion:
+            exertion = self._DEFAULT_ACTIONS.get(action)
+        endtext = exertion.get("description").format(
+            author=ctx.author.mention, target=member.mention
+        )
 
         contentment, price = exertion.get("contentment"), exertion.get("price")
 
@@ -847,13 +826,12 @@ price:: {data.get('price')}""",
                 else:
                     await mc(ctx.author).contentment.set(100)
         spouses = await mc(ctx.author).current()
-        if member.id not in spouses:
-            if await mc(ctx.author).married():
-                for sid in spouses:
-                    spouse = ctx.guild.get_member(sid)
-                    endtext = await self._maybe_divorce(
-                        ctx, spouse, endtext, contentment
-                    )
+        if member.id not in spouses and await mc(ctx.author).married():
+            for sid in spouses:
+                spouse = ctx.guild.get_member(sid)
+                endtext = await self._maybe_divorce(
+                    ctx, spouse, endtext, contentment
+                )
         await ctx.send(endtext)
 
     @commands.guild_only()
@@ -893,29 +871,22 @@ price:: {data.get('price')}""",
 
         if author_gift == 0:
             if await self.config.guild(ctx.guild).currency() == 0:
-                if await bank.can_spend(ctx.author, price):
-                    await bank.withdraw_credits(ctx.author, price)
-                    member_gift += 1
-                    author_gift -= 1
-                else:
+                if not await bank.can_spend(ctx.author, price):
                     return await ctx.send("Uh oh, you cannot afford this.")
+                await bank.withdraw_credits(ctx.author, price)
             else:
                 author_cookies = int(
                     await self.bot.get_cog("Cookies")
                     .config.member(ctx.author)
                     .cookies()
                 )
-                if price <= author_cookies:
-                    await self.bot.get_cog("Cookies").config.member(
-                        ctx.author
-                    ).cookies.set(author_cookies - price)
-                    member_gift += 1
-                    author_gift -= 1
-                else:
+                if price > author_cookies:
                     return await ctx.send("Uh oh, you cannot afford this.")
-        else:
-            author_gift -= 1
-            member_gift += 1
+                await self.bot.get_cog("Cookies").config.member(
+                    ctx.author
+                ).cookies.set(author_cookies - price)
+        author_gift -= 1
+        member_gift += 1
         if author_gift >= 0:
             await mc(ctx.author).gifts.set_raw(item, value=author_gift)
         if member_gift > 0:
@@ -937,13 +908,12 @@ price:: {data.get('price')}""",
                 await mc(ctx.author).contentment.set(100)
 
         spouses = await mc(ctx.author).current()
-        if member.id not in spouses:
-            if await mc(ctx.author).married():
-                for sid in spouses:
-                    spouse = ctx.guild.get_member(sid)
-                    endtext = await self._maybe_divorce(
-                        ctx, spouse, endtext, contentment
-                    )
+        if member.id not in spouses and await mc(ctx.author).married():
+            for sid in spouses:
+                spouse = ctx.guild.get_member(sid)
+                endtext = await self._maybe_divorce(
+                    ctx, spouse, endtext, contentment
+                )
         await ctx.send(endtext)
 
     async def _get_actions(self, ctx):
@@ -951,7 +921,7 @@ price:: {data.get('price')}""",
         removed_actions = await self.config.guild(ctx.guild).removed_actions()
         custom_actions = await self.config.guild(ctx.guild).custom_actions()
         if len(custom_actions) == 0:
-            custom_actions = list()
+            custom_actions = []
         else:
             custom_actions = list(custom_actions.keys())
 
@@ -966,11 +936,7 @@ price:: {data.get('price')}""",
         gifts = list(self._DEFAULT_GIFTS.keys())
         removed_gifts = await self.config.guild(ctx.guild).removed_gifts()
         custom_gifts = await self.config.guild(ctx.guild).custom_gifts()
-        if len(custom_gifts) == 0:
-            custom_gifts = list()
-        else:
-            custom_gifts = list(custom_gifts.keys())
-
+        custom_gifts = list() if len(custom_gifts) == 0 else list(custom_gifts.keys())
         for removed in removed_gifts:
             gifts.remove(removed)
 
@@ -979,24 +945,15 @@ price:: {data.get('price')}""",
         return gifts
 
     async def _get_all(self, ctx):
-        all_items = list()
-        all_items.extend(await self._get_actions(ctx))
+        all_items = list(await self._get_actions(ctx))
         all_items.extend(await self._get_gifts(ctx))
         return all_items
 
     async def _is_custom(self, ctx, item):
         actions = await self.config.guild(ctx.guild).custom_actions()
-        if len(actions) == 0:
-            actions = list()
-        else:
-            actions = list(actions.keys())
-
+        actions = list() if len(actions) == 0 else list(actions.keys())
         gifts = await self.config.guild(ctx.guild).custom_gifts()
-        if len(gifts) == 0:
-            gifts = list()
-        else:
-            gifts = list(gifts.keys())
-
+        gifts = list() if len(gifts) == 0 else list(gifts.keys())
         return item in actions or item in gifts
 
     async def _is_removed(self, ctx, item):
