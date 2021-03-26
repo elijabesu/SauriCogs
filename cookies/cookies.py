@@ -296,7 +296,7 @@ class Cookies(commands.Cog):
             empty = "Nothing to see here."
             await ctx.send(box(empty, lang="md"))
 
-    @commands.group()
+    @commands.group(autohelp=True)
     @checks.admin()
     @commands.guild_only()
     async def cookieset(self, ctx):
@@ -305,13 +305,13 @@ class Cookies(commands.Cog):
     @cookieset.command(name="gg")
     async def cookieset_gg(self, ctx: commands.Context, make_global: bool, confirmation: typing.Optional[bool]):
         """Switch from per-guild to global cookies and vice versa."""
+        if await self.config.is_global() == make_global:
+            return await ctx.send("Uh oh, you're not really changing anything.")
         if not confirmation:
             return await ctx.send(
                 "This will delete **all** current settings. This action **cannot** be undone.\n"
                 f"If you're sure, type `{ctx.clean_prefix}cookieset gg <make_global> yes`."
             )
-        if await self.config.is_global() == make_global:
-            return await ctx.send("Uh oh, you're not really changing anything.")
         await self.config.clear_all_members()
         await self.config.clear_all_guilds()
         await self.config.clear_all_globals()
