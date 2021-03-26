@@ -268,12 +268,13 @@ class Cookies(commands.Cog):
             bar_len=pound_len + 9,
         )
         temp_msg = header
+        is_global = await self.config.is_global()
         for a_id in ids:
-            a = get(ctx.guild.members, id=int(a_id))
+            a = self.bot.get_user(a_id) if is_global else ctx.guild.get_member(a_id)
             if not a:
                 continue
             name = a.display_name
-            cookies = await self.config.member(a).cookies()
+            cookies = await self.config.user(a).cookies() if is_global else await self.config.member(a).cookies()
             if cookies == 0:
                 continue
             score = "Cookies"
