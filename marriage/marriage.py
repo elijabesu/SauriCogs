@@ -211,6 +211,7 @@ class Marriage(commands.Cog):
     async def marryset_settings(self, ctx: commands.Context):
         """See current settings."""
         is_global = await self.config.is_global()
+        conf = await self._get_conf_group(ctx.guild)
         data = (
             await self.config.all()
             if is_global
