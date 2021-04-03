@@ -210,8 +210,12 @@ class Marriage(commands.Cog):
     @marryset.command(name="settings")
     async def marryset_settings(self, ctx: commands.Context):
         """See current settings."""
-        conf = await self._get_conf_group(ctx.guild)
-        data = await conf.all()
+        is_global = await self.config.is_global()
+        data = (
+            await self.config.all()
+            if is_global
+            else await self.config.guild(ctx.guild).all()
+        )
         currency_used = (
             "Red's economy" if data["currency"] == 0 else "SauriCogs' cookies"
         )
@@ -261,9 +265,9 @@ class Marriage(commands.Cog):
         )
         embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
         embed.title = "**__Marriage settings:__**"
+        embed.add_field(name="Global:", value=str(is_global))
         embed.add_field(name="Enabled*:", value=str(data["toggle"]))
         embed.add_field(name="Currency:", value=currency_used)
-        embed.add_field(name="\u200b", value="\u200b")
         embed.add_field(name="Marriage price:", value=str(data["marprice"]))
         embed.add_field(name="Divorce price:", value=str(data["divprice"]))
         embed.add_field(name="Multiple spouses:", value=str(data["multi"]))
