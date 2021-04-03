@@ -333,7 +333,10 @@ class Cookies(commands.Cog):
     @checks.admin()
     @commands.guild_only()
     async def cookieset(self, ctx):
-        """Various Cookies settings."""
+        f"""Various Cookies settings.
+        
+        Version: {self.__version__}
+        Author: {self.__author__}"""
 
     @cookieset.command(name="gg")
     async def cookieset_gg(
@@ -355,7 +358,7 @@ class Cookies(commands.Cog):
         await self.config.clear_all_guilds()
         await self.config.clear_all_globals()
         await self.config.is_global.set(make_global)
-        await ctx.send(f"Cookies are now {'global' if make_global else 'per-guild'}!")
+        await ctx.send(f"Cookies are now {'global' if make_global else 'per-guild'}.")
 
     @cookieset.command(name="amount")
     async def cookieset_amount(self, ctx: commands.Context, amount: int):
@@ -672,13 +675,13 @@ class Cookies(commands.Cog):
 
     async def can_spend(self, user, amount):
         if await self.config.is_global():
-            return True if await self.config.user(user).cookies() >= amount else False
-        return True if await self.config.member(user).cookies() >= amount else False
+            return await self.config.user(user).cookies() >= amount
+        return await self.config.member(user).cookies() >= amount
 
     async def _can_spend(self, to_currency, user, amount):
         if to_currency:
-            return True if await self.can_spend(user, amount) else False
-        return True if await bank.can_spend(user, amount) else False
+            return bool(await self.can_spend(user, amount))
+        return bool(await bank.can_spend(user, amount))
 
     async def withdraw_cookies(self, user, amount):
         if await self.config.is_global():
@@ -695,3 +698,7 @@ class Cookies(commands.Cog):
         else:
             cookies = await self.config.member(user).cookies() + amount
             await self.config.member(user).cookies.set(cookies)
+
+    async def get_cookies(self, user):
+        conf = self.config.user(user) if await self.config.is_global() else self.config.member(user)
+        return await conf.cookies()
