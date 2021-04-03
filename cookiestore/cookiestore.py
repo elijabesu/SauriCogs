@@ -38,19 +38,42 @@ class CookieStore(commands.Cog):
     @checks.admin()
     @commands.guild_only()
     async def cookiestoreset(self, ctx):
-        """Various Cookie Store settings."""
+        f"""Various Cookie Store settings.
+        
+        Version: {self.__version__}
+        Author: {self.__author__}"""
+
+    @cookiestoreset.command(name="gg")
+    async def cookiestoreset_gg(
+        self,
+        ctx: commands.Context,
+        make_global: bool,
+        confirmation: typing.Optional[bool],
+    ):
+        """Switch from per-guild to global cookie store and vice versa."""
+        if await self.config.is_global() == make_global:
+            return await ctx.send("Uh oh, you're not really changing anything.")
+        if not confirmation:
+            return await ctx.send(
+                "This will delete **all** current settings. This action **cannot** be undone.\n"
+                f"If you're sure, type `{ctx.clean_prefix}cookieset gg <make_global> yes`."
+            )
+        await self.config.clear_all_members()
+        await self.config.clear_all_users()
+        await self.config.clear_all_guilds()
+        await self.config.clear_all_globals()
+        await self.config.is_global.set(make_global)
+        await ctx.send(f"Cookie store is now {'global' if make_global else 'per-guild'}.")
 
     @cookiestoreset.command(name="toggle")
-    async def cookiestoreset_toggle(self, ctx: commands.Context, on_off: bool = None):
+    async def cookiestoreset_toggle(self, ctx: commands.Context, on_off: typing.Optional[bool]):
         """Toggle store for current server.
 
         If `on_off` is not provided, the state will be flipped."""
-        target_state = on_off or not (await self.config.guild(ctx.guild).enabled())
-        await self.config.guild(ctx.guild).enabled.set(target_state)
-        if target_state:
-            await ctx.send("Store is now enabled.")
-        else:
-            await ctx.send("Store is now disabled.")
+        conf = await self._get_conf_group(ctx.guild)
+        target_state = on_off or not (await conf.enabled())
+        await conf.enabled.set(target_state)
+        await ctx.send(f"Store is now {'enabled' if target_state else 'disabled'}.")
 
     @cookiestoreset.group(name="add")
     async def cookiestoreset_add(self, ctx: commands.Context):
@@ -61,11 +84,12 @@ class CookieStore(commands.Cog):
         self, ctx: commands.Context, role: discord.Role, price: int, quantity: int
     ):
         """Add a purchasable (returnable) role."""
-        if price <= 0 or quantity <= 0:
+        if self._over_zero(price, quantity):
             return await ctx.send("Uh oh, price/quantity have to be over 0.")
-        if await self.config.guild(ctx.guild).roles.get_raw(role):
+        conf = await self._get_conf_group(ctx.guild)
+        if await conf.roles.get_raw(role):
             return await ctx.send(f"Uh oh, {role.name} is already registered.")
-        await self.config.guild(ctx.guild).roles.set_raw(
+        await conf.roles.set_raw(
             role.name, value={"price": price, "quantity": quantity}
         )
         await ctx.tick()
@@ -75,11 +99,12 @@ class CookieStore(commands.Cog):
         self, ctx: commands.Context, item: str, price: int, quantity: int, redeem: bool
     ):
         """Add a purchasable (returnable) item."""
-        if price <= 0 or quantity <= 0:
+        if self._over_zero(price, quantity):
             return await ctx.send("Uh oh, price/quantity have to be over 0.")
-        if await self.config.guild(ctx.guild).items.get_raw(item):
+        conf = await self._get_conf_group(ctx.guild)
+        if await conf.items.get_raw(item):
             return await ctx.send(f"Uh oh, {item} is already registered.")
-        await self.config.guild(ctx.guild).items.set_raw(
+        await conf.items.set_raw(
             item,
             value={
                 "price": price,
@@ -94,11 +119,12 @@ class CookieStore(commands.Cog):
         self, ctx: commands.Context, game: str, price: int, quantity: int, redeem: bool
     ):
         """Add a purchasable (non-returnable) game."""
-        if price <= 0 or quantity <= 0:
+        if self._over_zero(price, quantity):
             return await ctx.send("Uh oh, price/quantity have to be over 0.")
-        if await self.config.guild(ctx.guild).games.get_raw(game):
+        conf = await self._get_conf_group(ctx.guild)
+        if await conf.games.get_raw(game):
             return await ctx.send(f"Uh oh, {game} is already registered.")
-        await self.config.guild(ctx.guild).games.set_raw(
+        await conf.games.set_raw(
             game,
             value={
                 "price": price,
@@ -117,43 +143,47 @@ class CookieStore(commands.Cog):
         self, ctx: commands.Context, role: discord.Role
     ):
         """Remove a purchasable role."""
-        if not await self.config.guild(ctx.guild).roles.get_raw(role):
+        conf = await self._get_conf_group(ctx.guild)
+        if not await conf.roles.get_raw(role):
             return await ctx.send(f"Uh oh, {role.name} is not registered.")
-        await self.config.guild(ctx.guild).roles.clear_raw(role)
+        await conf.roles.clear_raw(role)
         await ctx.tick()
 
     @cookiestoreset_remove.command(name="item")
     async def cookiestoreset_remove_item(self, ctx: commands.Context, item: str):
         """Remove a purchasable item."""
-        if not await self.config.guild(ctx.guild).items.get_raw(item):
+        conf = await self._get_conf_group(ctx.guild)
+        if not await conf.items.get_raw(item):
             return await ctx.send(f"Uh oh, {item} is not registered.")
-        await self.config.guild(ctx.guild).items.clear_raw(item)
+        await conf.items.clear_raw(item)
         await ctx.tick()
 
     @cookiestoreset_remove.command(name="game")
     async def cookiestoreset_remove_game(self, ctx: commands.Context, game: str):
         """Remove a purchasable game."""
-        if not await self.config.guild(ctx.guild).games.get_raw(game):
+        conf = await self._get_conf_group(ctx.guild)
+        if not await conf.games.get_raw(game):
             return await ctx.send(f"Uh oh, {game} is not registered.")
-        await self.config.guild(ctx.guild).games.clear_raw(game)
+        await conf.games.clear_raw(game)
         await ctx.tick()
 
     @cookiestoreset.command(name="show")
     async def cookiestoreset_show(self, ctx: commands.Context, *, item: str):
-        """Show information about a buyable item/role/game key."""
+        """Show information about a purchasable item/role/game key."""
         item = item.strip("@")
-        items = await self.config.guild(ctx.guild).items.get_raw()
-        roles = await self.config.guild(ctx.guild).roles.get_raw()
-        games = await self.config.guild(ctx.guild).games.get_raw()
+        conf = await self._get_conf_group(ctx.guild)
+        items = await conf.items.get_raw()
+        roles = await conf.roles.get_raw()
+        games = await conf.games.get_raw()
 
         if item in items:
-            info = await self.config.guild(ctx.guild).items.get_raw(item)
+            info = await conf.items.get_raw(item)
             item_type = "item"
         elif item in roles:
-            info = await self.config.guild(ctx.guild).roles.get_raw(item)
+            info = await conf.roles.get_raw(item)
             item_type = "role"
         elif item in games:
-            info = await self.config.guild(ctx.guild).games.get_raw(item)
+            info = await conf.games.get_raw(item)
             item_type = "game"
         else:
             return await ctx.send("This item isn't buyable.")
@@ -171,24 +201,25 @@ class CookieStore(commands.Cog):
         self, ctx: commands.Context, item: str, quantity: int
     ):
         """Change the quantity of an existing purchasable item."""
-        if quantity <= 0:
+        if self._over_zero(quantity):
             return await ctx.send("Uh oh, quantity has to be more than 0.")
-        items = await self.config.guild(ctx.guild).items.get_raw()
-        roles = await self.config.guild(ctx.guild).roles.get_raw()
-        games = await self.config.guild(ctx.guild).games.get_raw()
+        conf = await self._get_conf_group(ctx.guild)
+        items = await conf.items.get_raw()
+        roles = await conf.roles.get_raw()
+        games = await conf.games.get_raw()
 
         if item in items:
-            await self.config.guild(ctx.guild).items.set_raw(
+            await conf.items.set_raw(
                 item, "quantity", value=quantity
             )
             await ctx.tick()
         elif item in roles:
-            await self.config.guild(ctx.guild).roles.set_raw(
+            await conf.roles.set_raw(
                 item, "quantity", value=quantity
             )
             await ctx.tick()
         elif item in games:
-            await self.config.guild(ctx.guild).games.set_raw(
+            await conf.games.set_raw(
                 item, "quantity", value=quantity
             )
             await ctx.tick()
@@ -204,8 +235,9 @@ class CookieStore(commands.Cog):
         """Set the role/member that should be pinged when a member wants to redeem their item.
 
         If who isn't provided, it will show the current ping set."""
+        conf = await self._get_conf_group(ctx.guild)
         if not who:
-            ping_id = await self.config.guild(ctx.guild).ping()
+            ping_id = await conf.ping()
             if not ping_id:
                 return await ctx.send("No ping is set.")
             ping = ctx.guild.get_member(ping_id)
@@ -216,7 +248,7 @@ class CookieStore(commands.Cog):
                     "The role must have been deleted or user must have left."
                 )
             return await ctx.send(f"{ping.name} is set to be pinged.")
-        await self.config.guild(ctx.guild).ping.set(who.id)
+        await conf.ping.set(who.id)
         await ctx.send(
             f"{who.name} has been set to be pinged when a member wants to redeem their item."
         )
@@ -231,12 +263,13 @@ class CookieStore(commands.Cog):
                 "This will delete **all** items. This action **cannot** be undone.\n"
                 f"If you're sure, type `{ctx.clean_prefix}cookiestoreset reset yes`."
             )
-        for i in await self.config.guild(ctx.guild).items.get_raw():
-            await self.config.guild(ctx.guild).items.clear_raw(i)
-        for r in await self.config.guild(ctx.guild).roles.get_raw():
-            await self.config.guild(ctx.guild).roles.clear_raw(r)
-        for g in await self.config.guild(ctx.guild).games.get_raw():
-            await self.config.guild(ctx.guild).games.clear_raw(g)
+        conf = await self._get_conf_group(ctx.guild)
+        for i in await conf.items.get_raw():
+            await conf.items.clear_raw(i)
+        for r in await conf.roles.get_raw():
+            await conf.roles.clear_raw(r)
+        for g in await conf.games.get_raw():
+            await conf.games.clear_raw(g)
         await ctx.send("All items have been deleted from the store.")
 
     @cookiestoreset_reset.command(name="nventories")
@@ -249,17 +282,18 @@ class CookieStore(commands.Cog):
                 "This will delete **all** items from all members' inventories. This action **cannot** be undone.\n"
                 f"If you're sure, type `{ctx.clean_prefix}cookiestoreset reset inventories yes`."
             )
-        for member in ctx.guild.members:
-            inventory = await self.config.member(member).inventory.get_raw()
-            for item in inventory:
-                await self.config.member(member).inventory.clear_raw(item)
+        if await self.config.is_global():
+            await self.config.clear_all_users()
+        else:
+            await self.config.clear_all_members(ctx.guild)
         await ctx.send("All items have been deleted from all members' inventories.")
 
     @commands.command()
     @commands.guild_only()
     async def shop(self, ctx: commands.Context):
         """Display the cookie store."""
-        enabled = await self.config.guild(ctx.guild).enabled()
+        conf = await self._get_conf_group(ctx.guild)
+        enabled = await conf.enabled()
         if not enabled:
             return await ctx.send("Uh oh, store is disabled.")
         page_list = await self._show_store(ctx)
@@ -272,15 +306,19 @@ class CookieStore(commands.Cog):
     @commands.guild_only()
     async def buy(self, ctx: commands.Context, *, item: typing.Optional[str]):
         """Buy an item from the cookie store."""
-        enabled = await self.config.guild(ctx.guild).enabled()
+        conf = await self._get_conf_group(ctx.guild)
+        enabled = await conf.enabled()
         if not enabled:
             return await ctx.send("Uh oh, store is disabled.")
-        cookies = int(
-            await self.bot.get_cog("Cookies").config.member(ctx.author).cookies()
-        )
-        items = await self.config.guild(ctx.guild).items.get_raw()
-        roles = await self.config.guild(ctx.guild).roles.get_raw()
-        games = await self.config.guild(ctx.guild).games.get_raw()
+
+        cookies_cog = self.bot.get_cog("Cookies").config
+        if await cookies_cog.is_global():
+            cookies = await cookies_cog.user(ctx.author).cookies()
+        else:
+            cookies = await cookies_cog.member(ctx.author).cookies()
+        items = await conf.items.get_raw()
+        roles = await conf.roles.get_raw()
+        games = await conf.games.get_raw()
 
         if not item:
             page_list = await self._show_store(ctx)
@@ -294,7 +332,7 @@ class CookieStore(commands.Cog):
         if item in roles:
             role_obj = get(ctx.guild.roles, name=item)
             if role_obj:
-                role = await self.config.guild(ctx.guild).roles.get_raw(item)
+                role = await conf.roles.get_raw(item)
                 price = int(role.get("price"))
                 quantity = int(role.get("quantity"))
                 if quantity == 0:
@@ -317,14 +355,14 @@ class CookieStore(commands.Cog):
                         "redeemed": True,
                     },
                 )
-                await self.config.guild(ctx.guild).roles.set_raw(
+                await conf.roles.set_raw(
                     item, "quantity", value=quantity
                 )
                 await ctx.send(f"You have bought {item}.")
             else:
                 await ctx.send("Uh oh, can't find the role.")
         elif item in items:
-            item_info = await self.config.guild(ctx.guild).items.get_raw(item)
+            item_info = await conf.items.get_raw(item)
             price = int(item_info.get("price"))
             quantity = int(item_info.get("quantity"))
             redeemable = item_info.get("redeemable")
@@ -339,7 +377,7 @@ class CookieStore(commands.Cog):
             await self.bot.get_cog("Cookies").config.member(ctx.author).cookies.set(
                 cookies
             )
-            await self.config.guild(ctx.guild).items.set_raw(
+            await conf.items.set_raw(
                 item, "quantity", value=quantity
             )
             if redeemable:
@@ -384,7 +422,7 @@ class CookieStore(commands.Cog):
             await self.bot.get_cog("Cookies").config.member(ctx.author).cookies.set(
                 cookies
             )
-            await self.config.guild(ctx.guild).games.set_raw(
+            await conf.games.set_raw(
                 item, "quantity", value=quantity
             )
             if redeemable:
@@ -423,7 +461,8 @@ class CookieStore(commands.Cog):
     @commands.guild_only()
     async def cookiestore_return(self, ctx: commands.Context, *, item: str):
         """Return an item, you will only get 50% of the price."""
-        enabled = await self.config.guild(ctx.guild).enabled()
+        conf = await self._get_conf_group(ctx.guild)
+        enabled = await conf.enabled()
         if not enabled:
             return await ctx.send("Uh oh, store is disabled.")
         cookies = int(
@@ -511,7 +550,8 @@ class CookieStore(commands.Cog):
         redeemed = info.get("redeemed")
         if redeemed:
             return await ctx.send("You have already redeemed this item.")
-        ping_id = await self.config.guild(ctx.guild).ping()
+        conf = await self._get_conf_group(ctx.guild)
+        ping_id = await conf.ping()
         if not ping_id:
             return await ctx.send("Uh oh, your Admins haven't set this yet.")
         ping = ctx.guild.get_member(ping_id)
@@ -573,15 +613,25 @@ class CookieStore(commands.Cog):
         return page_list
 
     async def _show_thing(self, ctx, number, item_name):
-        gc = self.config.guild(ctx.guild)
+        conf = await self._get_conf_group(ctx.guild)
         if number == 0:
             if item_name == "None":
-                return await gc.items.get_raw()
-            return await gc.items.get_raw(item_name)
+                return await conf.items.get_raw()
+            return await conf.items.get_raw(item_name)
         if number == 1:
             if item_name == "None":
-                return await gc.roles.get_raw()
-            return await gc.roles.get_raw(item_name)
+                return await conf.roles.get_raw()
+            return await conf.roles.get_raw(item_name)
         if item_name == "None":
-            return await gc.games.get_raw()
-        return await gc.games.get_raw(item_name)
+            return await conf.games.get_raw()
+        return await conf.games.get_raw(item_name)
+
+    @staticmethod
+    def _over_zero(one: int, two: typing.Optional[int]):
+        return (one <= 0 or two <= 0) if two else (one <= 0)
+
+    async def _get_conf_group(self, guild):
+        return self.config if await self.config.is_global() else self.config.guild(guild)
+
+    async def _get_user_conf(self, is_global, user):
+        return self.config.user(user) if is_global else self.config.member(user)
