@@ -2,8 +2,6 @@ import random
 import discord
 import typing
 
-from discord.utils import get
-
 from redbot.core import checks, commands
 
 
@@ -22,7 +20,8 @@ class Pick(commands.Cog):
     async def pick(self, ctx: commands.Context, *, role: typing.Optional[discord.Role]):
         """Pick a random user. *Output is a user ID.*
 
-        I suggest using [nestedcommands by tmerc](https://github.com/tmercswims/tmerc-cogs) (Example of usage `[p]say Congratulations <@$(pick)>! You won!`)"""
+        I suggest using [nestedcommands by tmerc](https://github.com/tmercswims/tmerc-cogs)
+        Example of usage `[p]say Congratulations <@$(pick)>! You won!`"""
         if not role or not role.members:
             winner = random.choice(ctx.guild.members)
         else:
