@@ -32,7 +32,10 @@ class EconomyRaffle(commands.Cog):
     @commands.guild_only()
     @checks.admin()
     async def economyraffleset(self, ctx: commands.Context):
-        """Various Economy Raffle settings."""
+        f"""Various Economy Raffle settings.
+        
+        Version: {self.__version__}
+        Author: {self.__author__}"""
 
     @economyraffleset.command(name="role")
     async def economyraffleset_role(self, ctx: commands.Context, *, role: typing.Optional[discord.Role]):

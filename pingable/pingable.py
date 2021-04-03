@@ -28,7 +28,10 @@ class Pingable(commands.Cog):
     @commands.guild_only()
     @checks.bot_has_permissions(manage_roles=True)
     async def pingableset(self, ctx: commands.Context):
-        """Various Pingable settings."""
+        f"""Various Pingable settings.
+        
+        Version: {self.__version__}
+        Author: {self.__author__}"""
 
     @pingableset.command(name="ping")
     async def pingableset_ping(self, ctx: commands.Context, *, role: discord.Role):

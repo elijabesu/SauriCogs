@@ -28,7 +28,10 @@ class UniqueName(commands.Cog):
     @commands.guild_only()
     @checks.bot_has_permissions(manage_nicknames=True)
     async def uniquenameset(self, ctx: commands.Context):
-        """Various Unique Name settings."""
+        f"""Various Unique Name settings.
+        
+        Version: {self.__version__}
+        Author: {self.__author__}"""
 
     @uniquenameset.command(name="role")
     async def unset_role(self, ctx: commands.Context, role: discord.Role):

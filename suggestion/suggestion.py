@@ -208,7 +208,10 @@ class Suggestion(commands.Cog):
     @commands.group(autohelp=True, aliases=["suggestion"])
     @commands.guild_only()
     async def suggestset(self, ctx: commands.Context):
-        """Various Suggestion settings."""
+        f"""Various Suggestion settings.
+        
+        Version: {self.__version__}
+        Author: {self.__author__}"""
 
     @suggestset.command(name="channel")
     async def suggestset_channel(

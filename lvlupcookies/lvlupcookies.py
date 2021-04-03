@@ -34,7 +34,10 @@ class LevelUpCookies(commands.Cog):
     @commands.guild_only()
     @commands.group(autohelp=True, aliases=["lvlupcookies"])
     async def lvlupcookiesset(self, ctx: commands.Context):
-        """Various Level Up Cookies settings."""
+        f"""Various Level Up Cookies settings.
+        
+        Version: {self.__version__}
+        Author: {self.__author__}"""
 
     @lvlupcookies.command(name="add")
     async def lvlupcookies_add(self, ctx: commands.Context, level: int, cookies: int):

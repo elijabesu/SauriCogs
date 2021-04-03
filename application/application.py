@@ -139,7 +139,10 @@ class Application(commands.Cog):
     @commands.guild_only()
     @checks.bot_has_permissions(manage_channels=True, manage_roles=True)
     async def applyset(self, ctx: commands.Context):
-        """Application settings"""
+        f"""Various Application settings.
+        
+        Version: {self.__version__}
+        Author: {self.__author__}"""
 
     @applyset.command(name="questions")
     async def applyset_questions(self, ctx: commands.Context):

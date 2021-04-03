@@ -27,7 +27,10 @@ class UserLog(commands.Cog):
     @commands.guild_only()
     @checks.admin()
     async def userlogset(self, ctx: commands.Context):
-        """Various User Log settings."""
+        f"""Various User Log settings.
+        
+        Version: {self.__version__}
+        Author: {self.__author__}"""
 
     @userlogset.command(name="channel")
     async def user_channel_log(

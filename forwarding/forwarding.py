@@ -105,7 +105,10 @@ class Forwarding(commands.Cog):
     @checks.is_owner()
     @commands.guild_only()
     async def forwardset(self, ctx: commands.Context):
-        """Various Forwarding settings."""
+        f"""Various Forwarding settings.
+        
+        Version: {self.__version__}
+        Author: {self.__author__}"""
 
     @forwardset.command(name="channel")
     async def forwardset_channel(

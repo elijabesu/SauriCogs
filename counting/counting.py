@@ -40,7 +40,10 @@ class Counting(commands.Cog):
     @commands.group(autohelp=True, aliases=["counting"])
     @commands.guild_only()
     async def countset(self, ctx: commands.Context):
-        """Various Counting settings."""
+        f"""Various Counting settings.
+        
+        Version: {self.__version__}
+        Author: {self.__author__}"""
 
     @countset.command(name="channel")
     async def countset_channel(

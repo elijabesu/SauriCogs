@@ -29,7 +29,10 @@ class Lock(commands.Cog):
     @commands.guild_only()
     @checks.admin()
     async def lockset(self, ctx: commands.Context):
-        """Various Lock settings."""
+        f"""Various Lock settings.
+        
+        Version: {self.__version__}
+        Author: {self.__author__}"""
 
     @lockset.command(name="role")
     async def lockset_role(self, ctx: commands.Context, role: discord.Role):

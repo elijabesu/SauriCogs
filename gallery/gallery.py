@@ -29,7 +29,10 @@ class Gallery(commands.Cog):
     @checks.admin()
     @checks.bot_has_permissions(manage_messages=True)
     async def galleryset(self, ctx: commands.Context):
-        """Various Gallery settings"""
+        f"""Various Gallery settings.
+        
+        Version: {self.__version__}
+        Author: {self.__author__}"""
 
     @galleryset.command(name="add")
     async def galleryset_add(self, ctx: commands.Context, channel: discord.TextChannel):
