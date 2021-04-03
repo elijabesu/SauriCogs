@@ -26,20 +26,21 @@ class Marriage(commands.Cog):
         self.config = Config.get_conf(
             self, identifier=5465461324979524, force_registration=True
         )
-
-        self.config.register_member(
-            married=False,
-            current=[],
-            divorced=False,
-            exes=[],
-            about="I'm mysterious",
-            crush=None,
-            marcount=0,
-            contentment=100,
-            gifts={
+        default_user = {
+            "married": False,
+            "current": [],
+            "divorced": False,
+            "exes": [],
+            "about": "I'm mysterious.",
+            "crush": None,
+            "marcount": 0,
+            "dircount": 0,
+            "contentment": 100,
+            "gifts": {
                 # "gift": owned pcs
-            },
-        )
+            }
+        }
+
         self.config.register_guild(
             toggle=False,
             marprice=1500,
@@ -52,6 +53,22 @@ class Marriage(commands.Cog):
             removed_gifts=[],
             gift_text=":gift: {author} has gifted one {item} to {target}",
         )
+        self.config.register_global(
+            is_global=False,
+            toggle=False,
+            marprice=1500,
+            divprice=2,
+            currency=0,
+            multi=False,
+            custom_actions={},
+            custom_gifts={},
+            removed_actions=[],
+            removed_gifts=[],
+            gift_text=":gift: {author} has gifted one {item} to {target}",
+        )
+
+        self.config.register_member(**default_user)
+        self.config.register_user(**default_user)
 
     @property
     def _DEFAULT_ACTIONS(self):
@@ -101,25 +118,53 @@ class Marriage(commands.Cog):
     @commands.guild_only()
     @checks.admin()
     async def marryset(self, ctx: commands.Context):
-        """Various Marriage settings."""
+        f"""Various Marriage settings.
+        
+        Version: {self.__version__}
+        Author: {self.__author__}"""
+
+    @marryset.command(name="gg")
+    async def marryset_gg(
+        self,
+        ctx: commands.Context,
+        make_global: bool,
+        confirmation: typing.Optional[bool],
+    ):
+        """Switch from per-guild to global marriage and vice versa."""
+        if await self.config.is_global() == make_global:
+            return await ctx.send("Uh oh, you're not really changing anything.")
+        if not confirmation:
+            return await ctx.send(
+                "This will delete **all** current settings. This action **cannot** be undone.\n"
+                f"If you're sure, type `{ctx.clean_prefix}cookieset gg <make_global> yes`."
+            )
+        await self.config.clear_all_members()
+        await self.config.clear_all_users()
+        await self.config.clear_all_guilds()
+        await self.config.clear_all_globals()
+        await self.config.is_global.set(make_global)
+        await ctx.send(f"Cookies are now {'global' if make_global else 'per-guild'}.")
 
     @marryset.command(name="toggle")
     async def marryset_toggle(
         self, ctx: commands.Context, on_off: typing.Optional[bool]
     ):
-        """Toggle Marriage for current server.
+        """Toggle Marriage.
 
         If `on_off` is not provided, the state will be flipped."""
-        target_state = on_off or not (await self.config.guild(ctx.guild).toggle())
-        await self.config.guild(ctx.guild).toggle.set(target_state)
+        conf = await self._get_conf_group(ctx.guild)
+        target_state = on_off or not (await conf.toggle())
+        await conf.toggle.set(target_state)
         await ctx.send(
-            "Marriage is now enabled." if target_state else "Marriage is now disabled."
+            f"Marriage is now {'enabled' if target_state else 'disabled'}."
         )
 
     @checks.is_owner()
     @marryset.command(name="currency")
     async def marryset_currency(self, ctx: commands.Context, currency: int):
-        """Set the currency that should be used. 0 for Red's economy, 1 for SauriCogs' cookies"""
+        """Set the currency that should be used.
+
+        0 for Red's economy, 1 for SauriCogs' cookies."""
         if currency != 0:
             if currency != 1:
                 return await ctx.send("Uh oh, currency can only be 0 or 1.")
@@ -127,17 +172,17 @@ class Marriage(commands.Cog):
                 return await ctx.send(
                     f"Uh oh, Cookies isn't loaded. Load it using `{ctx.clean_prefix}load cookies`"
                 )
-        await self.config.guild(ctx.guild).currency.set(currency)
+        conf = await self._get_conf_group(ctx.guild)
+        await conf.currency.set(currency)
         await ctx.tick()
 
     @marryset.command(name="multiple")
     async def marryset_multiple(self, ctx: commands.Context, state: bool):
         """Enable/disable whether members can be married to multiple people at once."""
-        await self.config.guild(ctx.guild).multi.set(state)
+        conf = await self._get_conf_group(ctx.guild)
+        await conf.multi.set(state)
         await ctx.send(
-            "Members can marry multiple people."
-            if state
-            else "Members cannot marry multiple people."
+            f"Members {'can' if state else 'cannot'} marry multiple people."
         )
 
     @marryset.command(name="marprice")
@@ -147,7 +192,8 @@ class Marriage(commands.Cog):
         With each past marriage, the cost of getting married is 50% more"""
         if price <= 0:
             return await ctx.send("Uh oh, price cannot be 0 or less.")
-        await self.config.guild(ctx.guild).marprice.set(price)
+        conf = await self._get_conf_group(ctx.guild)
+        await conf.marprice.set(price)
         await ctx.tick()
 
     @marryset.command(name="divprice")
@@ -157,13 +203,15 @@ class Marriage(commands.Cog):
         This is a multiplier, not the price! Default is 2."""
         if multiplier <= 1:
             return await ctx.send("Uh oh, that ain't a valia multiplier.")
-        await self.config.guild(ctx.guild).divprice.set(multiplier)
+        conf = await self._get_conf_group(ctx.guild)
+        await conf.divprice.set(multiplier)
         await ctx.tick()
 
     @marryset.command(name="settings")
     async def marryset_settings(self, ctx: commands.Context):
         """See current settings."""
-        data = await self.config.guild(ctx.guild).all()
+        conf = await self._get_conf_group(ctx.guild)
+        data = await conf.all()
         currency_used = (
             "Red's economy" if data["currency"] == 0 else "SauriCogs' cookies"
         )
@@ -172,8 +220,8 @@ class Marriage(commands.Cog):
             ctx
         )
 
-        custom_actions = await self.config.guild(ctx.guild).custom_actions()
-        custom_gifts = await self.config.guild(ctx.guild).custom_gifts()
+        custom_actions = await conf.custom_actions()
+        custom_gifts = await conf.custom_gifts()
 
         actions, gifts = "", ""
 
@@ -244,7 +292,8 @@ class Marriage(commands.Cog):
         Available parameters are `{author}` and `{target}`"""
         if action in await self._get_actions(ctx):
             return await ctx.send("Uh oh, that's already a registered action.")
-        await self.config.guild(ctx.guild).custom_actions.set_raw(
+        conf = await self._get_conf_group(ctx.guild)
+        await conf.custom_actions.set_raw(
             action,
             value={
                 "contentment": contentment,
@@ -261,10 +310,12 @@ class Marriage(commands.Cog):
         """Remove a custom action."""
         if action not in await self._get_actions(ctx):
             return await ctx.send("Uh oh, that's not a registered action.")
+
+        conf = await self._get_conf_group(ctx.guild)
         if await self._is_custom(ctx, action):
-            await self.config.guild(ctx.guild).custom_actions.clear_raw(action)
+            await conf.custom_actions.clear_raw(action)
         else:
-            async with self.config.guild(ctx.guild).removed_actions() as removed:
+            async with conf.removed_actions() as removed:
                 removed.append(action)
         await ctx.tick()
 
@@ -274,7 +325,8 @@ class Marriage(commands.Cog):
         if await self._is_removed(ctx, action):
             return await ctx.send("Uh oh, that's not a registered action.")
 
-        data = await self.config.guild(ctx.guild).custom_actions.get_raw(
+        conf = await self._get_conf_group(ctx.guild)
+        data = await conf.custom_actions.get_raw(
             action, default=None
         )
         if not data:
@@ -312,7 +364,9 @@ description:: {data.get('description')}""",
         Available parameters are `{author}` and `{target}`"""
         if gift in await self._get_gifts(ctx):
             return await ctx.send("Uh oh, that's already a registered gift.")
-        await self.config.guild(ctx.guild).custom_gifts.set_raw(
+
+        conf = await self._get_conf_group(ctx.guild)
+        await conf.custom_gifts.set_raw(
             gift, value={"contentment": contentment, "price": price}
         )
         await ctx.tick()
@@ -322,10 +376,12 @@ description:: {data.get('description')}""",
         """Remove a custom gift."""
         if gift not in await self._get_gifts(ctx):
             return await ctx.send("Uh oh, that's not a registered gift.")
+
+        conf = await self._get_conf_group(ctx.guild)
         if await self._is_custom(ctx, gift):
-            await self.config.guild(ctx.guild).custom_gifts.clear_raw(gift)
+            await conf.custom_gifts.clear_raw(gift)
         else:
-            async with self.config.guild(ctx.guild).removed_gifts() as removed:
+            async with conf.removed_gifts() as removed:
                 removed.append(gift)
         await ctx.tick()
 
@@ -335,7 +391,8 @@ description:: {data.get('description')}""",
         if await self._is_removed(ctx, gift):
             return await ctx.send("Uh oh, that's not a registered gift.")
 
-        data = await self.config.guild(ctx.guild).custom_gifts.get_raw(
+        conf = await self._get_conf_group(ctx.guild)
+        data = await conf.custom_gifts.get_raw(
             gift, default=None
         )
         if not data:
@@ -363,7 +420,8 @@ price:: {data.get('price')}""",
         self, ctx: commands.Context, member: typing.Optional[discord.Member]
     ):
         """Display your or someone else's about"""
-        if not await self.config.guild(ctx.guild).toggle():
+        conf = await self._get_conf_group(ctx.guild)
+        if not await conf.toggle():
             return await ctx.send("Marriage is not enabled!")
         if not member:
             member = ctx.author
@@ -403,11 +461,11 @@ price:: {data.get('price')}""",
                 ex_text = "None" if exes == [] else humanize_list(exes)
         crush = ctx.guild.get_member(await conf.crush())
         crush = "None" if not crush else crush.name
-        if await self.config.guild(ctx.guild).currency() == 0:
+        if await conf.currency() == 0:
             currency = await bank.get_currency_name(ctx.guild)
             bal = await bank.get_balance(member)
         else:
-            bal = int(await self.bot.get_cog("Cookies").config.member(member).cookies())
+            bal = await self._get_cookies(member)
             currency = ":cookie:"
         gifts = await conf.gifts.get_raw()
         giftos = list()
@@ -442,7 +500,8 @@ price:: {data.get('price')}""",
         """Add your about text
 
         Maximum is 1000 characters."""
-        if not await self.config.guild(ctx.guild).toggle():
+        conf = await self._get_conf_group(ctx.guild)
+        if not await conf.toggle():
             return await ctx.send("Marriage is not enabled!")
         if len(about) > 1000:
             return await ctx.send("Uh oh, this is not an essay.")
@@ -454,8 +513,9 @@ price:: {data.get('price')}""",
     async def exes(
         self, ctx: commands.Context, member: typing.Optional[discord.Member]
     ):
-        """Display your or someone else's exes"""
-        if not await self.config.guild(ctx.guild).toggle():
+        """Display your or someone else's exes."""
+        conf = await self._get_conf_group(ctx.guild)
+        if not await conf.toggle():
             return await ctx.send("Marriage is not enabled!")
         if not member:
             member = ctx.author
@@ -473,7 +533,8 @@ price:: {data.get('price')}""",
     async def spouses(
         self, ctx: commands.Context, member: typing.Optional[discord.Member]
     ):
-        if not await self.config.guild(ctx.guild).toggle():
+        conf = await self._get_conf_group(ctx.guild)
+        if not await conf.toggle():
             return await ctx.send("Marriage is not enabled!")
         if not member:
             member = ctx.author
@@ -500,7 +561,8 @@ price:: {data.get('price')}""",
         self, ctx: commands.Context, member: typing.Optional[discord.Member]
     ):
         """Tell us who you have a crush on"""
-        if not await self.config.guild(ctx.guild).toggle():
+        conf = await self._get_conf_group(ctx.guild)
+        if not await conf.toggle():
             return await ctx.send("Marriage is not enabled!")
         if not member:
             await self.config.member(ctx.author).crush.clear()
@@ -515,13 +577,14 @@ price:: {data.get('price')}""",
     @commands.command()
     async def marry(self, ctx: commands.Context, member: discord.Member):
         """Marry the love of your life!"""
-        if not await self.config.guild(ctx.guild).toggle():
+        conf = await self._get_conf_group(ctx.guild)
+        if not await conf.toggle():
             return await ctx.send("Marriage is not enabled!")
         if member.id == ctx.author.id:
             return await ctx.send("You cannot marry yourself!")
         if member.id in await self.config.member(ctx.author).current():
             return await ctx.send("You two are already married!")
-        if not await self.config.guild(ctx.guild).multi():
+        if not await conf.multi():
             if await self.config.member(ctx.author).married():
                 return await ctx.send("You're already married!")
             if await self.config.member(member).married():
@@ -537,7 +600,7 @@ price:: {data.get('price')}""",
             return await ctx.send("Oh no... I was looking forward to the cerenomy...")
         if not pred.result:
             return await ctx.send("Oh no... I was looking forward to the cerenomy...")
-        default_amount = await self.config.guild(ctx.guild).marprice()
+        default_amount = await conf.marprice()
         author_marcount = await self.config.member(ctx.author).marcount()
         target_marcount = await self.config.member(member).marcount()
 
@@ -554,7 +617,7 @@ price:: {data.get('price')}""",
             if multiplier != 0
             else int(round(default_amount))
         )
-        if await self.config.guild(ctx.guild).currency() == 0:
+        if await conf.currency() == 0:
             currency = await bank.get_currency_name(ctx.guild)
             end_amount = f"{amount} {currency}"
             if not await bank.can_spend(
@@ -564,21 +627,13 @@ price:: {data.get('price')}""",
             await bank.withdraw_credits(ctx.author, amount)
             await bank.withdraw_credits(member, amount)
         else:
-            author_cookies = int(
-                await self.bot.get_cog("Cookies").config.member(ctx.author).cookies()
-            )
-            target_cookies = int(
-                await self.bot.get_cog("Cookies").config.member(member).cookies()
-            )
             end_amount = f"{amount} :cookie:"
-            if amount > author_cookies or amount > target_cookies:
+            if not await self._can_spend_cookies(
+                    ctx.author, amount
+            ) or not await self._can_spend_cookies(member, amount):
                 return await ctx.send(f"Uh oh, you two cannot afford this...")
-            await self.bot.get_cog("Cookies").config.member(
-                ctx.author
-            ).cookies.set(author_cookies - amount)
-            await self.bot.get_cog("Cookies").config.member(member).cookies.set(
-                target_cookies - amount
-            )
+            await self._withdraw_cookies(ctx.author, amount)
+            await self._withdraw_cookies(member, amount)
         await self.config.member(ctx.author).marcount.set(author_marcount + 1)
         await self.config.member(member).marcount.set(target_marcount + 1)
 
@@ -607,7 +662,8 @@ price:: {data.get('price')}""",
         self, ctx: commands.Context, member: discord.Member, court: bool = False
     ):
         """Divorce your current spouse"""
-        if not await self.config.guild(ctx.guild).toggle():
+        conf = await self._get_conf_group(ctx.guild)
+        if not await conf.toggle():
             return await ctx.send("Marriage is not enabled!")
         if member.id == ctx.author.id:
             return await ctx.send("You cannot divorce yourself!")
@@ -621,8 +677,8 @@ price:: {data.get('price')}""",
             pred = MessagePredicate.yes_or_no(ctx, ctx.channel, member)
             await self.bot.wait_for("message", check=pred)
             if pred.result:
-                default_amount = await self.config.guild(ctx.guild).marprice()
-                default_multiplier = await self.config.guild(ctx.guild).divprice()
+                default_amount = await conf.marprice()
+                default_multiplier = await conf.divprice()
                 author_marcount = await self.config.member(ctx.author).marcount()
                 target_marcount = await self.config.member(member).marcount()
 
@@ -639,7 +695,7 @@ price:: {data.get('price')}""",
                     if multiplier != 0
                     else int(round(default_amount * default_multiplier))
                 )
-                if await self.config.guild(ctx.guild).currency() == 0:
+                if await conf.currency() == 0:
                     currency = await bank.get_currency_name(ctx.guild)
                     end_amount = f"You both paid {amount} {currency}"
                     if not await bank.can_spend(
@@ -652,34 +708,22 @@ price:: {data.get('price')}""",
                     await bank.withdraw_credits(ctx.author, amount)
                     await bank.withdraw_credits(member, amount)
                 else:
-                    author_cookies = int(
-                        await self.bot.get_cog("Cookies")
-                        .config.member(ctx.author)
-                        .cookies()
-                    )
-                    target_cookies = int(
-                        await self.bot.get_cog("Cookies")
-                        .config.member(member)
-                        .cookies()
-                    )
                     end_amount = f"You both paid {amount} :cookie:"
-                    if amount > author_cookies or amount > target_cookies:
+                    if not await self._can_spend_cookies(
+                            ctx.author, amount
+                    ) or not await self._can_spend_cookies(member, amount):
                         return await ctx.send(
                             f"Uh oh, you two cannot afford this... But you can force a court by "
                             f"doing `{ctx.clean_prefix}divorce {member.mention} yes`"
                         )
-                    await self.bot.get_cog("Cookies").config.member(
-                        ctx.author
-                    ).cookies.set(author_cookies - amount)
-                    await self.bot.get_cog("Cookies").config.member(
-                        member
-                    ).cookies.set(target_cookies - amount)
+                    await self._withdraw_cookies(ctx.author, amount)
+                    await self._withdraw_cookies(member, amount)
             else:
                 court = True
         if court:
             court = random.randint(1, 100)
             court_multiplier = court / 100
-            if await self.config.guild(ctx.guild).currency() == 0:
+            if await conf.currency() == 0:
                 currency = await bank.get_currency_name(ctx.guild)
                 abal = await bank.get_balance(ctx.author)
                 tbal = await bank.get_balance(member)
@@ -689,23 +733,13 @@ price:: {data.get('price')}""",
                 await bank.withdraw_credits(ctx.author, aamount)
                 await bank.withdraw_credits(member, tamount)
             else:
-                author_cookies = int(
-                    await self.bot.get_cog("Cookies")
-                    .config.member(ctx.author)
-                    .cookies()
-                )
-                target_cookies = int(
-                    await self.bot.get_cog("Cookies").config.member(member).cookies()
-                )
+                author_cookies = await self._get_cookies(ctx.author)
+                target_cookies = await self._get_cookies(member)
                 aamount = int(round(author_cookies * court_multiplier))
                 tamount = int(round(target_cookies * court_multiplier))
                 end_amount = f"{ctx.author.name} paid {aamount} :cookie:, {member.name} paid {tamount} :cookie:"
-                await self.bot.get_cog("Cookies").config.member(ctx.author).cookies.set(
-                    author_cookies - aamount
-                )
-                await self.bot.get_cog("Cookies").config.member(member).cookies.set(
-                    target_cookies - tamount
-                )
+                await self._withdraw_cookies(ctx.author, aamount)
+                await self._withdraw_cookies(member, tamount)
         async with self.config.member(ctx.author).current() as acurrent:
             acurrent.remove(member.id)
         async with self.config.member(member).current() as tcurrent:
@@ -734,11 +768,11 @@ price:: {data.get('price')}""",
         member: discord.Member,
     ):
         """Do something with someone"""
-        gc = self.config.guild
-        mc = self.config.member
+        conf = await self._get_conf_group(ctx.guild)
+        m_conf = await self._get_user_conf()
         actions = await self._get_actions(ctx)
 
-        if not await gc(ctx.guild).toggle():
+        if not await conf.toggle():
             return await ctx.send("Marriage is not enabled!")
 
         if member.id == ctx.author.id:
@@ -747,7 +781,7 @@ price:: {data.get('price')}""",
         if action not in actions:
             return await ctx.send(f"Available actions are: {humanize_list(actions)}")
 
-        exertion = await gc(ctx.guild).custom_actions.get_raw(action, default=None)
+        exertion = await conf.custom_actions.get_raw(action, default=None)
         if not exertion:
             exertion = self._DEFAULT_ACTIONS.get(action)
         endtext = exertion.get("description").format(
@@ -756,21 +790,15 @@ price:: {data.get('price')}""",
 
         contentment, price = exertion.get("contentment"), exertion.get("price")
 
-        if await self.config.guild(ctx.guild).currency() == 0:
+        if await conf.currency() == 0:
             if await bank.can_spend(ctx.author, price):
                 await bank.withdraw_credits(ctx.author, price)
             else:
                 return await ctx.send("Uh oh, you cannot afford this.")
         else:
-            author_cookies = int(
-                await self.bot.get_cog("Cookies").config.member(ctx.author).cookies()
-            )
-            if price <= author_cookies:
-                await self.bot.get_cog("Cookies").config.member(ctx.author).cookies.set(
-                    author_cookies - price
-                )
-            else:
+            if not await self._can_spend_cookies(ctx.author, price):
                 return await ctx.send("Uh oh, you cannot afford this.")
+            await self._withdraw_cookies(ctx.author, price)
 
         if exertion.get("require_consent"):
             await ctx.send(
@@ -786,47 +814,47 @@ price:: {data.get('price')}""",
                     "They took too long. Try again later, please. (You didn't lose any contentment.)"
                 )
             if pred.result:
-                t_temp = await mc(member).contentment()
+                t_temp = await m_conf(member).contentment()
                 t_missing = 100 - t_temp
                 if t_missing != 0:
                     if contentment <= t_missing:
-                        await mc(member).contentment.set(t_temp + contentment)
+                        await m_conf(member).contentment.set(t_temp + contentment)
                     else:
-                        await mc(member).contentment.set(100)
-                a_temp = await mc(ctx.author).contentment()
+                        await m_conf(member).contentment.set(100)
+                a_temp = await m_conf(ctx.author).contentment()
                 a_missing = 100 - a_temp
                 if a_missing != 0:
                     if contentment <= a_missing:
-                        await mc(ctx.author).contentment.set(a_temp + contentment)
+                        await m_conf(ctx.author).contentment.set(a_temp + contentment)
                     else:
-                        await mc(ctx.author).contentment.set(100)
+                        await m_conf(ctx.author).contentment.set(100)
                 endtext = exertion.get("description").format(
                     author=ctx.author.mention, target=member.mention
                 )
             else:
-                a_temp = await mc(ctx.author).contentment()
+                a_temp = await m_conf(ctx.author).contentment()
                 if contentment < a_temp:
-                    await mc(ctx.author).contentment.set(a_temp - contentment)
+                    await m_conf(ctx.author).contentment.set(a_temp - contentment)
                 else:
-                    await mc(ctx.author).contentment.set(0)
+                    await m_conf(ctx.author).contentment.set(0)
                 endtext = "They do not wish to do that."
         else:
-            t_temp = await mc(member).contentment()
+            t_temp = await m_conf(member).contentment()
             t_missing = 100 - t_temp
             if t_missing != 0:
                 if contentment <= t_missing:
-                    await mc(member).contentment.set(t_temp + contentment)
+                    await m_conf(member).contentment.set(t_temp + contentment)
                 else:
-                    await mc(member).contentment.set(100)
-            a_temp = await mc(ctx.author).contentment()
+                    await m_conf(member).contentment.set(100)
+            a_temp = await m_conf(ctx.author).contentment()
             a_missing = 100 - a_temp
             if a_missing != 0:
                 if contentment <= a_missing:
-                    await mc(ctx.author).contentment.set(a_temp + contentment)
+                    await m_conf(ctx.author).contentment.set(a_temp + contentment)
                 else:
-                    await mc(ctx.author).contentment.set(100)
-        spouses = await mc(ctx.author).current()
-        if member.id not in spouses and await mc(ctx.author).married():
+                    await m_conf(ctx.author).contentment.set(100)
+        spouses = await m_conf(ctx.author).current()
+        if member.id not in spouses and await m_conf(ctx.author).married():
             for sid in spouses:
                 spouse = ctx.guild.get_member(sid)
                 endtext = await self._maybe_divorce(
@@ -836,79 +864,72 @@ price:: {data.get('price')}""",
 
     @commands.guild_only()
     @commands.command()
-    async def mgift(
+    async def gift(
         self,
         ctx: commands.Context,
         member: discord.Member,
         item: str,
     ):
-        gc = self.config.guild
-        mc = self.config.member
+        conf = await self._get_conf_group(ctx.guild)
+        m_conf = await self._get_user_conf()
         gifts = await self._get_gifts(ctx)
 
-        if not await gc(ctx.guild).toggle():
+        if not await conf.toggle():
             return await ctx.send("Marriage is not enabled!")
 
         if member.id == ctx.author.id:
             return await ctx.send("You cannot perform anything with yourself!")
 
-        exertion = await gc(ctx.guild).custom_gifts.get_raw(item, default=None)
+        exertion = await conf.custom_gifts.get_raw(item, default=None)
         if not exertion:
             exertion = self._DEFAULT_GIFTS.get(item)
 
         if item not in gifts:
             return await ctx.send(f"Available gifts are: {humanize_list(gifts)}")
 
-        endtext_format = await gc(ctx.guild).gift_text()
+        endtext_format = await conf.gift_text()
         endtext = endtext_format.format(
             author=ctx.author.mention, item=item, target=member.mention
         )
 
-        author_gift = await mc(ctx.author).gifts.get_raw(item, default=0)
-        member_gift = await mc(member).gifts.get_raw(item, default=0)
+        author_gift = await m_conf(ctx.author).gifts.get_raw(item, default=0)
+        member_gift = await m_conf(member).gifts.get_raw(item, default=0)
 
         contentment, price = exertion.get("contentment"), exertion.get("price")
 
         if author_gift == 0:
-            if await self.config.guild(ctx.guild).currency() == 0:
+            if await conf.currency() == 0:
                 if not await bank.can_spend(ctx.author, price):
                     return await ctx.send("Uh oh, you cannot afford this.")
                 await bank.withdraw_credits(ctx.author, price)
             else:
-                author_cookies = int(
-                    await self.bot.get_cog("Cookies")
-                    .config.member(ctx.author)
-                    .cookies()
-                )
-                if price > author_cookies:
+                if not await self._can_spend_cookies(ctx.author, price):
                     return await ctx.send("Uh oh, you cannot afford this.")
-                await self.bot.get_cog("Cookies").config.member(
-                    ctx.author
-                ).cookies.set(author_cookies - price)
+                await self._withdraw_cookies(ctx.author, price)
         author_gift -= 1
         member_gift += 1
         if author_gift >= 0:
-            await mc(ctx.author).gifts.set_raw(item, value=author_gift)
+            await m_conf(ctx.author).gifts.set_raw(item, value=author_gift)
         if member_gift > 0:
-            await mc(member).gifts.set_raw(item, value=member_gift)
+            await m_conf(member).gifts.set_raw(item, value=member_gift)
 
-        t_temp = await mc(member).contentment()
+        t_temp = await m_conf(member).contentment()
         t_missing = 100 - t_temp
         if t_missing != 0:
             if contentment <= t_missing:
-                await mc(member).contentment.set(t_temp + contentment)
+                await m_conf(member).contentment.set(t_temp + contentment)
             else:
-                await mc(member).contentment.set(100)
-        a_temp = await mc(ctx.author).contentment()
+                await m_conf(member).contentment.set(100)
+        a_temp = await m_conf(ctx.author).contentment()
         a_missing = 100 - a_temp
         if a_missing != 0:
             if contentment <= a_missing:
-                await mc(ctx.author).contentment.set(a_temp + contentment)
+                await m_conf(ctx.author).contentment.set(a_temp + contentment)
             else:
-                await mc(ctx.author).contentment.set(100)
+                await m_conf(ctx.author).contentment.set(100)
 
-        spouses = await mc(ctx.author).current()
-        if member.id not in spouses and await mc(ctx.author).married():
+        spouses = await m_conf(ctx.author).current()
+        if member.id not in spouses and await m_conf(ctx.author).married():
             for sid in spouses:
                 spouse = ctx.guild.get_member(sid)
                 endtext = await self._maybe_divorce(
@@ -917,9 +938,11 @@ price:: {data.get('price')}""",
         await ctx.send(endtext)
 
     async def _get_actions(self, ctx):
+        conf = await self._get_conf_group(ctx.guild)
+
         actions = list(self._DEFAULT_ACTIONS.keys())
-        removed_actions = await self.config.guild(ctx.guild).removed_actions()
-        custom_actions = await self.config.guild(ctx.guild).custom_actions()
+        removed_actions = await conf.removed_actions()
+        custom_actions = await conf.custom_actions()
         if len(custom_actions) == 0:
             custom_actions = []
         else:
@@ -933,9 +956,11 @@ price:: {data.get('price')}""",
         return actions
 
     async def _get_gifts(self, ctx):
+        conf = await self._get_conf_group(ctx.guild)
+
         gifts = list(self._DEFAULT_GIFTS.keys())
-        removed_gifts = await self.config.guild(ctx.guild).removed_gifts()
-        custom_gifts = await self.config.guild(ctx.guild).custom_gifts()
+        removed_gifts = await conf.removed_gifts()
+        custom_gifts = await conf.custom_gifts()
         custom_gifts = list() if len(custom_gifts) == 0 else list(custom_gifts.keys())
         for removed in removed_gifts:
             gifts.remove(removed)
@@ -950,56 +975,67 @@ price:: {data.get('price')}""",
         return all_items
 
     async def _is_custom(self, ctx, item):
-        actions = await self.config.guild(ctx.guild).custom_actions()
+        conf = await self._get_conf_group(ctx.guild)
+        actions = await conf.custom_actions()
         actions = list() if len(actions) == 0 else list(actions.keys())
-        gifts = await self.config.guild(ctx.guild).custom_gifts()
+        gifts = await conf.custom_gifts()
         gifts = list() if len(gifts) == 0 else list(gifts.keys())
         return item in actions or item in gifts
 
     async def _is_removed(self, ctx, item):
-        actions = await self.config.guild(ctx.guild).removed_actions()
-        gifts = await self.config.guild(ctx.guild).removed_gifts()
+        conf = await self._get_conf_group(ctx.guild)
+        actions = await conf.removed_actions()
+        gifts = await conf.removed_gifts()
 
         return item in actions or item in gifts
 
-    async def _get_user_cookies(self, ctx, user):
-        return await self.bot.get_cog("Cookies").config.member(user).cookies()
+    async def _get_cookies(self, user):
+        return await self.bot.get_cog("Cookies").get_cookies(user)
 
-    async def _set_user_cookies(self, ctx, user, amount):
-        return await self.bot.get_cog("Cookies").config.member(user).cookies.set(amount)
+    async def _can_spend_cookies(self, user, amount):
+        return bool(await self.bot.get_cog("Cookies").can_spend(user, amount))
+
+    async def _withdraw_cookies(self, user, amount):
+        return await self.bot.get_cog("Cookies").withdraw_cookies(user, amount)
+
+    async def _deposit_cookies(self, user, amount):
+        return await self.bot.get_cog("Cookies").deposit_cookies(user, amount)
 
     async def _maybe_divorce(self, ctx, spouse, endtext, contentment):
-        mc = self.config.member
-        s_temp = await mc(spouse).contentment()
+        conf = await self._get_conf_group(ctx.guild)
+        m_conf = await self._get_user_conf()
+        s_temp = await m_conf(spouse).contentment()
         new_s_temp = 0 if s_temp < contentment else s_temp - contentment
-        await mc(spouse).contentment.set(new_s_temp)
+        await m_conf(spouse).contentment.set(new_s_temp)
         if new_s_temp <= 0:
-            async with mc(ctx.author).current() as acurrent:
+            async with m_conf(ctx.author).current() as acurrent:
                 acurrent.remove(spouse.id)
-            async with mc(spouse).current() as tcurrent:
+            async with m_conf(spouse).current() as tcurrent:
                 tcurrent.remove(ctx.author.id)
-            async with mc(ctx.author).exes() as aexes:
+            async with m_conf(ctx.author).exes() as aexes:
                 aexes.append(spouse.id)
-            async with mc(spouse).exes() as texes:
+            async with m_conf(spouse).exes() as texes:
                 texes.append(ctx.author.id)
-            if len(await mc(ctx.author).current()) == 0:
-                await mc(ctx.author).married.set(False)
-                await mc(ctx.author).divorced.set(True)
-            if len(await mc(spouse).current()) == 0:
-                await mc(spouse).married.set(False)
-                await mc(spouse).divorced.set(True)
-            if await self.config.guild(ctx.guild).currency() == 0:
+            if len(await m_conf(ctx.author).current()) == 0:
+                await m_conf(ctx.author).married.set(False)
+                await m_conf(ctx.author).divorced.set(True)
+            if len(await m_conf(spouse).current()) == 0:
+                await m_conf(spouse).married.set(False)
+                await m_conf(spouse).divorced.set(True)
+            if await conf.currency() == 0:
                 abal = await bank.get_balance(ctx.author)
-                tamount = int(round(tbal * court_multiplier))
                 await bank.withdraw_credits(ctx.author, abal)
                 await bank.deposit_credits(spouse, abal)
             else:
-                author_cookies = await self._get_user_cookies(ctx, ctx.author)
-                spouse_cookies = await self._get_user_cookies(ctx, spouse)
-                await self._set_user_cookies(ctx, ctx.author, 0)
-                await self._set_user_cookies(
-                    ctx, spouse, spouse_cookies + author_cookies
-                )
+                author_cookies = await self._get_cookies(ctx.author)
+                await self._withdraw_cookies(ctx.author, author_cookies)
+                await self._deposit_cookies(spouse, author_cookies)
             endtext = f"{endtext}\n:broken_heart: {ctx.author.mention} has made {spouse.mention} completely unhappy "
             f"with their actions so {spouse.mention} left them and took all their money!"
         return endtext
+
+    async def _get_conf_group(self, guild):
+        return self.config if await self.config.is_global() else self.config.guild(guild)
+
+    async def _get_user_conf(self):
+        return self.config.user if await self.config.is_global() else self.config.member
