@@ -52,6 +52,7 @@ class Marriage(commands.Cog):
             removed_actions=[],
             removed_gifts=[],
             gift_text=":gift: {author} has gifted one {item} to {target}",
+        )
 
         self.config.register_global(
             is_global=False,
