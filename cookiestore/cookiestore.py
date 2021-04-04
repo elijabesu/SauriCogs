@@ -56,7 +56,7 @@ class CookieStore(commands.Cog):
         if not confirmation:
             return await ctx.send(
                 "This will delete **all** current settings. This action **cannot** be undone.\n"
-                f"If you're sure, type `{ctx.clean_prefix}cookieset gg <make_global> yes`."
+                f"If you're sure, type `{ctx.clean_prefix}cookiestoreset gg <make_global> yes`."
             )
         await self.config.clear_all_members()
         await self.config.clear_all_users()
