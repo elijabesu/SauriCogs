@@ -550,17 +550,9 @@ class Suggestion(commands.Cog):
             if reaction.emoji == up_emoji:
                 up_count = reaction.count - 1  # minus the bot
             if reaction.emoji == down_emoji:
-                down_count = reaction.count - 1  # minus the bot
+                down_count = reaction.count - 1 # minus the bot
 
-        return (
-            str(up_count)
-            + "x "
-            + up_emoji
-            + "\n"
-            + str(down_count)
-            + "x "
-            + down_emoji
-        )
+        return f"{up_count}x {up_emoji}\n{down_count}x {down_emoji}"
 
     async def _get_emojis(self, ctx):
         up_emoji = self.bot.get_emoji(await self.config.guild(ctx.guild).up_emoji())
