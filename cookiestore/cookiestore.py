@@ -288,6 +288,32 @@ class CookieStore(commands.Cog):
             await self.config.clear_all_members(ctx.guild)
         await ctx.send("All items have been deleted from all members' inventories.")
 
+    @cookiestoreset.command(name="settings")
+    async def cookiestoreset_settings(self, ctx: commands.Context):
+        """See current settings."""
+        is_global = await self.config.is_global()
+        data = (
+            await self.config.all()
+            if is_global
+            else await self.config.guild(ctx.guild).all()
+        )
+        ping = ctx.guild.get_role(data["ping"])
+        ping = ping.name if ping else "None"
+
+        embed = discord.Embed(
+            colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
+        )
+        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
+        embed.title = "**__Cookie Store settings:__**"
+        embed.set_footer(text="*required to function properly")
+
+        embed.add_field(name="Global:", value=str(is_global))
+        embed.add_field(name="Enabled*:", value=str(data["enabled"]))
+        embed.add_field(name="Ping*:", value=ping)
+        embed.add_field(name="Items:", value=f"`{ctx.clean_prefix}shop` to see all available items.")
+
+        await ctx.send(embed=embed)
+
     @commands.command()
     @commands.guild_only()
     async def shop(self, ctx: commands.Context):
