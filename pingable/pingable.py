@@ -1,11 +1,8 @@
 import asyncio
 import discord
-
-from datetime import timedelta
+import datetime
 
 from redbot.core import Config, checks, commands
-from redbot.core.utils.predicates import MessagePredicate
-from redbot.core.utils.antispam import AntiSpam
 
 from redbot.core.bot import Red
 
@@ -16,7 +13,7 @@ class Pingable(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.1"
+    __version__ = "1.1.0"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -25,51 +22,80 @@ class Pingable(commands.Cog):
         )
 
         self.config.register_role(pingable=False, channel=None)
-        self.antispam = {}
 
-    @checks.admin_or_permissions(manage_roles=True)
-    @commands.command(aliases=["addpingable"])
+    @commands.group(autohelp=True)
+    @checks.admin()
     @commands.guild_only()
     @checks.bot_has_permissions(manage_roles=True)
-    async def setpingable(self, ctx: commands.Context, *, role: discord.Role):
-        """Make a role pingable"""
-        pred_yn = MessagePredicate.yes_or_no(ctx)
-        pred_c = MessagePredicate.valid_text_channel(ctx)
+    async def pingableset(self, ctx: commands.Context):
+        f"""Various Pingable settings.
+        
+        Version: {self.__version__}
+        Author: {self.__author__}"""
 
+    @pingableset.command(name="ping")
+    async def pingableset_ping(self, ctx: commands.Context, *, role: discord.Role):
+        """Make a role pingable."""
         await self.config.role(role).pingable.set(True)
-        await ctx.send("Do you want it to work only in one channel?")
-        try:
-            await self.bot.wait_for("message", timeout=120, check=pred_yn)
-        except asyncio.TimeoutError:
-            return await ctx.send("You took too long. Try again, please.")
-        if pred_yn.result:
-            await ctx.send("What channel?")
-            try:
-                await self.bot.wait_for("message", timeout=120, check=pred_c)
-            except asyncio.TimeoutError:
-                return await ctx.send("You took too long. Try again, please.")
-            channel = pred_c.result
-            await self.config.role(role).channel.set(channel.id)
-        await ctx.send(
-            f"{role.name} set as pingable. You can now set an alias for "
-            f'`{ctx.clean_prefix}pingable "{role.name}"` for users to use.'
+        await self.config.role(role).channel.clear()
+        await ctx.send(f"{role.name} set as pingable.")
+
+    @pingableset.command(name="unping")
+    async def pingableset_unping(self, ctx: commands.Context, *, role: discord.Role):
+        """Make a role unpingable."""
+        await self.config.role(role).pingable.clear()
+        await self.config.role(role).channel.clear()
+        await ctx.send(f"{role.name} removed from the pingable roles.")
+
+    @pingableset.command(name="pingin")
+    async def pingableset_pingin(
+        self, ctx: commands.Context, role: discord.Role, channel: discord.TextChannel
+    ):
+        """Make a role pinable in a specified channel only."""
+        await self.config.role(role).pingable.set(True)
+        await self.config.role(role).channel.set(channel.id)
+        await ctx.send(f"{role.name} set as pingable only in {channel.mention}.")
+
+    @pingableset.command(name="settings")
+    async def pingableset_settings(self, ctx: commands.Context):
+        """See current settings."""
+        roles_nochannel = ""
+        roles_channel = ""
+
+        for role in ctx.guild.roles:
+            if await self.config.role(role).pingable():
+                channel = ctx.guild.get_channel(await self.config.role(role).channel())
+                if not channel:
+                    roles_nochannel += role.name + "\n"
+                else:
+                    roles_channel += role.name + "(" + channel.mention + ")\n"
+
+        if roles_channel == "":
+            roles_channel = "None"
+        if roles_nochannel == "":
+            roles_nochannel = "None"
+
+        embed = discord.Embed(
+            colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
+        )
+        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
+        embed.title = "**__Pingable settings:__**"
+        embed.set_footer(text="*required to function properly")
+
+        embed.add_field(
+            name="Pingable roles everywhere:",
+            value=roles_nochannel.strip(),
+            inline=False,
+        )
+        embed.add_field(
+            name="Pingable roles with specified channel:",
+            value=roles_channel.strip(),
+            inline=False,
         )
 
-    @checks.admin_or_permissions(manage_roles=True)
-    @commands.command(aliases=["delpingable"])
-    @commands.guild_only()
-    @checks.bot_has_permissions(manage_roles=True)
-    async def rmpingable(self, ctx: commands.Context, *, role: discord.Role):
-        """Make a role unpingable"""
-        bot = self.bot
+        await ctx.send(embed=embed)
 
-        await self.config.role(role).pingable.set(False)
-        await self.config.role(role).channel.set(None)
-        await ctx.send(
-            f"{role.name} removed from the pingable roles. Don't forget to delete the alias for "
-            f'`{ctx.clean_prefix}pingable "{role.name}"`.'
-        )
-
+    @commands.cooldown(1, 1800, commands.BucketType.member)
     @commands.command()
     @commands.guild_only()
     @checks.bot_has_permissions(manage_roles=True)
@@ -79,17 +105,12 @@ class Pingable(commands.Cog):
         """Ping a role."""
         if not await self.config.role(role).pingable():
             return
-        if await self.config.role(role).channel():
-            if await self.config.role(role).channel() != ctx.channel.id:
-                return
-        if ctx.guild not in self.antispam:
-            self.antispam[ctx.guild] = {}
-        if ctx.author not in self.antispam[ctx.guild]:
-            self.antispam[ctx.guild][ctx.author] = AntiSpam([(timedelta(hours=1), 1)])
-        if self.antispam[ctx.guild][ctx.author].spammy:
-            return await ctx.send("Uh oh, you're doing this way too frequently.")
+        if (
+            await self.config.role(role).channel()
+            and await self.config.role(role).channel() != ctx.channel.id
+        ):
+            return
         await ctx.message.delete()
         await role.edit(mentionable=True)
         await ctx.send(f"{role.mention}\n{ctx.author.mention}: {message}")
         await role.edit(mentionable=False)
-        self.antispam[ctx.guild][ctx.author].stamp()

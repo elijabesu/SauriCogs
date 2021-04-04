@@ -1,10 +1,10 @@
 import discord
+import datetime
+import typing
 
 from discord.utils import get
 
 from redbot.core import Config, commands, checks
-
-from typing import Union, Optional
 
 
 class Forwarding(commands.Cog):
@@ -12,7 +12,7 @@ class Forwarding(commands.Cog):
     You can also DM someone as the bot with `[p]pm <user_ID> <message>`."""
 
     __author__ = "saurichable"
-    __version__ = "2.3.2"
+    __version__ = "2.4.0"
 
     def __init__(self, bot):
         self.bot = bot
@@ -92,7 +92,7 @@ class Forwarding(commands.Cog):
         await destination.send(message)
         await ctx.send(f"Sent message to {destination}.")
 
-    @checks.admin()
+    @checks.is_owner()
     @commands.command()
     @commands.guild_only()
     @checks.bot_has_permissions(add_reactions=True)
@@ -101,16 +101,18 @@ class Forwarding(commands.Cog):
         await ctx.author.send(message)
         await ctx.tick()
 
-    @commands.group()
+    @commands.group(autohelp=True, aliases=["forwarding"])
     @checks.is_owner()
     @commands.guild_only()
-    async def setforward(self, ctx: commands.Context):
-        """Configuration commands for forwarding."""
-        pass
+    async def forwardset(self, ctx: commands.Context):
+        f"""Various Forwarding settings.
+        
+        Version: {self.__version__}
+        Author: {self.__author__}"""
 
-    @setforward.command(name="channel")
-    async def setforward_channel(
-            self, ctx: commands.Context, *, channel: Optional[discord.TextChannel]
+    @forwardset.command(name="channel")
+    async def forwardset_channel(
+        self, ctx: commands.Context, *, channel: typing.Optional[discord.TextChannel]
     ):
         """Set a channel in the current guild to be used for forwarding."""
         if channel:
@@ -122,9 +124,9 @@ class Forwarding(commands.Cog):
             await self.config.channel_id.clear()
             await ctx.send("I will forward all DMs to you.")
 
-    @setforward.command(name="ping")
-    async def setforward_ping(
-        self, ctx: commands.Context, *, ping: Union[discord.Role, discord.Member, None]
+    @forwardset.command(name="ping")
+    async def forwardset_ping(
+        self, ctx: commands.Context, *, ping: typing.Union[discord.Role, discord.Member, None]
     ):
         """Set a role or a member to be pinged for forwarding."""
         if ping:
@@ -133,8 +135,35 @@ class Forwarding(commands.Cog):
             else:
                 await self.config.ping_user_id(ping.id)
             await ctx.send(f"I will ping {ping.name}.\n"
-            f"Remember to `{ctx.clean_prefix}setforward channel`")
+            f"Remember to `{ctx.clean_prefix}forwardset channel`")
         else:
             await self.config.ping_role_id.clear()
             await self.config.ping_user_id.clear()
             await ctx.send("I will not ping any role nor member.")
+
+    @forwardset.command(name="settings")
+    async def forwardset_settings(self, ctx: commands.Context):
+        """See current settings."""
+        data = await self.config.all()
+
+        channel = ctx.guild.get_channel(data["channel_id"])
+        channel = "None" if not channel else channel.mention
+
+        role = ctx.guild.get_role(data["ping_role_id"])
+        role = "None" if not role else role.name
+
+        user = ctx.guild.get_member(data["ping_user_id"])
+        user = "None" if not user else user.name
+
+        embed = discord.Embed(
+            colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
+        )
+        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
+        embed.title = "**__Unique Name settings:__**"
+        embed.set_footer(text="*required to function properly")
+
+        embed.add_field(name="Forwarding to channel:", value=channel)
+        embed.add_field(name="Pinged role:", value=role)
+        embed.add_field(name="Pinged member:", value=user)
+
+        await ctx.send(embed=embed)

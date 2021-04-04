@@ -16,7 +16,7 @@ class Mentionable(commands.Cog):
     def __init__(self, bot: Red):
         self.bot = bot
 
-    @checks.admin_or_permissions(manage_roles=True)
+    @checks.admin()
     @commands.command()
     @commands.guild_only()
     @checks.bot_has_permissions(manage_roles=True)
@@ -28,14 +28,14 @@ class Mentionable(commands.Cog):
         else:
             await ctx.send(f"{role} is already mentionable.")
 
-    @checks.admin_or_permissions(manage_roles=True)
+    @checks.admin()
     @commands.command()
     @commands.guild_only()
     @checks.bot_has_permissions(manage_roles=True)
     async def unmention(self, ctx: commands.Context, *, role: discord.Role):
         """
-       Makes that role unmentionable
-       """
+        Makes that role unmentionable
+        """
         if not role.mentionable:
             await ctx.send(f"{role} is already unmentionable.")
         else:

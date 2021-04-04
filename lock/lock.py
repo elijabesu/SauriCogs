@@ -1,10 +1,10 @@
 import asyncio
 import discord
-
-from discord.utils import get
+import datetime
+import typing
 
 from redbot.core import Config, checks, commands
-from redbot.core.utils.predicates import MessagePredicate
+from redbot.core.utils.chat_formatting import humanize_list
 
 from redbot.core.bot import Red
 
@@ -12,11 +12,10 @@ from redbot.core.bot import Red
 class Lock(commands.Cog):
     """
     Lock `@everyone` from sending messages.
-    Use `[p]locksetup` first.
     """
 
     __author__ = "saurichable"
-    __version__ = "1.0.1"
+    __version__ = "1.1.0"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -24,125 +23,118 @@ class Lock(commands.Cog):
             self, identifier=36546565165464, force_registration=True
         )
 
-        default_guild = {"moderator": None, "everyone": True, "ignore": []}
+        self.config.register_guild(moderator=None, everyone=True, ignore=[])
 
-        self.config.register_guild(**default_guild)
-
-    @checks.admin_or_permissions(manage_guild=True)
+    @commands.group(autohelp=True)
     @commands.guild_only()
-    @commands.command()
-    async def locksetup(self, ctx: commands.Context):
-        """ Go through the initial setup process. """
-        await ctx.send("Do you use roles to access channels? (yes/no)")
-        pred = MessagePredicate.yes_or_no(ctx)
-        try:
-            await self.bot.wait_for("message", timeout=30, check=pred)
-        except asyncio.TimeoutError:
-            return await ctx.send("You took too long. Try again, please.")
-        if not pred.result:
-            await self.config.guild(ctx.guild).everyone.set(True)
-        else:
-            await self.config.guild(ctx.guild).everyone.set(False)
-        await ctx.send("What is your Moderator role?")
-        role = MessagePredicate.valid_role(ctx)
-        try:
-            await self.bot.wait_for("message", timeout=30, check=role)
-        except asyncio.TimeoutError:
-            return await ctx.send("You took too long. Try again, please.")
-        mod_role = role.result
-        await self.config.guild(ctx.guild).moderator.set(str(mod_role))
+    @checks.admin()
+    async def lockset(self, ctx: commands.Context):
+        f"""Various Lock settings.
+        
+        Version: {self.__version__}
+        Author: {self.__author__}"""
 
-        await ctx.send("You have finished the setup!")
+    @lockset.command(name="role")
+    async def lockset_role(self, ctx: commands.Context, role: discord.Role):
+        """Set role that can lock channels."""
+        await self.config.guild(ctx.guild).moderator.set(role.id)
+        await ctx.tick()
 
-    @checks.admin_or_permissions(manage_guild=True)
-    @commands.guild_only()
-    @commands.command()
-    async def lockignore(self, ctx: commands.Context, new_channel: discord.TextChannel):
+    @lockset.command(name="perms")
+    async def lockset_perms(self, ctx: commands.Context, everyone: bool):
+        """Set if you use roles to access channels."""
+        await self.config.guild(ctx.guild).everyone.set(not everyone)
+        await ctx.tick()
+
+    @lockset.command(name="ignore")
+    async def lockset_ignore(self, ctx: commands.Context, channel: discord.TextChannel):
         """ Ignore a channel during server lock. """
-        if new_channel.id not in await self.config.guild(ctx.guild).ignore():
+        if channel.id not in await self.config.guild(ctx.guild).ignore():
             async with self.config.guild(ctx.guild).ignore() as ignore:
-                ignore.append(new_channel.id)
-            await ctx.send(
-                f"{new_channel.mention} has been added into the ignored channels list."
+                ignore.append(channel.id)
+            return await ctx.send(
+                f"{channel.mention} has been added into the ignored channels list."
             )
-        else:
-            await ctx.send(
-                f"{new_channel.mention} is already in the ignored channels list."
-            )
+        await ctx.send(f"{channel.mention} is already in the ignored channels list.")
 
-    @checks.admin_or_permissions(manage_guild=True)
-    @commands.guild_only()
-    @commands.command()
-    async def lockunignore(
-        self, ctx: commands.Context, new_channel: discord.TextChannel
+    @lockset.command(name="unignore")
+    async def lockset_unignore(
+        self, ctx: commands.Context, channel: discord.TextChannel
     ):
         """ Remove channels from the ignored list. """
-        if new_channel.id not in await self.config.guild(ctx.guild).ignore():
-            await ctx.send(
-                f"{new_channel.mention} already isn't in the ignored channels list."
+        if channel.id not in await self.config.guild(ctx.guild).ignore():
+            return await ctx.send(
+                f"{channel.mention} already isn't in the ignored channels list."
             )
-        else:
-            async with self.config.guild(ctx.guild).ignore() as ignore:
-                ignore.remove(new_channel.id)
-            await ctx.send(
-                f"{new_channel.mention} has been removed from the ignored channels list."
-            )
+        async with self.config.guild(ctx.guild).ignore() as ignore:
+            ignore.remove(channel.id)
+        await ctx.send(
+            f"{channel.mention} has been removed from the ignored channels list."
+        )
 
-    @checks.mod_or_permissions(manage_roles=True)
-    @commands.command()
-    @commands.guild_only()
+    @lockset.command(name="settings")
+    async def lockset_settings(self, ctx: commands.Context):
+        """See current settings."""
+        data = await self.config.guild(ctx.guild).all()
+        mods = ctx.guild.get_role(data["moderator"])
+        mods = "None" if not mods else mods.name
+
+        channels = data["ignore"]
+        c_text = list()
+        if channels == []:
+            c_text = "None"
+        else:
+            for channel in channels:
+                c = ctx.guild.get_channel(channel)
+                if c:
+                    c_text.append(c.mention)
+            c_text = humanize_list(c_text)
+
+        embed = discord.Embed(
+            colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
+        )
+        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
+        embed.title = "**__Lock settings:__**"
+        embed.set_footer(text="*required to function properly")
+
+        embed.add_field(
+            name="Role that can type after locking*:", value=mods, inline=False
+        )
+        embed.add_field(
+            name="Using roles to access servers:*:",
+            value=str(not data["everyone"]),
+            inline=False,
+        )
+        embed.add_field(name="Ignored channels:", value=c_text, inline=False)
+
+        await ctx.send(embed=embed)
+
+    @checks.mod()
     @checks.bot_has_permissions(manage_channels=True)
+    @commands.guild_only()
+    @commands.group(invoke_without_command=True)
     async def lock(self, ctx: commands.Context):
         """ Lock `@everyone` from sending messages."""
-        everyone = get(ctx.guild.roles, name="@everyone")
-        name_moderator = await self.config.guild(ctx.guild).moderator()
-        mods = get(ctx.guild.roles, name=name_moderator)
+        mods = ctx.guild.get_role(await self.config.guild(ctx.guild).moderator())
         which = await self.config.guild(ctx.guild).everyone()
 
-        if not name_moderator:
+        if not mods:
             return await ctx.send(
                 "Uh oh. Looks like your Admins haven't setup this yet."
             )
         if which:
             await ctx.channel.set_permissions(
-                everyone, read_messages=True, send_messages=False
+                ctx.guild.default_role, read_messages=True, send_messages=False
             )
         else:
             await ctx.channel.set_permissions(
-                everyone, read_messages=False, send_messages=False
+                ctx.guild.default_role, read_messages=False, send_messages=False
             )
         await ctx.channel.set_permissions(mods, read_messages=True, send_messages=True)
         await ctx.send(":lock: Channel locked. Only Moderators can type.")
 
-    @checks.mod_or_permissions(manage_roles=True)
-    @commands.command()
-    @commands.guild_only()
-    @checks.bot_has_permissions(manage_channels=True)
-    async def unlock(self, ctx: commands.Context):
-        """ Unlock the channel for `@everyone`. """
-        everyone = get(ctx.guild.roles, name="@everyone")
-        name_moderator = await self.config.guild(ctx.guild).moderator()
-        which = await self.config.guild(ctx.guild).everyone()
-
-        if not name_moderator:
-            return await ctx.send(
-                "Uh oh. Looks like your Admins haven't setup this yet."
-            )
-        if which:
-            await ctx.channel.set_permissions(
-                everyone, read_messages=True, send_messages=True
-            )
-        else:
-            await ctx.channel.set_permissions(
-                everyone, read_messages=False, send_messages=True
-            )
-        await ctx.send(":unlock: Channel unlocked.")
-
-    @checks.mod_or_permissions(manage_roles=True)
-    @commands.command()
-    @commands.guild_only()
-    @checks.bot_has_permissions(manage_channels=True)
-    async def lockserver(self, ctx: commands.Context, confirmation: bool = False):
+    @lock.command(name="server")
+    async def lock_server(self, ctx: commands.Context, confirmation: typing.Optional[bool]):
         """ Lock `@everyone` from sending messages in the entire server."""
         if not confirmation:
             return await ctx.send(
@@ -150,13 +142,11 @@ class Lock(commands.Cog):
                 f"If you're sure, type `{ctx.clean_prefix}lockserver yes` (you can set an alias for this so I don't ask you every time)."
             )
         async with ctx.typing():
-            everyone = get(ctx.guild.roles, name="@everyone")
-            name_moderator = await self.config.guild(ctx.guild).moderator()
-            mods = get(ctx.guild.roles, name=name_moderator)
+            mods = ctx.guild.get_role(await self.config.guild(ctx.guild).moderator())
             which = await self.config.guild(ctx.guild).everyone()
             ignore = await self.config.guild(ctx.guild).ignore()
 
-            if not name_moderator:
+            if not mods:
                 return await ctx.send(
                     "Uh oh. Looks like your Admins haven't setup this yet."
                 )
@@ -165,30 +155,49 @@ class Lock(commands.Cog):
                     continue
                 if which:
                     await channel.set_permissions(
-                        everyone, read_messages=True, send_messages=False
+                        ctx.guild.default_role, read_messages=True, send_messages=False
                     )
                 else:
                     await channel.set_permissions(
-                        everyone, read_messages=False, send_messages=False
+                        ctx.guild.default_role, read_messages=False, send_messages=False
                     )
                 await channel.set_permissions(
                     mods, read_messages=True, send_messages=True
                 )
         await ctx.send(":lock: Server locked. Only Moderators can type.")
 
-    @checks.mod_or_permissions(manage_roles=True)
-    @commands.command()
-    @commands.guild_only()
+    @checks.mod()
     @checks.bot_has_permissions(manage_channels=True)
-    async def unlockserver(self, ctx: commands.Context):
+    @commands.guild_only()
+    @commands.group(invoke_without_command=True)
+    async def unlock(self, ctx: commands.Context):
+        """ Unlock the channel for `@everyone`. """
+        mods = ctx.guild.get_role(await self.config.guild(ctx.guild).moderator())
+        which = await self.config.guild(ctx.guild).everyone()
+
+        if not mods:
+            return await ctx.send(
+                "Uh oh. Looks like your Admins haven't setup this yet."
+            )
+        if which:
+            await ctx.channel.set_permissions(
+                ctx.guild.default_role, read_messages=True, send_messages=True
+            )
+        else:
+            await ctx.channel.set_permissions(
+                ctx.guild.default_role, read_messages=False, send_messages=True
+            )
+        await ctx.send(":unlock: Channel unlocked.")
+
+    @unlock.command(name="server")
+    async def unlock_server(self, ctx: commands.Context):
         """ Unlock the entire server for `@everyone` """
         async with ctx.typing():
-            everyone = get(ctx.guild.roles, name="@everyone")
-            name_moderator = await self.config.guild(ctx.guild).moderator()
+            mods = ctx.guild.get_role(await self.config.guild(ctx.guild).moderator())
             which = await self.config.guild(ctx.guild).everyone()
             ignore = await self.config.guild(ctx.guild).ignore()
 
-            if not name_moderator:
+            if not mods:
                 return await ctx.send(
                     "Uh oh. Looks like your Admins haven't setup this yet."
                 )
@@ -197,10 +206,10 @@ class Lock(commands.Cog):
                     continue
                 if which:
                     await channel.set_permissions(
-                        everyone, read_messages=True, send_messages=True
+                        ctx.guild.default_role, read_messages=True, send_messages=True
                     )
                 else:
                     await channel.set_permissions(
-                        everyone, read_messages=False, send_messages=True
+                        ctx.guild.default_role, read_messages=False, send_messages=True
                     )
         await ctx.send(":unlock: Server unlocked.")

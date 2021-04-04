@@ -30,12 +30,14 @@ class LevelUpCookies(commands.Cog):
         )
         self.config.register_guild(rewards={})
 
-    @checks.admin_or_permissions(manage_guild=True)
+    @checks.admin()
     @commands.guild_only()
-    @commands.group(autohelp=True)
-    async def lvlupcookies(self, ctx):
-        """Cookie rewards for roles."""
-        pass
+    @commands.group(autohelp=True, aliases=["lvlupcookies"])
+    async def lvlupcookiesset(self, ctx: commands.Context):
+        f"""Various Level Up Cookies settings.
+        
+        Version: {self.__version__}
+        Author: {self.__author__}"""
 
     @lvlupcookies.command(name="add")
     async def lvlupcookies_add(self, ctx: commands.Context, level: int, cookies: int):
@@ -58,17 +60,11 @@ class LevelUpCookies(commands.Cog):
         for level in await self.config.guild(ctx.guild).rewards.get_raw():
             l = await self.config.guild(ctx.guild).rewards.get_raw(level)
             c = l.get("cookies")
-            if int(c) == 1:
-                name = "cookie"
-            else:
-                name = "cookies"
+            name = "cookie" if int(c) == 1 else "cookies"
             text = f"Level {level} - {c} {name}"
             lst.append(text)
-        if lst == []:
-            desc = "Nothing to see here."
-        else:
-            desc = "\n".join(lst)
-        page_list = []
+        desc = "Nothing to see here." if lst == [] else "\n".join(lst)
+        page_list = list()
         for page in pagify(desc, delims=["\n"], page_length=1000):
             embed = discord.Embed(
                 colour=await ctx.embed_colour(),

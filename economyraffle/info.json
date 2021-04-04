@@ -1,6 +1,6 @@
 {
     "author" : ["saurichable"],
-    "install_msg" : "Thank you for installing my cog! **Use `[p]economysetup` first.**",
+    "install_msg" : "Thank you for installing my cog!",
     "name" : "EconomyRaffle",
     "short" : "Simple economy raffle cog.",
     "description" : "Just a simple cog that gives a pre-specified amount of credits to a randomly picked user.",

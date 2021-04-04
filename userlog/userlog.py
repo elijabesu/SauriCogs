@@ -1,5 +1,6 @@
 import datetime
 import discord
+import typing
 
 from redbot.core import checks, commands, Config
 
@@ -12,7 +13,7 @@ class UserLog(commands.Cog):
     """Log when users join/leave into your specified channel."""
 
     __author__ = "saurichable"
-    __version__ = "1.0.3"
+    __version__ = "1.1.0"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -22,62 +23,79 @@ class UserLog(commands.Cog):
 
         self.config.register_guild(channel=None, join=True, leave=True)
 
-    @commands.group(autohelp=True)
+    @commands.group(autohelp=True, aliases=["userlog"])
     @commands.guild_only()
-    @checks.admin_or_permissions(manage_guild=True)
-    async def userlog(self, ctx):
-        """Manage user log settings."""
-        pass
+    @checks.admin()
+    async def userlogset(self, ctx: commands.Context):
+        f"""Various User Log settings.
+        
+        Version: {self.__version__}
+        Author: {self.__author__}"""
 
-    @userlog.command(name="channel")
-    async def user_channel_log(self, ctx, channel: discord.TextChannel = None):
+    @userlogset.command(name="channel")
+    async def user_channel_log(
+        self, ctx: commands.Context, channel: typing.Optional[discord.TextChannel]
+    ):
         """Set the channel for logs.
 
         If the channel is not provided, logging will be disabled."""
         if channel:
             await self.config.guild(ctx.guild).channel.set(channel.id)
         else:
-            await self.config.guild(ctx.guild).channel.set(None)
+            await self.config.guild(ctx.guild).channel.clear()
         await ctx.tick()
 
-    @userlog.command(name="join")
-    async def user_join_log(self, ctx: commands.Context, on_off: bool = None):
-        """Toggle logging when users join the current server. 
+    @userlogset.command(name="join")
+    async def user_join_log(self, ctx: commands.Context, on_off: typing.Optional[bool]):
+        """Toggle logging when users join the current server.
 
         If `on_off` is not provided, the state will be flipped."""
-        target_state = (
-            on_off
-            if on_off
-            else not (await self.config.guild(ctx.guild).join())
-        )
+        target_state = on_off or not (await self.config.guild(ctx.guild).join())
         await self.config.guild(ctx.guild).join.set(target_state)
         if target_state:
             await ctx.send("Logging users joining is now enabled.")
         else:
             await ctx.send("Logging users joining is now disabled.")
 
-    @userlog.command(name="leave")
-    async def user_leave_log(self, ctx: commands.Context, on_off: bool = None):
+    @userlogset.command(name="leave")
+    async def user_leave_log(self, ctx: commands.Context, on_off: typing.Optional[bool]):
         """Toggle logging when users leave the current server.
 
         If `on_off` is not provided, the state will be flipped."""
-        target_state = (
-            on_off
-            if on_off
-            else not (await self.config.guild(ctx.guild).leave())
-        )
+        target_state = on_off or not (await self.config.guild(ctx.guild).leave())
         await self.config.guild(ctx.guild).leave.set(target_state)
         if target_state:
             await ctx.send("Logging users leaving is now enabled.")
         else:
             await ctx.send("Logging users leaving is now disabled.")
 
+    @userlogset.command(name="settings")
+    async def user_settings(self, ctx: commands.Context):
+        """See current settings."""
+        data = await self.config.guild(ctx.guild).all()
+        channel = ctx.guild.get_channel(await self.config.guild(ctx.guild).channel())
+        channel = "None" if not channel else channel.mention
+        embed = discord.Embed(
+            colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
+        )
+        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
+        embed.title = "**__User Log settings:__**"
+
+        embed.set_footer(text="*required to function properly")
+        embed.add_field(name="Channel*:", value=channel)
+        embed.add_field(name="Join:", value=str(data["join"]))
+        embed.add_field(name="Leave:", value=str(data["leave"]))
+
+        await ctx.send(embed=embed)
+
     @commands.Cog.listener()
     async def on_member_join(self, member):
         join = await self.config.guild(member.guild).join()
         if not join:
             return
-        channel = member.guild.get_channel(await self.config.guild(member.guild).channel())
+        channel = member.guild.get_channel(
+            await self.config.guild(member.guild).channel()
+        )
         if not channel:
             return
         time = datetime.datetime.utcnow()
@@ -108,7 +126,9 @@ class UserLog(commands.Cog):
         leave = await self.config.guild(member.guild).leave()
         if not leave:
             return
-        channel = member.guild.get_channel(await self.config.guild(member.guild).channel())
+        channel = member.guild.get_channel(
+            await self.config.guild(member.guild).channel()
+        )
         if not channel:
             return
         time = datetime.datetime.utcnow()
