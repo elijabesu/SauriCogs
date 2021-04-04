@@ -39,22 +39,22 @@ class LevelUpCookies(commands.Cog):
         Version: {self.__version__}
         Author: {self.__author__}"""
 
-    @lvlupcookies.command(name="add")
-    async def lvlupcookies_add(self, ctx: commands.Context, level: int, cookies: int):
+    @lvlupcookiesset.command(name="add")
+    async def lvlupcookiesset_add(self, ctx: commands.Context, level: int, cookies: int):
         """Set a cookie reward for leveling up!"""
         await self.config.guild(ctx.guild).rewards.set_raw(
             level, value={"cookies": cookies}
         )
         await ctx.send(f"Gaining {level} will now give {cookies} :cookie:")
 
-    @lvlupcookies.command(name="del")
-    async def lvlupcookies_del(self, ctx: commands.Context, level: int):
+    @lvlupcookiesset.command(name="del")
+    async def lvlupcookiesset_del(self, ctx: commands.Context, level: int):
         """Delete cookies for level."""
         await self.config.guild(ctx.guild).rewards.clear_raw(level)
         await ctx.send(f"Gaining {level} will now not give any :cookie:")
 
-    @lvlupcookies.command(name="show")
-    async def lvlupcookies_show(self, ctx: commands.Context):
+    @lvlupcookiesset.command(name="show")
+    async def lvlupcookiesset_show(self, ctx: commands.Context):
         """Show how many cookies a level gives."""
         lst = []
         for level in await self.config.guild(ctx.guild).rewards.get_raw():
