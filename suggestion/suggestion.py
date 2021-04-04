@@ -312,7 +312,7 @@ class Suggestion(commands.Cog):
         await self.config.guild(ctx.guild).delete_suggestion.set(target_state)
         await ctx.send(
             "Suggestions will be deleted upon approving/rejecting from the original suggestion channel."
-            if delete
+            if target_state
             else "Suggestions will stay in the original channel after approving/rejecting."
         )
 
