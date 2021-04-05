@@ -16,7 +16,7 @@ class Application(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.3.0"
+    __version__ = "1.3.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -304,7 +304,7 @@ class Application(commands.Cog):
                 return await ctx.send(
                     "Uh oh, the configuration is not correct. Ask the Admins to set it."
                 )
-            if applicant not in target.roles:
+            if applicant in target.roles:
                 await target.remove_roles(applicant)
             else:
                 return await ctx.send(
