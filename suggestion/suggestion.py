@@ -16,7 +16,7 @@ class Suggestion(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.5.0"
+    __version__ = "1.5.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -325,11 +325,11 @@ class Suggestion(commands.Cog):
         )
         suggest_channel = "None" if not suggest_channel else suggest_channel.mention
         approve_channel = ctx.guild.get_channel(
-            await self.config.guild(ctx.guild).suggest_id()
+            await self.config.guild(ctx.guild).approve_id()
         )
         approve_channel = "None" if not approve_channel else approve_channel.mention
         reject_channel = ctx.guild.get_channel(
-            await self.config.guild(ctx.guild).suggest_id()
+            await self.config.guild(ctx.guild).reject_id()
         )
         reject_channel = "None" if not reject_channel else reject_channel.mention
         up_emoji, down_emoji = await self._get_emojis(ctx)
