@@ -348,7 +348,7 @@ class Application(commands.Cog):
             if accepter not in ctx.author.roles:
                 return await ctx.send("Uh oh, you cannot use this command.")
 
-        if await self.config.guild(ctx.guild).applicant_role():
+        if await self.config.guild(ctx.guild).applicant_id():
             try:
                 applicant = ctx.guild.get_role(await self.config.guild(ctx.guild).applicant_id())
             except TypeError:
