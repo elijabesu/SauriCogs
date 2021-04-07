@@ -602,7 +602,10 @@ class Suggestion(commands.Cog):
         else:
             server = ctx.guild.id
             old_channel = ctx.guild.get_channel(await self.config.guild(ctx.guild).suggest_id())
-            channel = ctx.guild.get_channel(await self.config.guild(ctx.guild).approve_id())
+            if approve:
+                channel = ctx.guild.get_channel(await self.config.guild(ctx.guild).approve_id())
+            else:
+                channel = ctx.guild.get_channel(await self.config.guild(ctx.guild).reject_id())
         msg_id = await self.config.custom("SUGGESTION", server, suggestion_id).msg_id()
         if (
             msg_id != 0
@@ -642,12 +645,15 @@ class Suggestion(commands.Cog):
             await old_msg.edit(content=content, embed=embed)
         else:
             if channel:
-                if await self.config.guild(ctx.guild).delete_suggestion():
-                    await old_msg.delete()
-                nmsg = await channel.send(content=content, embed=embed)
-                await self.config.custom(
-                    "SUGGESTION", server, suggestion_id
-                ).msg_id.set(nmsg.id)
+                if not await self.config.guild(ctx.guild).same():
+                    if await self.config.guild(ctx.guild).delete_suggestion():
+                        await old_msg.delete()
+                    nmsg = await channel.send(content=content, embed=embed)
+                    await self.config.custom(
+                        "SUGGESTION", server, suggestion_id
+                    ).msg_id.set(nmsg.id)
+                else:
+                    await old_msg.edit(content=content, embed=embed)
             else:
                 if not await self.config.guild(ctx.guild).same():
                     if await self.config.guild(ctx.guild).delete_suggestion():
