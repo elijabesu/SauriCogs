@@ -5,7 +5,7 @@ import calendar
 import typing
 import datetime
 
-from redbot.core import Config, checks, commands, bank
+from redbot.core import Config, checks, commands, bank, errors
 from redbot.core.utils.chat_formatting import pagify, box
 from redbot.core.utils.predicates import MessagePredicate
 from redbot.core.utils.menus import menu, DEFAULT_CONTROLS
@@ -21,7 +21,7 @@ class Cookies(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.2.0"
+    __version__ = "1.2.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -80,18 +80,17 @@ class Cookies(commands.Cog):
                     if not role_multiplier:
                         role_multiplier = 1
                     multipliers.append(role_multiplier)
-                cookies += amount * max(multipliers)
+                amount *= max(multipliers)
             else:
                 amount = int(random.choice(list(range(minimum, maximum))))
-                cookies += amount
-            if self._max_balance_check(cookies):
+            if self._max_balance_check(cookies + amount):
                 return await ctx.send(
                     "Uh oh, you have reached the maximum amount of cookies that you can put in your bag. :frowning:"
                 )
             next_cookie = cur_time + await conf.cooldown()
             await um_conf.next_cookie.set(next_cookie)
-            await um_conf.cookies.set(cookies)
-            await ctx.send(f"Here is your {amount} :cookie:")
+            await self.deposit_cookies(ctx.author, amount)
+            await ctx.send(f"Here {'is' if amount == 1 else 'are'} your {amount} :cookie:")
         else:
             dtime = self.display_time(next_cookie - cur_time)
             await ctx.send(f"Uh oh, you have to wait {dtime}.")
@@ -172,16 +171,11 @@ class Cookies(commands.Cog):
                     f"{target.display_name} has reached the maximum amount of cookies, "
                     "so you haven't lost any."
                 )
-            author_cookies -= penalty
-            target_cookies += penalty
             await ctx.send(
                 f"You got caught while trying to steal {target.display_name}'s :cookie:\nYour penalty is {penalty} :cookie: which they got!"
             )
-        if await self.config.is_global():
-            await self.config.member(target).cookies.set(target_cookies)
-        else:
-            await self.config.user(target).cookies.set(target_cookies)
-        await um_conf.cookies.set(author_cookies)
+        await self.deposit_cookies(target, penalty)
+        await self.withdraw_cookies(ctx.author, penalty)
 
     @commands.command()
     @commands.guild_only()
@@ -193,7 +187,7 @@ class Cookies(commands.Cog):
             else self.config.member(ctx.author)
         )
 
-        author_cookies = um_conf.cookies()
+        author_cookies = await um_conf.cookies()
         if amount <= 0:
             return await ctx.send("Uh oh, amount has to be more than 0.")
         if target.id == ctx.author.id:
@@ -201,14 +195,12 @@ class Cookies(commands.Cog):
         if amount > author_cookies:
             return await ctx.send("You don't have enough cookies yourself!")
         target_cookies = await self.config.member(target).cookies()
-        target_cookies += amount
-        if self._max_balance_check(target_cookies):
+        if self._max_balance_check(target_cookies + amount):
             return await ctx.send(
-                f"Uh oh, {target.display_name} has reached the maximum amount of cookies that they can have in their jar. :frowning:"
+                f"Uh oh, {target.display_name}'s jar would be way too full."
             )
-        author_cookies -= amount
-        await um_conf.cookies.set(author_cookies)
-        await self.config.member(target).cookies.set(target_cookies)
+        await self.withdraw_cookies(ctx.author, amount)
+        await self.deposit_cookies(target, amount)
         await ctx.send(
             f"{ctx.author.mention} has gifted {amount} :cookie: to {target.mention}"
         )
@@ -263,13 +255,18 @@ class Cookies(commands.Cog):
         if not to_currency:
             await bank.withdraw_credits(ctx.author, amount)
             new_cookies = int(amount * rate)
+            if self._max_balance_check(new_cookies):
+                return await ctx.send(f"Uh oh, your jar would be way too full.")
             await self.deposit_cookies(ctx.author, new_cookies)
             return await ctx.send(
                 f"You have exchanged {amount} {currency} and got {new_cookies} :cookie:"
             )
-        await self.withdraw_cookies(ctx.author, amount)
         new_currency = int(amount / rate)
-        await bank.deposit_credits(ctx.author, new_currency)
+        try:
+            await bank.deposit_credits(ctx.author, new_currency)
+        except errors.BalanceTooHigh:
+            return await ctx.send(f"Uh oh, your bank balance would be way too high.")
+        await self.withdraw_cookies(ctx.author, amount)
         return await ctx.send(
             f"You have exchanged {amount} :cookie: and got {new_currency} {currency}"
         )
@@ -482,12 +479,11 @@ class Cookies(commands.Cog):
             else self.config.member(target)
         )
         target_cookies = await um_conf.cookies()
-        target_cookies += amount
-        if self._max_balance_check(target_cookies):
+        if self._max_balance_check(target_cookies + amount):
             return await ctx.send(
                 f"Uh oh, {target.display_name} has reached the maximum amount of cookies."
             )
-        await um_conf.cookies.set(target_cookies)
+        await self.deposit_cookies(target, amount)
         await ctx.send(f"Added {amount} :cookie: to {target.mention}'s balance.")
 
     @cookieset.command(name="take")
@@ -504,8 +500,7 @@ class Cookies(commands.Cog):
         )
         target_cookies = await um_conf.cookies()
         if amount <= target_cookies:
-            target_cookies -= amount
-            await um_conf.cookies.set(target_cookies)
+            await self.withdraw_cookies(target, amount)
             return await ctx.send(
                 f"Took away {amount} :cookie: from {target.mention}'s balance."
             )
@@ -635,10 +630,9 @@ class Cookies(commands.Cog):
                 cookies = await self.config.role(role).cookies()
                 if cookies != 0:
                     old_cookies = await self.config.member(after).cookies()
-                    new_cookies = old_cookies + cookies
-                    if self._max_balance_check(new_cookies):
+                    if self._max_balance_check(old_cookies + cookies):
                         continue
-                    await self.config.member(after).cookies.set(new_cookies)
+                    await self.deposit_cookies(after, cookies)
 
     async def _get_ids(self, ctx):
         if await self.config.is_global():
