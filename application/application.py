@@ -42,6 +42,10 @@ class Application(commands.Cog):
             ],
         )
 
+    async def red_delete_data_for_user(self, *, requester, user_id):
+        # nothing to delete
+        return
+
     @commands.max_concurrency(1, commands.BucketType.member, wait=True)
     @commands.command()
     @commands.guild_only()

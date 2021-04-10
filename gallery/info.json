@@ -4,5 +4,6 @@
     "name" : "Gallery",
     "short" : "Gallery channels!",
     "description" : "Set channels as galleries, deleting all messages that don't contain any attachments.",
-    "tags" : ["gallery"]
+    "tags" : ["gallery"],
+    "end_user_data_statement": "This cog does not store any user data."
 }

@@ -20,6 +20,10 @@ class UserLog(commands.Cog):
 
         self.config.register_guild(channel=None, join=True, leave=True)
 
+    async def red_delete_data_for_user(self, *, requester, user_id):
+        # nothing to delete
+        return
+
     @commands.group(autohelp=True, aliases=["userlog"])
     @commands.guild_only()
     @checks.admin()

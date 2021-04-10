@@ -22,6 +22,10 @@ class Pingable(commands.Cog):
 
         self.config.register_role(pingable=False, channel=None)
 
+    async def red_delete_data_for_user(self, *, requester, user_id):
+        # nothing to delete
+        return
+
     @commands.group(autohelp=True)
     @checks.admin()
     @commands.guild_only()

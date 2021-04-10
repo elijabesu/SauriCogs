@@ -70,6 +70,22 @@ class Marriage(commands.Cog):
         self.config.register_member(**default_user)
         self.config.register_user(**default_user)
 
+    async def red_delete_data_for_user(self, *, requester, user_id):
+        await self.config.user_from_id(user_id).clear()
+        for guild in self.bot.guilds:
+            await self.config.member_from_ids(guild.id, user_id).clear()
+            for member in guild.members:
+                member_exes = await self.config.member(member).exes()
+                member_spouses = await self.config.member(member).spouses()
+                if user_id in member_exes:
+                    member_exes.remove(user_id)
+                    await self.config.member(member).exes.set(member_exes)
+                if user_id in member_spouses:
+                    member_spouses.remove(user_id)
+                    if len(member_spouses) == 0:
+                        await self.config.member(member).married.set(False)
+                    await self.config.member(member).spouses.set(member_spouses)
+
     @property
     def _DEFAULT_ACTIONS(self):
         return {

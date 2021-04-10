@@ -21,6 +21,11 @@ class Forwarding(commands.Cog):
             guild_id=0, channel_id=0, ping_role_id=0, ping_user_id=0
         )
 
+    async def red_delete_data_for_user(self, *, requester, user_id):
+        for guild in self.bot.guilds:
+            if user_id == await self.config.guild(guild).ping_user_id():
+                await self.config.guild(guild).ping_user_id.clear()
+
     async def _send_to(self, embed):
         guild = self.bot.get_guild(await self.config.guild_id())
         if not guild:

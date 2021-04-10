@@ -5,5 +5,6 @@
     "short" : "Set cookie rewards for users that level up!",
     "description" : "Set cookie rewards for users that level up!",
     "tags" : ["cookies", "rewards"],
-    "required_cogs": {"Leveler": "https://github.com/fixator10/Fixator10-Cogs/", "Cookies": "https://github.com/elijabesu/SauriCogs"}
+    "required_cogs": {"Leveler": "https://github.com/fixator10/Fixator10-Cogs/", "Cookies": "https://github.com/elijabesu/SauriCogs"},
+    "end_user_data_statement": "This cog does not store any user data."
 }

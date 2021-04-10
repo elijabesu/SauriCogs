@@ -15,6 +15,10 @@ class Mentionable(commands.Cog):
     def __init__(self, bot: Red):
         self.bot = bot
 
+    async def red_delete_data_for_user(self, *, requester, user_id):
+        # nothing to delete
+        return
+
     @checks.admin()
     @commands.command()
     @commands.guild_only()

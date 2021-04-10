@@ -4,5 +4,6 @@
     "name" : "Suggestion",
     "short" : "Simple suggestion box.",
     "description" : "Just a simple suggestion box with voting system.",
-    "tags" : ["suggestion"]
+    "tags" : ["suggestion"],
+    "end_user_data_statement": "This cog stores user names, discriminators, and IDs upon sending a suggestion. This data is used solely to display and contact the user about any change to their suggestion."
 }

@@ -4,5 +4,6 @@
     "name" : "Marriage",
     "short" : "Marriage cog with some extra shit.",
     "description" : "Marriage cog with some extra shit.",
-    "tags" : ["marriage", "marry", "waifu"]
+    "tags" : ["marriage", "marry", "waifu"],
+    "end_user_data_statement": "This cog stores user IDs upon marrying and divorcing."
 }

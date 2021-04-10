@@ -4,5 +4,6 @@
     "name" : "Pick",
     "short" : "Pick a random user or a user with a specified role.",
     "description" : "Pick a random user or a user with a specified role.",
-    "tags" : ["pick"]
+    "tags" : ["pick"],
+    "end_user_data_statement": "This cog does not store any user data."
 }

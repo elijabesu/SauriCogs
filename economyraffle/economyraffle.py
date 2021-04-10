@@ -27,6 +27,10 @@ class EconomyRaffle(commands.Cog):
             message="Congratulations {winner}! :tada: You just won {amount} {currency_name}!",
         )
 
+    async def red_delete_data_for_user(self, *, requester, user_id):
+        # nothing to delete
+        return
+
     @commands.group(autohelp=True, aliases=["erset"])
     @commands.guild_only()
     @checks.admin()

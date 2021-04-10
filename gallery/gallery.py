@@ -24,6 +24,10 @@ class Gallery(commands.Cog):
 
         self.config.register_guild(channels=[], whitelist=None, time=0)
 
+    async def red_delete_data_for_user(self, *, requester, user_id):
+        # nothing to delete
+        return
+
     @commands.group(autohelp=True)
     @commands.guild_only()
     @checks.admin()

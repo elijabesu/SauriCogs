@@ -22,6 +22,10 @@ class UniqueName(commands.Cog):
         )
         self.config.register_global(guilds=[])
 
+    async def red_delete_data_for_user(self, *, requester, user_id):
+        # nothing to delete
+        return
+
     @commands.group(autohelp=True, aliases=["unset", "uniquename"])
     @checks.admin()
     @commands.guild_only()

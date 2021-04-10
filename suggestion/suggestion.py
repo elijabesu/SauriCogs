@@ -49,6 +49,19 @@ class Suggestion(commands.Cog):
             rtext=None,
         )
 
+    async def red_delete_data_for_user(self, *, requester, user_id):
+        # global suggestions first
+        for suggestion_id in range(1, await self.config.next_id()):
+            author_info = await self.config.custom("SUGGESTION", 1, suggestion_id).author()
+            if user_id in author_info:
+                await self.config.custom("SUGGESTION", 1, suggestion_id).author.clear()
+        # per guild suggestions
+        for guild in self.bot.guilds:
+            for suggestion_id in range(1, await self.config.guild(guild).next_id()):
+                author_info = await self.config.custom("SUGGESTION", guild.id, suggestion_id).author()
+                if user_id in author_info:
+                    await self.config.custom("SUGGESTION", guild.id, suggestion_id).author.clear()
+
     @commands.command()
     @commands.guild_only()
     @checks.bot_has_permissions(add_reactions=True)
@@ -572,6 +585,8 @@ class Suggestion(commands.Cog):
         return up_emoji, down_emoji
 
     async def _get_op_info(self, ctx, op_info):
+        if len(op_info) == 0:
+            return None, "Unknown", 0000, 0000000000000000000, ctx.guild.icon_url
         op_id = op_info[0]
         op = await self.bot.fetch_user(op_id)
         if op:

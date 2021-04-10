@@ -13,6 +13,10 @@ class Pick(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    async def red_delete_data_for_user(self, *, requester, user_id):
+        # nothing to delete
+        return
+
     @commands.command()
     @commands.guild_only()
     @checks.mod()

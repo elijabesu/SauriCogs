@@ -33,6 +33,11 @@ class CookieStore(commands.Cog):
         self.config.register_member(inventory={})
         self.config.register_user(inventory={})
 
+    async def red_delete_data_for_user(self, *, requester, user_id):
+        await self.config.user_from_id(user_id).clear()
+        for guild in self.bot.guilds:
+            await self.config.member_from_ids(guild.id, user_id).clear()
+
     @commands.group(autohelp=True, aliases=["cookiestore", "storeset"])
     @checks.admin()
     @commands.guild_only()

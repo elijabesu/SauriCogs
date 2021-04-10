@@ -34,6 +34,11 @@ class Counting(commands.Cog):
             topic=True,
         )
 
+    async def red_delete_data_for_user(self, *, requester, user_id):
+        for guild in self.bot.guilds:
+            if user_id == await self.config.guild(guild).last():
+                await self.config.guild(guild).last.clear()
+
     @checks.admin()
     @checks.bot_has_permissions(manage_channels=True, manage_messages=True)
     @commands.group(autohelp=True, aliases=["counting"])
@@ -196,11 +201,9 @@ class Counting(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if not message.guild:
+        if not message.guild or message.author.id == self.bot.user.id:
             return
         if message.channel.id != await self.config.guild(message.guild).channel():
-            return
-        if message.author.id == self.bot.user.id:
             return
         last_id = await self.config.guild(message.guild).last()
         previous = await self.config.guild(message.guild).previous()

@@ -4,5 +4,6 @@
     "name" : "Pingable",
     "short" : "Make unpingable roles pingable by regular users.",
     "description" : "Make unpingable roles pingable by regular users with commands.",
-    "tags" : ["mentionable", "pingable"]
+    "tags" : ["mentionable", "pingable"],
+    "end_user_data_statement": "This cog does not store any user data."
 }

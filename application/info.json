@@ -4,5 +4,6 @@
     "name" : "Application",
     "short" : "Simple application cog.",
     "description" : "Just a simple application cog with a Staff Applicant role.",
-    "tags" : ["application", "app"]
+    "tags" : ["application", "app"],
+    "end_user_data_statement": "This cog does not store any end user data."
 }

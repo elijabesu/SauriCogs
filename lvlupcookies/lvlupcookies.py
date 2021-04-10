@@ -29,6 +29,10 @@ class LevelUpCookies(commands.Cog):
         )
         self.config.register_guild(rewards={})
 
+    async def red_delete_data_for_user(self, *, requester, user_id):
+        # nothing to delete
+        return
+
     @checks.admin()
     @commands.guild_only()
     @commands.group(autohelp=True, aliases=["lvlupcookies"])

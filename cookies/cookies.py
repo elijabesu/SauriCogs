@@ -52,6 +52,11 @@ class Cookies(commands.Cog):
 
         self.config.register_role(cookies=0, multiplier=1)
 
+    async def red_delete_data_for_user(self, *, requester, user_id):
+        await self.config.user_from_id(user_id).clear()
+        for guild in self.bot.guilds:
+            await self.config.member_from_ids(guild.id, user_id).clear()
+
     @commands.command()
     @commands.guild_only()
     async def cookie(self, ctx: commands.Context):

@@ -4,5 +4,6 @@
     "name" : "Mentionable",
     "short" : "Makes unmentionable roles mentionable.",
     "description" : "Just a very simple cog that makes unmentionable roles mentionable.",
-    "tags" : ["mentionable"]
+    "tags" : ["mentionable"],
+    "end_user_data_statement": "This cog does not store any user data."
 }

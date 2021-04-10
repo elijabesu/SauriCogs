@@ -4,5 +4,6 @@
     "name" : "Forwarding",
     "short" : "Forward messages to the owner.",
     "description" : "A cog to forward messages to the bot owner, including messages with attachments.",
-    "tags" : ["forwarding", "forward"]
+    "tags" : ["forwarding", "forward"],
+    "end_user_data_statement": "This cog stores user ID if they are set as a ping user."
 }
