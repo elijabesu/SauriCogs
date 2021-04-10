@@ -6,5 +6,6 @@
     "disabled" : false,
     "short" : "Lock `@everyone` from sending messages.",
     "description" : "Lock `@everyone` from sending messages except Mods.",
-    "tags" : ["lockdown", "lock"]
+    "tags" : ["lockdown", "lock"],
+    "end_user_data_statement": "This cog does not store any end user data."
 }

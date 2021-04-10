@@ -40,12 +40,19 @@ class AdvancedLock(commands.Cog):
 
         self.config.register_guild(**default_guild)
 
+    async def red_delete_data_for_user(self, *, requester, user_id):
+        # nothing to delete
+        return
+
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        context = super().format_help_for_context(ctx)
+        return f"{context}\n\nVersion: {self.__version__}"
+
     @commands.group(autohelp=True)
     @commands.guild_only()
     @checks.admin_or_permissions(manage_guild=True)
     async def setlock(self, ctx):
         """Various Lock settings."""
-        pass
 
     @commands.guild_only()
     @setlock.command(name="toggle")
