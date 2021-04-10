@@ -16,7 +16,7 @@ class Marriage(commands.Cog):
     Marry, divorce, and give gifts to other members.
     """
 
-    __version__ = "1.6.0"
+    __version__ = "1.6.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -301,6 +301,7 @@ class Marriage(commands.Cog):
         price: int,
         consent_description: typing.Optional[str],
         consent: typing.Optional[bool],
+        *,
         description: str,
     ):
         """Add a custom action.
