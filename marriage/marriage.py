@@ -16,7 +16,7 @@ class Marriage(commands.Cog):
     Marry, divorce, and give gifts to other members.
     """
 
-    __version__ = "1.6.1"
+    __version__ = "1.6.2"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -299,16 +299,17 @@ class Marriage(commands.Cog):
         action: str,
         contentment: int,
         price: int,
-        consent_description: typing.Optional[str],
+        consent_description: str,
         consent: bool,
-        *,
         description: str,
     ):
         """Add a custom action.
 
-        Available parameters are `{author}` and `{target}`"""
+        Available parameters are `{author}` and `{target}`
+
+        If you don't want consent_description, use empty quotation marks."""
         if action in await self._get_actions(ctx):
-            return await ctx.send("Uh oh, that's already a registered action.")
+            return await ctx.send("Uh oh, that's already a registerOHed action.")
         conf = await self._get_conf_group(ctx.guild)
         await conf.custom_actions.set_raw(
             action,
@@ -548,6 +549,7 @@ price:: {data.get('price')}""",
     async def spouses(
         self, ctx: commands.Context, member: typing.Optional[discord.Member]
     ):
+        """Display your or someone else's spouses."""
         conf = await self._get_conf_group(ctx.guild)
         if not await conf.toggle():
             return await ctx.send("Marriage is not enabled!")
@@ -576,7 +578,7 @@ price:: {data.get('price')}""",
     async def crush(
         self, ctx: commands.Context, member: typing.Optional[discord.Member]
     ):
-        """Tell us who you have a crush on"""
+        """Tell us who you have a crush on."""
         conf = await self._get_conf_group(ctx.guild)
         if not await conf.toggle():
             return await ctx.send("Marriage is not enabled!")
@@ -786,7 +788,7 @@ price:: {data.get('price')}""",
         action: str,
         member: discord.Member,
     ):
-        """Do something with someone"""
+        """Do something with someone."""
         conf = await self._get_conf_group(ctx.guild)
         m_conf = await self._get_user_conf_group()
         actions = await self._get_actions(ctx)
@@ -875,7 +877,11 @@ price:: {data.get('price')}""",
         spouses = await m_conf(ctx.author).current()
         if member.id not in spouses and await m_conf(ctx.author).married():
             for sid in spouses:
-                spouse = self.bot.get_user(sid)
+                spouse = (
+                    self.bot.get_user(sid)
+                    if await self.config.is_global()
+                    else ctx.guild.get_member(sid)
+                )
                 endtext = await self._maybe_divorce(ctx, spouse, endtext, contentment)
         await ctx.send(endtext)
 
@@ -887,6 +893,7 @@ price:: {data.get('price')}""",
         member: discord.Member,
         item: str,
     ):
+        """Give someone something."""
         conf = await self._get_conf_group(ctx.guild)
         m_conf = await self._get_user_conf_group()
         gifts = await self._get_gifts(ctx)
