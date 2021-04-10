@@ -106,7 +106,7 @@ class Marriage(commands.Cog):
             },
             "dinner": {
                 "contentment": 15,
-                "price": 0,
+                "price": 25,
                 "require_consent": False,
                 "description": ":ramen: {author} took {target} on a fancy dinner",
             },
@@ -300,7 +300,7 @@ class Marriage(commands.Cog):
         contentment: int,
         price: int,
         consent_description: typing.Optional[str],
-        consent: typing.Optional[bool],
+        consent: bool,
         *,
         description: str,
     ):
@@ -948,7 +948,11 @@ price:: {data.get('price')}""",
         spouses = await m_conf(ctx.author).current()
         if member.id not in spouses and await m_conf(ctx.author).married():
             for sid in spouses:
-                spouse = self.bot.get_user(sid)
+                spouse = (
+                    self.bot.get_user(sid)
+                    if await self.config.is_global()
+                    else ctx.guild.get_member(sid)
+                )
                 endtext = await self._maybe_divorce(ctx, spouse, endtext, contentment)
         await ctx.send(endtext)
 
