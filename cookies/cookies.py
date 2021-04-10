@@ -20,7 +20,7 @@ class Cookies(commands.Cog):
     Collect cookies and steal from others.
     """
 
-    __version__ = "1.2.2"
+    __version__ = "1.2.3"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -141,7 +141,7 @@ class Cookies(commands.Cog):
         if await self.config.is_global():
             target_cookies = await self.config.user(target).cookies()
         else:
-            await self.config.member(target).cookies()
+            target_cookies = await self.config.member(target).cookies()
         if target_cookies == 0:
             return await ctx.send(
                 f"Uh oh, {target.display_name} doesn't have any :cookie:"
