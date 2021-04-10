@@ -17,7 +17,6 @@ class AdvancedLock(commands.Cog):
     Use `[p]setlock setup` first.
     """
 
-    __author__ = "saurichable"
     __version__ = "1.1.2"
 
     def __init__(self, bot: Red):
@@ -476,9 +475,7 @@ class AdvancedLock(commands.Cog):
         check_channels = [int(c_id) for c_id in config_channels]
         for ig_id in ignore:
             check_channels.append(ig_id)
-        if any(
-            channel.id not in check_channels for channel in ctx.guild.text_channels
-        ):
+        if any(channel.id not in check_channels for channel in ctx.guild.text_channels):
             missing_list = [
                 channel.mention
                 for channel in ctx.guild.text_channels

@@ -14,7 +14,6 @@ class Lock(commands.Cog):
     Lock `@everyone` from sending messages.
     """
 
-    __author__ = "saurichable"
     __version__ = "1.1.0"
 
     def __init__(self, bot: Red):
@@ -30,9 +29,8 @@ class Lock(commands.Cog):
     @checks.admin()
     async def lockset(self, ctx: commands.Context):
         f"""Various Lock settings.
-        
-        Version: {self.__version__}
-        Author: {self.__author__}"""
+
+        Version: {self.__version__}"""
 
     @lockset.command(name="role")
     async def lockset_role(self, ctx: commands.Context, role: discord.Role):
@@ -134,7 +132,9 @@ class Lock(commands.Cog):
         await ctx.send(":lock: Channel locked. Only Moderators can type.")
 
     @lock.command(name="server")
-    async def lock_server(self, ctx: commands.Context, confirmation: typing.Optional[bool]):
+    async def lock_server(
+        self, ctx: commands.Context, confirmation: typing.Optional[bool]
+    ):
         """ Lock `@everyone` from sending messages in the entire server."""
         if not confirmation:
             return await ctx.send(

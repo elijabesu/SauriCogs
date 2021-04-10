@@ -15,7 +15,6 @@ class Suggestion(commands.Cog):
     Only admins can approve or reject suggestions.
     """
 
-    __author__ = "saurichable"
     __version__ = "1.5.1"
 
     def __init__(self, bot: Red):
@@ -118,10 +117,10 @@ class Suggestion(commands.Cog):
     @commands.guild_only()
     @checks.bot_has_permissions(manage_messages=True)
     async def approve(
-            self,
-            ctx: commands.Context,
-            suggestion_id: int,
-            is_global: typing.Optional[bool],
+        self,
+        ctx: commands.Context,
+        suggestion_id: int,
+        is_global: typing.Optional[bool],
     ):
         """Approve a suggestion."""
         await self._finish_suggestion(ctx, suggestion_id, is_global, True, None)
@@ -131,12 +130,12 @@ class Suggestion(commands.Cog):
     @commands.guild_only()
     @checks.bot_has_permissions(manage_messages=True)
     async def reject(
-            self,
-            ctx: commands.Context,
-            suggestion_id: int,
-            is_global: typing.Optional[bool],
-            *,
-            reason: typing.Optional[str],
+        self,
+        ctx: commands.Context,
+        suggestion_id: int,
+        is_global: typing.Optional[bool],
+        *,
+        reason: typing.Optional[str],
     ):
         """Reject a suggestion. Reason is optional."""
         await self._finish_suggestion(ctx, suggestion_id, is_global, False, reason)
@@ -146,12 +145,12 @@ class Suggestion(commands.Cog):
     @commands.guild_only()
     @checks.bot_has_permissions(manage_messages=True)
     async def addreason(
-            self,
-            ctx: commands.Context,
-            suggestion_id: int,
-            is_global: typing.Optional[bool],
-            *,
-            reason: str,
+        self,
+        ctx: commands.Context,
+        suggestion_id: int,
+        is_global: typing.Optional[bool],
+        *,
+        reason: str,
     ):
         """Add a reason to a rejected suggestion.
 
@@ -164,13 +163,17 @@ class Suggestion(commands.Cog):
         else:
             server = ctx.guild.id
             if not await self.config.guild(ctx.guild).same():
-                channel = ctx.guild.get_channel(await self.config.guild(ctx.guild).reject_id())
+                channel = ctx.guild.get_channel(
+                    await self.config.guild(ctx.guild).reject_id()
+                )
             else:
-                channel = ctx.guild.get_channel(await self.config.guild(ctx.guild).suggest_id())
+                channel = ctx.guild.get_channel(
+                    await self.config.guild(ctx.guild).suggest_id()
+                )
         msg_id = await self.config.custom("SUGGESTION", server, suggestion_id).msg_id()
         if msg_id != 0:
             if not await self.config.custom(
-                    "SUGGESTION", server, suggestion_id
+                "SUGGESTION", server, suggestion_id
             ).rejected():
                 return await ctx.send("This suggestion hasn't been rejected.")
             if await self.config.custom("SUGGESTION", server, suggestion_id).reason():
@@ -190,10 +193,10 @@ class Suggestion(commands.Cog):
     @commands.command()
     @commands.guild_only()
     async def showsuggestion(
-            self,
-            ctx: commands.Context,
-            suggestion_id: int,
-            is_global: typing.Optional[bool],
+        self,
+        ctx: commands.Context,
+        suggestion_id: int,
+        is_global: typing.Optional[bool],
     ):
         """Show a suggestion."""
         content, embed = await self._build_suggestion(
@@ -209,13 +212,12 @@ class Suggestion(commands.Cog):
     @commands.guild_only()
     async def suggestset(self, ctx: commands.Context):
         f"""Various Suggestion settings.
-        
-        Version: {self.__version__}
-        Author: {self.__author__}"""
+
+        Version: {self.__version__}"""
 
     @suggestset.command(name="channel")
     async def suggestset_channel(
-            self, ctx: commands.Context, channel: typing.Optional[discord.TextChannel]
+        self, ctx: commands.Context, channel: typing.Optional[discord.TextChannel]
     ):
         """Set the channel for suggestions.
 
@@ -228,7 +230,7 @@ class Suggestion(commands.Cog):
 
     @suggestset.command(name="approved")
     async def suggestset_approved(
-            self, ctx: commands.Context, channel: typing.Optional[discord.TextChannel]
+        self, ctx: commands.Context, channel: typing.Optional[discord.TextChannel]
     ):
         """Set the channel for suggestions.
 
@@ -241,7 +243,7 @@ class Suggestion(commands.Cog):
 
     @suggestset.command(name="rejected")
     async def suggestset_rejected(
-            self, ctx: commands.Context, channel: typing.Optional[discord.TextChannel]
+        self, ctx: commands.Context, channel: typing.Optional[discord.TextChannel]
     ):
         """Set the channel for suggestions.
 
@@ -264,7 +266,7 @@ class Suggestion(commands.Cog):
 
     @suggestset.command(name="upemoji")
     async def suggestset_upemoji(
-            self, ctx: commands.Context, up_emoji: typing.Optional[discord.Emoji]
+        self, ctx: commands.Context, up_emoji: typing.Optional[discord.Emoji]
     ):
         """Set custom reactions emoji instead of ✅. """
         if not up_emoji:
@@ -279,7 +281,7 @@ class Suggestion(commands.Cog):
 
     @suggestset.command(name="downemoji")
     async def suggestset_downemoji(
-            self, ctx: commands.Context, down_emoji: typing.Optional[discord.Emoji]
+        self, ctx: commands.Context, down_emoji: typing.Optional[discord.Emoji]
     ):
         """Set custom reactions emoji instead of ❎. """
         if not down_emoji:
@@ -293,17 +295,25 @@ class Suggestion(commands.Cog):
         await ctx.tick()
 
     @suggestset.command(name="autodelete")
-    async def suggestset_autodelete(self, ctx: commands.Context, on_off: typing.Optional[bool]):
+    async def suggestset_autodelete(
+        self, ctx: commands.Context, on_off: typing.Optional[bool]
+    ):
         """Toggle whether after `[p]suggest`, the bot deletes the command message. """
         target_state = on_off or not (
             await self.config.guild(ctx.guild).delete_suggest()
         )
 
         await self.config.guild(ctx.guild).delete_suggest.set(target_state)
-        await ctx.send("Auto deletion is now enabled." if target_state else "Auto deletion is now disabled.")
+        await ctx.send(
+            "Auto deletion is now enabled."
+            if target_state
+            else "Auto deletion is now disabled."
+        )
 
     @suggestset.command(name="delete")
-    async def suggestset_delete(self, ctx: commands.Context, on_off: typing.Optional[bool]):
+    async def suggestset_delete(
+        self, ctx: commands.Context, on_off: typing.Optional[bool]
+    ):
         """Toggle whether suggestions in the original suggestion channel get deleted after being approved/rejected."""
         target_state = on_off or not (
             await self.config.guild(ctx.guild).delete_suggestion()
@@ -364,14 +374,16 @@ class Suggestion(commands.Cog):
     @checks.is_owner()
     @commands.guild_only()
     async def globalset(self, ctx: commands.Context):
-        ("""Global suggestions settings.
+        (
+            """Global suggestions settings.
 
         There is nothing like approved or rejected channels because global suggestions are meant to be for the bot"""
-         """only and will only work if it is sent in a server where normal suggestions are disabled.""")
+            """only and will only work if it is sent in a server where normal suggestions are disabled."""
+        )
 
     @globalset.command(name="toggle")
     async def suggestset_globalset_toggle(
-            self, ctx: commands.Context, on_off: typing.Optional[bool]
+        self, ctx: commands.Context, on_off: typing.Optional[bool]
     ):
         """Toggle global suggestions.
         If `on_off` is not provided, the state will be flipped."""
@@ -384,10 +396,10 @@ class Suggestion(commands.Cog):
 
     @globalset.command(name="channel")
     async def suggestset_globalset_channel(
-            self,
-            ctx: commands.Context,
-            server: typing.Optional[discord.Guild],
-            channel: typing.Optional[discord.TextChannel],
+        self,
+        ctx: commands.Context,
+        server: typing.Optional[discord.Guild],
+        channel: typing.Optional[discord.TextChannel],
     ):
         """Add channel where global suggestions should be sent."""
         if not server:
@@ -400,7 +412,7 @@ class Suggestion(commands.Cog):
 
     @globalset.command(name="ignore")
     async def suggestset_globalset_ignore(
-            self, ctx: commands.Context, server: typing.Optional[discord.Guild]
+        self, ctx: commands.Context, server: typing.Optional[discord.Guild]
     ):
         """Ignore suggestions from the server. """
         if not server:
@@ -414,7 +426,7 @@ class Suggestion(commands.Cog):
 
     @globalset.command(name="unignore")
     async def suggestset_globalset_unignore(
-            self, ctx: commands.Context, server: typing.Optional[discord.Guild]
+        self, ctx: commands.Context, server: typing.Optional[discord.Guild]
     ):
         """Remove server from the ignored list. """
         if not server:
@@ -480,7 +492,7 @@ class Suggestion(commands.Cog):
                     await message_reaction.remove(user)
 
     async def _build_suggestion(
-            self, ctx, author_id, server_id, suggestion_id, is_global
+        self, ctx, author_id, server_id, suggestion_id, is_global
     ):
         if is_global:
             if not await self.config.toggle():
@@ -489,35 +501,31 @@ class Suggestion(commands.Cog):
                 return await ctx.send("Uh oh, you're not my owner.")
             server = 1
             if (
-                    await self.config.custom(
-                        "SUGGESTION", server, suggestion_id
-                    ).msg_id()
-                    != 0
+                await self.config.custom("SUGGESTION", server, suggestion_id).msg_id()
+                != 0
             ):
                 content = f"Global suggestion #{suggestion_id}"
             else:
-                return await ctx.send(
-                    "Uh oh, that suggestion doesn't seem to exist."
-                )
+                return await ctx.send("Uh oh, that suggestion doesn't seem to exist.")
         if not is_global:
             server = server_id
             if (
-                await self.config.custom(
-                    "SUGGESTION", server, suggestion_id
-                ).msg_id()
+                await self.config.custom("SUGGESTION", server, suggestion_id).msg_id()
                 == 0
             ):
                 return await ctx.send("Uh oh, that suggestion doesn't seem to exist.")
             else:
                 content = f"Suggestion #{suggestion_id}"
         op_info = await self.config.custom("SUGGESTION", server, suggestion_id).author()
-        op, op_name, op_discriminator, op_id, op_avatar = await self._get_op_info(ctx, op_info)
+        op, op_name, op_discriminator, op_id, op_avatar = await self._get_op_info(
+            ctx, op_info
+        )
         if await self.config.custom("SUGGESTION", server, suggestion_id).finished():
             if await self.config.custom("SUGGESTION", server, suggestion_id).approved():
                 atext = f"Approved suggestion by {op_name}"
             else:
                 if await self.config.custom(
-                        "SUGGESTION", server, suggestion_id
+                    "SUGGESTION", server, suggestion_id
                 ).rejected():
                     atext = f"Rejected suggestion by {op_name}"
         else:
@@ -550,7 +558,7 @@ class Suggestion(commands.Cog):
             if reaction.emoji == up_emoji:
                 up_count = reaction.count - 1  # minus the bot
             if reaction.emoji == down_emoji:
-                down_count = reaction.count - 1 # minus the bot
+                down_count = reaction.count - 1  # minus the bot
 
         return f"{up_count}x {up_emoji}\n{down_count}x {down_emoji}"
 
@@ -601,17 +609,21 @@ class Suggestion(commands.Cog):
                 return
         else:
             server = ctx.guild.id
-            old_channel = ctx.guild.get_channel(await self.config.guild(ctx.guild).suggest_id())
+            old_channel = ctx.guild.get_channel(
+                await self.config.guild(ctx.guild).suggest_id()
+            )
             if approve:
-                channel = ctx.guild.get_channel(await self.config.guild(ctx.guild).approve_id())
+                channel = ctx.guild.get_channel(
+                    await self.config.guild(ctx.guild).approve_id()
+                )
             else:
-                channel = ctx.guild.get_channel(await self.config.guild(ctx.guild).reject_id())
+                channel = ctx.guild.get_channel(
+                    await self.config.guild(ctx.guild).reject_id()
+                )
         msg_id = await self.config.custom("SUGGESTION", server, suggestion_id).msg_id()
         if (
             msg_id != 0
-            and await self.config.custom(
-                "SUGGESTION", server, suggestion_id
-            ).finished()
+            and await self.config.custom("SUGGESTION", server, suggestion_id).finished()
         ):
             return await ctx.send("This suggestion has been finished already.")
         try:
@@ -624,7 +636,9 @@ class Suggestion(commands.Cog):
         content = old_msg.content
 
         op_info = await self.config.custom("SUGGESTION", server, suggestion_id).author()
-        op, op_name, op_discriminator, op_id, op_avatar = await self._get_op_info(ctx, op_info)
+        op, op_name, op_discriminator, op_id, op_avatar = await self._get_op_info(
+            ctx, op_info
+        )
 
         approved = "Approved" if approve else "Rejected"
 
@@ -667,4 +681,6 @@ class Suggestion(commands.Cog):
         await self.config.custom("SUGGESTION", server, suggestion_id).approved.set(True)
         await ctx.tick()
 
-        await self._contact_op(op, f"Your suggestion has been {approved.lower()}!", embed)
+        await self._contact_op(
+            op, f"Your suggestion has been {approved.lower()}!", embed
+        )

@@ -20,7 +20,6 @@ class Cookies(commands.Cog):
     Collect cookies.
     """
 
-    __author__ = "saurichable"
     __version__ = "1.2.2"
 
     def __init__(self, bot: Red):
@@ -335,8 +334,7 @@ class Cookies(commands.Cog):
     async def cookieset(self, ctx):
         f"""Various Cookies settings.
 
-        Version: {self.__version__}
-        Author: {self.__author__}"""
+        Version: {self.__version__}"""
 
     @cookieset.command(name="gg")
     async def cookieset_gg(

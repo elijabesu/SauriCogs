@@ -9,7 +9,6 @@ from redbot.core.utils.chat_formatting import humanize_list
 class UniqueName(commands.Cog):
     """Deny members' names to be the same as your Moderators'."""
 
-    __author__ = "saurichable"
     __version__ = "1.4.0"
 
     def __init__(self, bot):
@@ -29,9 +28,8 @@ class UniqueName(commands.Cog):
     @checks.bot_has_permissions(manage_nicknames=True)
     async def uniquenameset(self, ctx: commands.Context):
         f"""Various Unique Name settings.
-        
-        Version: {self.__version__}
-        Author: {self.__author__}"""
+
+        Version: {self.__version__}"""
 
     @uniquenameset.command(name="role")
     async def unset_role(self, ctx: commands.Context, role: discord.Role):

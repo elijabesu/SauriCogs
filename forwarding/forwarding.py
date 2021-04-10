@@ -8,10 +8,8 @@ from redbot.core import Config, commands, checks
 
 
 class Forwarding(commands.Cog):
-    """Forward messages to the bot owner, incl. pictures (max one per message).
-    You can also DM someone as the bot with `[p]pm <user_ID> <message>`."""
+    """Forward messages to the bot owner, incl. pictures (max one per message)."""
 
-    __author__ = "saurichable"
     __version__ = "2.4.0"
 
     def __init__(self, bot):
@@ -106,9 +104,8 @@ class Forwarding(commands.Cog):
     @commands.guild_only()
     async def forwardset(self, ctx: commands.Context):
         f"""Various Forwarding settings.
-        
-        Version: {self.__version__}
-        Author: {self.__author__}"""
+
+        Version: {self.__version__}"""
 
     @forwardset.command(name="channel")
     async def forwardset_channel(
@@ -126,7 +123,10 @@ class Forwarding(commands.Cog):
 
     @forwardset.command(name="ping")
     async def forwardset_ping(
-        self, ctx: commands.Context, *, ping: typing.Union[discord.Role, discord.Member, None]
+        self,
+        ctx: commands.Context,
+        *,
+        ping: typing.Union[discord.Role, discord.Member, None],
     ):
         """Set a role or a member to be pinged for forwarding."""
         if ping:
@@ -134,8 +134,10 @@ class Forwarding(commands.Cog):
                 await self.config.ping_role_id.set(ping.id)
             else:
                 await self.config.ping_user_id(ping.id)
-            await ctx.send(f"I will ping {ping.name}.\n"
-            f"Remember to `{ctx.clean_prefix}forwardset channel`")
+            await ctx.send(
+                f"I will ping {ping.name}.\n"
+                f"Remember to `{ctx.clean_prefix}forwardset channel`"
+            )
         else:
             await self.config.ping_role_id.clear()
             await self.config.ping_user_id.clear()

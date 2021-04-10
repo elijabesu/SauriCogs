@@ -18,7 +18,6 @@ class Marriage(commands.Cog):
     Marriage cog with some extra stuff.
     """
 
-    __author__ = "saurichable"
     __version__ = "1.6.0"
 
     def __init__(self, bot: Red):
@@ -38,7 +37,7 @@ class Marriage(commands.Cog):
             "contentment": 100,
             "gifts": {
                 # "gift": owned pcs
-            }
+            },
         }
 
         self.config.register_guild(
@@ -120,9 +119,8 @@ class Marriage(commands.Cog):
     @checks.admin()
     async def marryset(self, ctx: commands.Context):
         f"""Various Marriage settings.
-        
-        Version: {self.__version__}
-        Author: {self.__author__}"""
+
+        Version: {self.__version__}"""
 
     @marryset.command(name="gg")
     async def marryset_gg(
@@ -156,9 +154,7 @@ class Marriage(commands.Cog):
         conf = await self._get_conf_group(ctx.guild)
         target_state = on_off or not (await conf.toggle())
         await conf.toggle.set(target_state)
-        await ctx.send(
-            f"Marriage is now {'enabled' if target_state else 'disabled'}."
-        )
+        await ctx.send(f"Marriage is now {'enabled' if target_state else 'disabled'}.")
 
     @checks.is_owner()
     @marryset.command(name="currency")
@@ -182,9 +178,7 @@ class Marriage(commands.Cog):
         """Enable/disable whether members can be married to multiple people at once."""
         conf = await self._get_conf_group(ctx.guild)
         await conf.multi.set(state)
-        await ctx.send(
-            f"Members {'can' if state else 'cannot'} marry multiple people."
-        )
+        await ctx.send(f"Members {'can' if state else 'cannot'} marry multiple people.")
 
     @marryset.command(name="marprice")
     async def marryset_marprice(self, ctx: commands.Context, price: int):
@@ -332,9 +326,7 @@ class Marriage(commands.Cog):
             return await ctx.send("Uh oh, that's not a registered action.")
 
         conf = await self._get_conf_group(ctx.guild)
-        data = await conf.custom_actions.get_raw(
-            action, default=None
-        )
+        data = await conf.custom_actions.get_raw(action, default=None)
         if not data:
             data = self._DEFAULT_ACTIONS.get(action)
         if not data:
@@ -398,9 +390,7 @@ description:: {data.get('description')}""",
             return await ctx.send("Uh oh, that's not a registered gift.")
 
         conf = await self._get_conf_group(ctx.guild)
-        data = await conf.custom_gifts.get_raw(
-            gift, default=None
-        )
+        data = await conf.custom_gifts.get_raw(gift, default=None)
         if not data:
             data = self._DEFAULT_GIFTS.get(gift)
         if not data:
@@ -631,16 +621,16 @@ price:: {data.get('price')}""",
         if await conf.currency() == 0:
             currency = await bank.get_currency_name(ctx.guild)
             end_amount = f"{amount} {currency}"
-            if not await bank.can_spend(
-                ctx.author, amount
-            ) or not await bank.can_spend(member, amount):
+            if not await bank.can_spend(ctx.author, amount) or not await bank.can_spend(
+                member, amount
+            ):
                 return await ctx.send(f"Uh oh, you two cannot afford this...")
             await bank.withdraw_credits(ctx.author, amount)
             await bank.withdraw_credits(member, amount)
         else:
             end_amount = f"{amount} :cookie:"
             if not await self._can_spend_cookies(
-                    ctx.author, amount
+                ctx.author, amount
             ) or not await self._can_spend_cookies(member, amount):
                 return await ctx.send(f"Uh oh, you two cannot afford this...")
             await self._withdraw_cookies(ctx.author, amount)
@@ -722,7 +712,7 @@ price:: {data.get('price')}""",
                 else:
                     end_amount = f"You both paid {amount} :cookie:"
                     if not await self._can_spend_cookies(
-                            ctx.author, amount
+                        ctx.author, amount
                     ) or not await self._can_spend_cookies(member, amount):
                         return await ctx.send(
                             f"Uh oh, you two cannot afford this... But you can force a court by "
@@ -869,9 +859,7 @@ price:: {data.get('price')}""",
         if member.id not in spouses and await m_conf(ctx.author).married():
             for sid in spouses:
                 spouse = self.bot.get_user(sid)
-                endtext = await self._maybe_divorce(
-                    ctx, spouse, endtext, contentment
-                )
+                endtext = await self._maybe_divorce(ctx, spouse, endtext, contentment)
         await ctx.send(endtext)
 
     @commands.guild_only()
@@ -944,9 +932,7 @@ price:: {data.get('price')}""",
         if member.id not in spouses and await m_conf(ctx.author).married():
             for sid in spouses:
                 spouse = self.bot.get_user(sid)
-                endtext = await self._maybe_divorce(
-                    ctx, spouse, endtext, contentment
-                )
+                endtext = await self._maybe_divorce(ctx, spouse, endtext, contentment)
         await ctx.send(endtext)
 
     async def _get_actions(self, ctx):
@@ -1047,10 +1033,16 @@ price:: {data.get('price')}""",
         return endtext
 
     async def _get_conf_group(self, guild):
-        return self.config if await self.config.is_global() else self.config.guild(guild)
+        return (
+            self.config if await self.config.is_global() else self.config.guild(guild)
+        )
 
     async def _get_user_conf(self, user):
-        return self.config.user(user) if await self.config.is_global() else self.config.member(user)
+        return (
+            self.config.user(user)
+            if await self.config.is_global()
+            else self.config.member(user)
+        )
 
     async def _get_user_conf_group(self):
         return self.config.user if await self.config.is_global() else self.config.member

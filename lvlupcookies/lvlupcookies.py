@@ -20,7 +20,6 @@ class LevelUpCookies(commands.Cog):
     Note that you ***need*** Fixator10-Cogs' Leveler and SauriCogs' Cookies cogs installed, loaded and working.
     """
 
-    __author__ = "saurichable"
     __version__ = "1.0.0"
 
     def __init__(self, bot: Red):
@@ -35,12 +34,13 @@ class LevelUpCookies(commands.Cog):
     @commands.group(autohelp=True, aliases=["lvlupcookies"])
     async def lvlupcookiesset(self, ctx: commands.Context):
         f"""Various Level Up Cookies settings.
-        
-        Version: {self.__version__}
-        Author: {self.__author__}"""
+
+        Version: {self.__version__}"""
 
     @lvlupcookiesset.command(name="add")
-    async def lvlupcookiesset_add(self, ctx: commands.Context, level: int, cookies: int):
+    async def lvlupcookiesset_add(
+        self, ctx: commands.Context, level: int, cookies: int
+    ):
         """Set a cookie reward for leveling up!"""
         await self.config.guild(ctx.guild).rewards.set_raw(
             level, value={"cookies": cookies}

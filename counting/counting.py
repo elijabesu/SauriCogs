@@ -15,7 +15,6 @@ class Counting(commands.Cog):
     Counting channel!
     """
 
-    __author__ = "saurichable"
     __version__ = "1.4.0"
 
     def __init__(self, bot: Red):
@@ -41,9 +40,8 @@ class Counting(commands.Cog):
     @commands.guild_only()
     async def countset(self, ctx: commands.Context):
         f"""Various Counting settings.
-        
-        Version: {self.__version__}
-        Author: {self.__author__}"""
+
+        Version: {self.__version__}"""
 
     @countset.command(name="channel")
     async def countset_channel(
@@ -116,7 +114,9 @@ class Counting(commands.Cog):
             await ctx.send("Counting has been reset.")
 
     @countset.command(name="role")
-    async def countset_role(self, ctx: commands.Context, role: typing.Optional[discord.Role]):
+    async def countset_role(
+        self, ctx: commands.Context, role: typing.Optional[discord.Role]
+    ):
         """Add a whitelisted role."""
         if not role:
             await self.config.guild(ctx.guild).whitelist.clear()
@@ -127,7 +127,10 @@ class Counting(commands.Cog):
 
     @countset.command(name="warnmsg")
     async def countset_warnmsg(
-        self, ctx: commands.Context, on_off: typing.Optional[bool], seconds: typing.Optional[int]
+        self,
+        ctx: commands.Context,
+        on_off: typing.Optional[bool],
+        seconds: typing.Optional[int],
     ):
         """Toggle a warning message.
 
@@ -148,7 +151,9 @@ class Counting(commands.Cog):
             await ctx.send("Warning messages are now disabled.")
 
     @countset.command(name="topic")
-    async def countset_topic(self, ctx: commands.Context, on_off: typing.Optional[bool]):
+    async def countset_topic(
+        self, ctx: commands.Context, on_off: typing.Optional[bool]
+    ):
         """Toggle counting channel's topic changing.
 
         If `on_off` is not provided, the state will be flipped.="""

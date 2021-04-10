@@ -12,7 +12,6 @@ class Pingable(commands.Cog):
     Make unpingable roles pingable by regular users with commands.
     """
 
-    __author__ = "saurichable"
     __version__ = "1.1.0"
 
     def __init__(self, bot: Red):
@@ -29,9 +28,8 @@ class Pingable(commands.Cog):
     @checks.bot_has_permissions(manage_roles=True)
     async def pingableset(self, ctx: commands.Context):
         f"""Various Pingable settings.
-        
-        Version: {self.__version__}
-        Author: {self.__author__}"""
+
+        Version: {self.__version__}"""
 
     @pingableset.command(name="ping")
     async def pingableset_ping(self, ctx: commands.Context, *, role: discord.Role):

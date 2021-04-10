@@ -10,7 +10,6 @@ class Mentionable(commands.Cog):
     Makes unmentionable roles mentionable.
     """
 
-    __author__ = "saurichable"
     __version__ = "1.0.0"
 
     def __init__(self, bot: Red):

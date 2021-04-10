@@ -6,13 +6,10 @@ from redbot.core import checks, commands, Config
 
 from redbot.core.bot import Red
 
-__author__ = "saurichable"
-
 
 class UserLog(commands.Cog):
     """Log when users join/leave into your specified channel."""
 
-    __author__ = "saurichable"
     __version__ = "1.1.0"
 
     def __init__(self, bot: Red):
@@ -28,9 +25,8 @@ class UserLog(commands.Cog):
     @checks.admin()
     async def userlogset(self, ctx: commands.Context):
         f"""Various User Log settings.
-        
-        Version: {self.__version__}
-        Author: {self.__author__}"""
+
+        Version: {self.__version__}"""
 
     @userlogset.command(name="channel")
     async def user_channel_log(
@@ -58,7 +54,9 @@ class UserLog(commands.Cog):
             await ctx.send("Logging users joining is now disabled.")
 
     @userlogset.command(name="leave")
-    async def user_leave_log(self, ctx: commands.Context, on_off: typing.Optional[bool]):
+    async def user_leave_log(
+        self, ctx: commands.Context, on_off: typing.Optional[bool]
+    ):
         """Toggle logging when users leave the current server.
 
         If `on_off` is not provided, the state will be flipped."""

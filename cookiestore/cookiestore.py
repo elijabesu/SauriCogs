@@ -16,7 +16,6 @@ class CookieStore(commands.Cog):
     Store add-on for SauriCogs' Cookies cog.
     """
 
-    __author__ = "saurichable"
     __version__ = "1.1.0"
 
     def __init__(self, bot: Red):
@@ -39,9 +38,8 @@ class CookieStore(commands.Cog):
     @commands.guild_only()
     async def cookiestoreset(self, ctx):
         f"""Various Cookie Store settings.
-        
-        Version: {self.__version__}
-        Author: {self.__author__}"""
+
+        Version: {self.__version__}"""
 
     @cookiestoreset.command(name="gg")
     async def cookiestoreset_gg(
@@ -63,10 +61,14 @@ class CookieStore(commands.Cog):
         await self.config.clear_all_guilds()
         await self.config.clear_all_globals()
         await self.config.is_global.set(make_global)
-        await ctx.send(f"Cookie store is now {'global' if make_global else 'per-guild'}.")
+        await ctx.send(
+            f"Cookie store is now {'global' if make_global else 'per-guild'}."
+        )
 
     @cookiestoreset.command(name="toggle")
-    async def cookiestoreset_toggle(self, ctx: commands.Context, on_off: typing.Optional[bool]):
+    async def cookiestoreset_toggle(
+        self, ctx: commands.Context, on_off: typing.Optional[bool]
+    ):
         """Toggle store for current server.
 
         If `on_off` is not provided, the state will be flipped."""
@@ -209,19 +211,13 @@ class CookieStore(commands.Cog):
         games = await conf.games.get_raw()
 
         if item in items:
-            await conf.items.set_raw(
-                item, "quantity", value=quantity
-            )
+            await conf.items.set_raw(item, "quantity", value=quantity)
             await ctx.tick()
         elif item in roles:
-            await conf.roles.set_raw(
-                item, "quantity", value=quantity
-            )
+            await conf.roles.set_raw(item, "quantity", value=quantity)
             await ctx.tick()
         elif item in games:
-            await conf.games.set_raw(
-                item, "quantity", value=quantity
-            )
+            await conf.games.set_raw(item, "quantity", value=quantity)
             await ctx.tick()
         else:
             await ctx.send("This item isn't in the store. Please, add it first.")
@@ -310,7 +306,9 @@ class CookieStore(commands.Cog):
         embed.add_field(name="Global:", value=str(is_global))
         embed.add_field(name="Enabled*:", value=str(data["enabled"]))
         embed.add_field(name="Ping*:", value=ping)
-        embed.add_field(name="Items:", value=f"`{ctx.clean_prefix}shop` to see all available items.")
+        embed.add_field(
+            name="Items:", value=f"`{ctx.clean_prefix}shop` to see all available items."
+        )
 
         await ctx.send(embed=embed)
 
@@ -381,9 +379,7 @@ class CookieStore(commands.Cog):
                         "redeemed": True,
                     },
                 )
-                await conf.roles.set_raw(
-                    item, "quantity", value=quantity
-                )
+                await conf.roles.set_raw(item, "quantity", value=quantity)
                 await ctx.send(f"You have bought {item}.")
             else:
                 await ctx.send("Uh oh, can't find the role.")
@@ -403,9 +399,7 @@ class CookieStore(commands.Cog):
             await self.bot.get_cog("Cookies").config.member(ctx.author).cookies.set(
                 cookies
             )
-            await conf.items.set_raw(
-                item, "quantity", value=quantity
-            )
+            await conf.items.set_raw(item, "quantity", value=quantity)
             if redeemable:
                 await self.config.member(ctx.author).inventory.set_raw(
                     item,
@@ -448,9 +442,7 @@ class CookieStore(commands.Cog):
             await self.bot.get_cog("Cookies").config.member(ctx.author).cookies.set(
                 cookies
             )
-            await conf.games.set_raw(
-                item, "quantity", value=quantity
-            )
+            await conf.games.set_raw(item, "quantity", value=quantity)
             if redeemable:
                 await self.config.member(ctx.author).inventory.set_raw(
                     item,
@@ -657,7 +649,9 @@ class CookieStore(commands.Cog):
         return (one <= 0 or two <= 0) if two else (one <= 0)
 
     async def _get_conf_group(self, guild):
-        return self.config if await self.config.is_global() else self.config.guild(guild)
+        return (
+            self.config if await self.config.is_global() else self.config.guild(guild)
+        )
 
     async def _get_user_conf(self, is_global, user):
         return self.config.user(user) if is_global else self.config.member(user)

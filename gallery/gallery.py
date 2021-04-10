@@ -14,7 +14,6 @@ class Gallery(commands.Cog):
     Gallery channels!
     """
 
-    __author__ = "saurichable"
     __version__ = "1.3.1"
 
     def __init__(self, bot: Red):
@@ -32,8 +31,7 @@ class Gallery(commands.Cog):
     async def galleryset(self, ctx: commands.Context):
         f"""Various Gallery settings.
 
-        Version: {self.__version__}
-        Author: {self.__author__}"""
+        Version: {self.__version__}"""
 
     @galleryset.command(name="add")
     async def galleryset_add(self, ctx: commands.Context, channel: discord.TextChannel):
@@ -64,7 +62,9 @@ class Gallery(commands.Cog):
             await ctx.send(f"{channel.mention} isn't in the Gallery channels list.")
 
     @galleryset.command(name="role")
-    async def galleryset_role(self, ctx: commands.Context, role: typing.Optional[discord.Role]):
+    async def galleryset_role(
+        self, ctx: commands.Context, role: typing.Optional[discord.Role]
+    ):
         """Add or remove a whitelisted role."""
         if not role:
             await self.config.guild(ctx.guild).whitelist.clear()

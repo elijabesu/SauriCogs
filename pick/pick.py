@@ -8,7 +8,6 @@ from redbot.core import checks, commands
 class Pick(commands.Cog):
     """Pick a random user or a user with a specified role."""
 
-    __author__ = "saurichable"
     __version__ = "1.2.0"
 
     def __init__(self, bot):
