@@ -28,14 +28,16 @@ class Gallery(commands.Cog):
         # nothing to delete
         return
 
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        context = super().format_help_for_context(ctx)
+        return f"{context}\n\nVersion: {self.__version__}"
+
     @commands.group(autohelp=True)
     @commands.guild_only()
     @checks.admin()
     @checks.bot_has_permissions(manage_messages=True)
     async def galleryset(self, ctx: commands.Context):
-        f"""Various Gallery settings.
-
-        Version: {self.__version__}"""
+        """Various Gallery settings."""
 
     @galleryset.command(name="add")
     async def galleryset_add(self, ctx: commands.Context, channel: discord.TextChannel):

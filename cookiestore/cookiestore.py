@@ -38,13 +38,15 @@ class CookieStore(commands.Cog):
         for guild in self.bot.guilds:
             await self.config.member_from_ids(guild.id, user_id).clear()
 
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        context = super().format_help_for_context(ctx)
+        return f"{context}\n\nVersion: {self.__version__}"
+
     @commands.group(autohelp=True, aliases=["cookiestore", "storeset"])
     @checks.admin()
     @commands.guild_only()
     async def cookiestoreset(self, ctx):
-        f"""Various Cookie Store settings.
-
-        Version: {self.__version__}"""
+        """Various Cookie Store settings."""
 
     @cookiestoreset.command(name="gg")
     async def cookiestoreset_gg(

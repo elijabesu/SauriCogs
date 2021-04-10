@@ -24,13 +24,15 @@ class UserLog(commands.Cog):
         # nothing to delete
         return
 
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        context = super().format_help_for_context(ctx)
+        return f"{context}\n\nVersion: {self.__version__}"
+
     @commands.group(autohelp=True, aliases=["userlog"])
     @commands.guild_only()
     @checks.admin()
     async def userlogset(self, ctx: commands.Context):
-        f"""Various User Log settings.
-
-        Version: {self.__version__}"""
+        """Various User Log settings."""
 
     @userlogset.command(name="channel")
     async def user_channel_log(

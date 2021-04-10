@@ -19,6 +19,10 @@ class Mentionable(commands.Cog):
         # nothing to delete
         return
 
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        context = super().format_help_for_context(ctx)
+        return f"{context}\n\nVersion: {self.__version__}"
+
     @checks.admin()
     @commands.command()
     @commands.guild_only()

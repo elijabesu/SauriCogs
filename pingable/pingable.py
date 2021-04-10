@@ -26,14 +26,16 @@ class Pingable(commands.Cog):
         # nothing to delete
         return
 
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        context = super().format_help_for_context(ctx)
+        return f"{context}\n\nVersion: {self.__version__}"
+
     @commands.group(autohelp=True)
     @checks.admin()
     @commands.guild_only()
     @checks.bot_has_permissions(manage_roles=True)
     async def pingableset(self, ctx: commands.Context):
-        f"""Various Pingable settings.
-
-        Version: {self.__version__}"""
+        """Various Pingable settings."""
 
     @pingableset.command(name="ping")
     async def pingableset_ping(self, ctx: commands.Context, *, role: discord.Role):

@@ -62,6 +62,10 @@ class Suggestion(commands.Cog):
                 if user_id in author_info:
                     await self.config.custom("SUGGESTION", guild.id, suggestion_id).author.clear()
 
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        context = super().format_help_for_context(ctx)
+        return f"{context}\n\nVersion: {self.__version__}"
+
     @commands.command()
     @commands.guild_only()
     @checks.bot_has_permissions(add_reactions=True)
@@ -224,9 +228,7 @@ class Suggestion(commands.Cog):
     @commands.group(autohelp=True, aliases=["suggestion"])
     @commands.guild_only()
     async def suggestset(self, ctx: commands.Context):
-        f"""Various Suggestion settings.
-
-        Version: {self.__version__}"""
+        """Various Suggestion settings."""
 
     @suggestset.command(name="channel")
     async def suggestset_channel(

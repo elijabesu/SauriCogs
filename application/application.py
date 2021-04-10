@@ -46,6 +46,10 @@ class Application(commands.Cog):
         # nothing to delete
         return
 
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        context = super().format_help_for_context(ctx)
+        return f"{context}\n\nVersion: {self.__version__}"
+
     @commands.max_concurrency(1, commands.BucketType.member, wait=True)
     @commands.command()
     @commands.guild_only()
@@ -145,9 +149,7 @@ class Application(commands.Cog):
     @commands.guild_only()
     @checks.bot_has_permissions(manage_channels=True, manage_roles=True)
     async def applyset(self, ctx: commands.Context):
-        f"""Various Application settings.
-
-        Version: {self.__version__}"""
+        """Various Application settings."""
 
     @applyset.command(name="questions")
     async def applyset_questions(self, ctx: commands.Context):

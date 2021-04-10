@@ -31,13 +31,15 @@ class EconomyRaffle(commands.Cog):
         # nothing to delete
         return
 
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        context = super().format_help_for_context(ctx)
+        return f"{context}\n\nVersion: {self.__version__}"
+
     @commands.group(autohelp=True, aliases=["erset"])
     @commands.guild_only()
     @checks.admin()
     async def economyraffleset(self, ctx: commands.Context):
-        f"""Various Economy Raffle settings.
-
-        Version: {self.__version__}"""
+        """Various Economy Raffle settings."""
 
     @economyraffleset.command(name="role")
     async def economyraffleset_role(

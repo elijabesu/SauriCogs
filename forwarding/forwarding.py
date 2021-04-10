@@ -26,6 +26,10 @@ class Forwarding(commands.Cog):
             if user_id == await self.config.guild(guild).ping_user_id():
                 await self.config.guild(guild).ping_user_id.clear()
 
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        context = super().format_help_for_context(ctx)
+        return f"{context}\n\nVersion: {self.__version__}"
+
     async def _send_to(self, embed):
         guild = self.bot.get_guild(await self.config.guild_id())
         if not guild:
@@ -108,9 +112,7 @@ class Forwarding(commands.Cog):
     @checks.is_owner()
     @commands.guild_only()
     async def forwardset(self, ctx: commands.Context):
-        f"""Various Forwarding settings.
-
-        Version: {self.__version__}"""
+        """Various Forwarding settings."""
 
     @forwardset.command(name="channel")
     async def forwardset_channel(

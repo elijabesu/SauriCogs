@@ -28,13 +28,15 @@ class Lock(commands.Cog):
         # nothing to delete
         return
 
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        context = super().format_help_for_context(ctx)
+        return f"{context}\n\nVersion: {self.__version__}"
+
     @commands.group(autohelp=True)
     @commands.guild_only()
     @checks.admin()
     async def lockset(self, ctx: commands.Context):
-        f"""Various Lock settings.
-
-        Version: {self.__version__}"""
+        """Various Lock settings."""
 
     @lockset.command(name="role")
     async def lockset_role(self, ctx: commands.Context, role: discord.Role):

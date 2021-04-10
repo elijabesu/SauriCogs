@@ -57,6 +57,10 @@ class Cookies(commands.Cog):
         for guild in self.bot.guilds:
             await self.config.member_from_ids(guild.id, user_id).clear()
 
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        context = super().format_help_for_context(ctx)
+        return f"{context}\n\nVersion: {self.__version__}"
+
     @commands.command()
     @commands.guild_only()
     async def cookie(self, ctx: commands.Context):
@@ -337,9 +341,7 @@ class Cookies(commands.Cog):
     @checks.admin()
     @commands.guild_only()
     async def cookieset(self, ctx):
-        f"""Various Cookies settings.
-
-        Version: {self.__version__}"""
+        """Various Cookies settings."""
 
     @cookieset.command(name="gg")
     async def cookieset_gg(

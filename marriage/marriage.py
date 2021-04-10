@@ -86,6 +86,10 @@ class Marriage(commands.Cog):
                         await self.config.member(member).married.set(False)
                     await self.config.member(member).spouses.set(member_spouses)
 
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        context = super().format_help_for_context(ctx)
+        return f"{context}\n\nVersion: {self.__version__}"
+
     @property
     def _DEFAULT_ACTIONS(self):
         return {
@@ -134,9 +138,7 @@ class Marriage(commands.Cog):
     @commands.guild_only()
     @checks.admin()
     async def marryset(self, ctx: commands.Context):
-        f"""Various Marriage settings.
-
-        Version: {self.__version__}"""
+        """Various Marriage settings."""
 
     @marryset.command(name="gg")
     async def marryset_gg(

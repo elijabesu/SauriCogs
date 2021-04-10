@@ -33,13 +33,15 @@ class LevelUpCookies(commands.Cog):
         # nothing to delete
         return
 
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        context = super().format_help_for_context(ctx)
+        return f"{context}\n\nVersion: {self.__version__}"
+
     @checks.admin()
     @commands.guild_only()
     @commands.group(autohelp=True, aliases=["lvlupcookies"])
     async def lvlupcookiesset(self, ctx: commands.Context):
-        f"""Various Level Up Cookies settings.
-
-        Version: {self.__version__}"""
+        """Various Level Up Cookies settings."""
 
     @lvlupcookiesset.command(name="add")
     async def lvlupcookiesset_add(
