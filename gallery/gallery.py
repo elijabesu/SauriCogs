@@ -1,11 +1,12 @@
 import asyncio
-import discord
+import datetime
 import re
 import typing
 
+import discord
 from redbot.core import Config, checks, commands
-
 from redbot.core.bot import Red
+from redbot.core.utils.chat_formatting import humanize_list
 
 
 class Gallery(commands.Cog):
@@ -14,7 +15,7 @@ class Gallery(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.3.0"
+    __version__ = "1.3.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -30,7 +31,7 @@ class Gallery(commands.Cog):
     @checks.bot_has_permissions(manage_messages=True)
     async def galleryset(self, ctx: commands.Context):
         f"""Various Gallery settings.
-        
+
         Version: {self.__version__}
         Author: {self.__author__}"""
 
@@ -67,7 +68,7 @@ class Gallery(commands.Cog):
         """Add or remove a whitelisted role."""
         if not role:
             await self.config.guild(ctx.guild).whitelist.clear()
-            await ctx.send(f"Whitelisted role has been deleted.")
+            await ctx.send("Whitelisted role has been deleted.")
         else:
             await self.config.guild(ctx.guild).whitelist.set(role.id)
             await ctx.send(f"{role.name} has been whitelisted.")
