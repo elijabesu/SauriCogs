@@ -21,7 +21,7 @@ class Cookies(commands.Cog):
     """
 
     __author__ = "saurichable"
-    __version__ = "1.2.1"
+    __version__ = "1.2.2"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -90,7 +90,9 @@ class Cookies(commands.Cog):
             next_cookie = cur_time + await conf.cooldown()
             await um_conf.next_cookie.set(next_cookie)
             await self.deposit_cookies(ctx.author, amount)
-            await ctx.send(f"Here {'is' if amount == 1 else 'are'} your {amount} :cookie:")
+            await ctx.send(
+                f"Here {'is' if amount == 1 else 'are'} your {amount} :cookie:"
+            )
         else:
             dtime = self.display_time(next_cookie - cur_time)
             await ctx.send(f"Uh oh, you have to wait {dtime}.")
@@ -139,43 +141,44 @@ class Cookies(commands.Cog):
 
         await um_conf.next_steal.set(cur_time + await conf.stealcd())
 
-        success_chance = random.randint(1, 100)
-        if success_chance > 90:
+        if random.randint(1, 100) > 90:
             cookies_stolen = int(target_cookies * 0.5)
             if cookies_stolen == 0:
                 cookies_stolen = 1
             stolen = random.randint(1, cookies_stolen)
-            author_cookies += stolen
-            if self._max_balance_check(author_cookies):
+            if self._max_balance_check(author_cookies + stolen):
                 return await ctx.send(
                     "Uh oh, you have reached the maximum amount of cookies that you can put in your jar. :frowning:\n"
                     f"You didn't steal any :cookie: from {target.display_name}."
                 )
-            target_cookies -= stolen
-            await ctx.send(f"You stole {stolen} :cookie: from {target.display_name}!")
-        else:
-            cookies_penalty = int(author_cookies * 0.25)
-            if cookies_penalty == 0:
-                cookies_penalty = 1
-            if cookies_penalty <= 0:
-                return await ctx.send(
-                    f"Uh oh, you got caught while trying to steal {target.display_name}'s :cookie:\n"
-                    f"You don't have any cookies, so you haven't lost any."
-                )
-            penalty = random.randint(1, cookies_penalty)
-            if author_cookies < penalty:
-                penalty = author_cookies
-            if self._max_balance_check(target_cookies + penalty):
-                return await ctx.send(
-                    f"Uh oh, you got caught while trying to steal {target.display_name}'s :cookie:\n"
-                    f"{target.display_name} has reached the maximum amount of cookies, "
-                    "so you haven't lost any."
-                )
-            await ctx.send(
-                f"You got caught while trying to steal {target.display_name}'s :cookie:\nYour penalty is {penalty} :cookie: which they got!"
+            await self.deposit_cookies(ctx.author, stolen)
+            await self.withdraw_cookies(target, stolen)
+            return await ctx.send(
+                f"You stole {stolen} :cookie: from {target.display_name}!"
+            )
+
+        cookies_penalty = int(author_cookies * 0.25)
+        if cookies_penalty == 0:
+            cookies_penalty = 1
+        if cookies_penalty <= 0:
+            return await ctx.send(
+                f"Uh oh, you got caught while trying to steal {target.display_name}'s :cookie:\n"
+                f"You don't have any cookies, so you haven't lost any."
+            )
+        penalty = random.randint(1, cookies_penalty)
+        if author_cookies < penalty:
+            penalty = author_cookies
+        if self._max_balance_check(target_cookies + penalty):
+            return await ctx.send(
+                f"Uh oh, you got caught while trying to steal {target.display_name}'s :cookie:\n"
+                f"{target.display_name} has reached the maximum amount of cookies, "
+                "so you haven't lost any."
             )
         await self.deposit_cookies(target, penalty)
         await self.withdraw_cookies(ctx.author, penalty)
+        await ctx.send(
+            f"You got caught while trying to steal {target.display_name}'s :cookie:\nYour penalty is {penalty} :cookie: which they got!"
+        )
 
     @commands.command()
     @commands.guild_only()
@@ -331,7 +334,7 @@ class Cookies(commands.Cog):
     @commands.guild_only()
     async def cookieset(self, ctx):
         f"""Various Cookies settings.
-        
+
         Version: {self.__version__}
         Author: {self.__author__}"""
 
@@ -694,5 +697,9 @@ class Cookies(commands.Cog):
             await self.config.member(user).cookies.set(cookies)
 
     async def get_cookies(self, user):
-        conf = self.config.user(user) if await self.config.is_global() else self.config.member(user)
+        conf = (
+            self.config.user(user)
+            if await self.config.is_global()
+            else self.config.member(user)
+        )
         return await conf.cookies()
