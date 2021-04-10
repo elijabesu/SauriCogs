@@ -1,9 +1,9 @@
 {
     "author" : ["saurichable", "bobloy"],
-    "install_msg" : "Thank you for installing my cog!",
+    "install_msg" : "Thank you for installing Mentionable!",
     "name" : "Mentionable",
     "short" : "Makes unmentionable roles mentionable.",
-    "description" : "Just a very simple cog that makes unmentionable roles mentionable.",
+    "description" : "Very simple way to make unmentionable roles mentionable.",
     "tags" : ["mentionable"],
     "end_user_data_statement": "This cog does not store any user data."
 }

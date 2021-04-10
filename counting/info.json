@@ -1,9 +1,9 @@
 {
     "author" : ["saurichable"],
-    "install_msg" : "Thank you for installing my cog!",
+    "install_msg" : "Thank you for installing Counting!",
     "name" : "Counting",
-    "short" : "Counting channel",
-    "description" : "Make a counting channel",
+    "short" : "Counting channel.",
+    "description" : "Make a counting channel with goals.",
     "tags" : ["counting", "count"],
     "end_user_data_statement": "This cog stores user IDs if they are the last one to count."
 }

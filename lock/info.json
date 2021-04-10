@@ -1,9 +1,9 @@
 {
     "author" : ["saurichable"],
-    "install_msg" : "Thank you for installing my cog! You have to do `[p]locksetup` first.",
+    "install_msg" : "Thank you for installing Lock!",
     "name" : "Lock",
     "short" : "Lock `@everyone` from sending messages.",
-    "description" : "Lock `@everyone` from sending messages except Mods.",
+    "description" : "Lock `@everyone` from sending messages in channels or the entire guild, and only allow Moderators to talk.",
     "tags" : ["lockdown", "lock"],
     "end_user_data_statement": "This cog does not store any user data."
 }

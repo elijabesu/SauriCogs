@@ -1,9 +1,9 @@
 	{
     "author" : ["saurichable"],
-    "install_msg" : "Thank you for installing my cog!",
+    "install_msg" : "Thank you for installing Marriage!",
     "name" : "Marriage",
-    "short" : "Marriage cog with some extra shit.",
-    "description" : "Marriage cog with some extra shit.",
+    "short" : "Marry, divorce, and give gifts to other members.",
+    "description" : "Marry, divorce, and give gifts to other members.",
     "tags" : ["marriage", "marry", "waifu"],
     "end_user_data_statement": "This cog stores user IDs upon marrying and divorcing."
 }

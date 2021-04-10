@@ -10,7 +10,7 @@ from redbot.core.bot import Red
 
 class EconomyRaffle(commands.Cog):
     """
-    Simple economy raffle cog.
+    Simple cog that gives a pre-specified amount of credits to a randomly picked user.
     """
 
     __version__ = "1.1.0"

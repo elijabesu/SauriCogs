@@ -7,7 +7,7 @@ from redbot.core.bot import Red
 
 class Mentionable(commands.Cog):
     """
-    Makes unmentionable roles mentionable.
+    Very simple way to make unmentionable roles mentionable.
     """
 
     __version__ = "1.0.0"

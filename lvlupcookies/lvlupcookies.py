@@ -16,8 +16,6 @@ db = client["leveler"]
 class LevelUpCookies(commands.Cog):
     """
     Set cookie rewards for users that level up!
-
-    Note that you ***need*** Fixator10-Cogs' Leveler and SauriCogs' Cookies cogs installed, loaded and working.
     """
 
     __version__ = "1.0.0"
@@ -39,12 +37,12 @@ class LevelUpCookies(commands.Cog):
 
     @checks.admin()
     @commands.guild_only()
-    @commands.group(autohelp=True, aliases=["lvlupcookies"])
-    async def lvlupcookiesset(self, ctx: commands.Context):
+    @commands.group(autohelp=True, aliases=["levelupcookies"])
+    async def levelupcookiesset(self, ctx: commands.Context):
         """Various Level Up Cookies settings."""
 
-    @lvlupcookiesset.command(name="add")
-    async def lvlupcookiesset_add(
+    @levelupcookiesset.command(name="add")
+    async def levelupcookiesset_add(
         self, ctx: commands.Context, level: int, cookies: int
     ):
         """Set a cookie reward for leveling up!"""
@@ -53,14 +51,14 @@ class LevelUpCookies(commands.Cog):
         )
         await ctx.send(f"Gaining {level} will now give {cookies} :cookie:")
 
-    @lvlupcookiesset.command(name="del")
-    async def lvlupcookiesset_del(self, ctx: commands.Context, level: int):
+    @levelupcookiesset.command(name="del")
+    async def levelupcookiesset_del(self, ctx: commands.Context, level: int):
         """Delete cookies for level."""
         await self.config.guild(ctx.guild).rewards.clear_raw(level)
         await ctx.send(f"Gaining {level} will now not give any :cookie:")
 
-    @lvlupcookiesset.command(name="show")
-    async def lvlupcookiesset_show(self, ctx: commands.Context):
+    @levelupcookiesset.command(name="show")
+    async def levelupcookiesset_show(self, ctx: commands.Context):
         """Show how many cookies a level gives."""
         lst = []
         for level in await self.config.guild(ctx.guild).rewards.get_raw():

@@ -8,7 +8,9 @@ from redbot.core import Config, commands, checks
 
 
 class Forwarding(commands.Cog):
-    """Forward messages to the bot owner, incl. pictures (max one per message)."""
+    """
+    Forward all DMs sent to the bot to the bot owner (or a specified channel), including messages with attachments.
+    """
 
     __version__ = "2.4.0"
 

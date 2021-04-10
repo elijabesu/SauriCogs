@@ -1,9 +1,9 @@
 {
     "author" : ["saurichable"],
-    "install_msg" : "Thank you for installing my cog!",
+    "install_msg" : "Thank you for installing Application!",
     "name" : "Application",
-    "short" : "Simple application cog.",
-    "description" : "Just a simple application cog with a Staff Applicant role.",
+    "short" : "Applications with custom questions.",
+    "description" : "Receive and moderate staff applications with customizable questions.",
     "tags" : ["application", "app"],
     "end_user_data_statement": "This cog does not store any end user data."
 }

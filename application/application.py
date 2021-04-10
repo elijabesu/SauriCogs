@@ -12,7 +12,7 @@ from redbot.core.bot import Red
 
 class Application(commands.Cog):
     """
-    Simple application cog.
+    Receive and moderate staff applications with customizable questions.
     """
 
     __version__ = "1.3.1"

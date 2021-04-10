@@ -7,7 +7,9 @@ from redbot.core.utils.chat_formatting import humanize_list
 
 
 class UniqueName(commands.Cog):
-    """Deny members' names to be the same as your Moderators'."""
+    """
+    Deny members' names to be the same as your Moderators'.
+    """
 
     __version__ = "1.4.0"
 

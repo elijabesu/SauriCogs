@@ -13,8 +13,8 @@ from redbot.core.bot import Red
 
 class AdvancedLock(commands.Cog):
     """
-    Lock `@everyone` from sending messages.
-    Use `[p]setlock setup` first.
+    Lock `@everyone` from sending messages in channels or the entire guild, and only allow Moderators to talk.
+    This version has some advanced settings.
     """
 
     __version__ = "1.1.2"

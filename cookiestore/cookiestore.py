@@ -13,7 +13,7 @@ from redbot.core.bot import Red
 
 class CookieStore(commands.Cog):
     """
-    Store add-on for SauriCogs' Cookies cog.
+    Additional store with redeemable items to my Cookies cog.
     """
 
     __version__ = "1.1.0"

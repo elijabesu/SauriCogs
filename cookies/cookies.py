@@ -17,7 +17,7 @@ _MAX_BALANCE = 2 ** 63 - 1
 
 class Cookies(commands.Cog):
     """
-    Collect cookies.
+    Collect cookies and steal from others.
     """
 
     __version__ = "1.2.2"

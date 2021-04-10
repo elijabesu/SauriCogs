@@ -8,7 +8,9 @@ from redbot.core.bot import Red
 
 
 class UserLog(commands.Cog):
-    """Log when users join/leave into your specified channel."""
+    """
+    Log when users join/leave into a specified channel.
+    """
 
     __version__ = "1.1.0"
 

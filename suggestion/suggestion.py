@@ -10,9 +10,7 @@ from redbot.core.bot import Red
 
 class Suggestion(commands.Cog):
     """
-    Simple suggestion box, basically.
-
-    Only admins can approve or reject suggestions.
+    Per guild, as well as global, suggestion box voting system.
     """
 
     __version__ = "1.5.1"

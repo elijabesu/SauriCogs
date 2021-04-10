@@ -1,9 +1,9 @@
 {
     "author" : ["saurichable"],
-    "install_msg" : "Thank you for installing my cog! Only admins can approve or reject suggestions.",
+    "install_msg" : "Thank you for installing Suggestion!",
     "name" : "Suggestion",
     "short" : "Simple suggestion box.",
-    "description" : "Just a simple suggestion box with voting system.",
+    "description" : "Per guild, as well as global, suggestion box voting system.",
     "tags" : ["suggestion"],
     "end_user_data_statement": "This cog stores user names, discriminators, and IDs upon sending a suggestion. This data is used solely to display and contact the user about any change to their suggestion."
 }

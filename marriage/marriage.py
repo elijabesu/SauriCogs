@@ -10,12 +10,10 @@ from redbot.core.utils.predicates import MessagePredicate
 
 from redbot.core.bot import Red
 
-__author__ = "saurichable"
-
 
 class Marriage(commands.Cog):
     """
-    Marriage cog with some extra stuff.
+    Marry, divorce, and give gifts to other members.
     """
 
     __version__ = "1.6.0"

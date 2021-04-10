@@ -1,6 +1,6 @@
 {
     "author" : ["saurichable"],
-    "install_msg" : "Thank you for installing my cog!",
+    "install_msg" : "Thank you for installing Pingable!",
     "name" : "Pingable",
     "short" : "Make unpingable roles pingable by regular users.",
     "description" : "Make unpingable roles pingable by regular users with commands.",

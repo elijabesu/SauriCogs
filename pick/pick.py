@@ -6,7 +6,7 @@ from redbot.core import checks, commands
 
 
 class Pick(commands.Cog):
-    """Pick a random user or a user with a specified role."""
+    """Pick a random user, or a user with a specified role."""
 
     __version__ = "1.2.0"
 

@@ -11,7 +11,7 @@ from redbot.core.utils.chat_formatting import humanize_list
 
 class Gallery(commands.Cog):
     """
-    Gallery channels!
+    Set channels as galleries, deleting all messages that don't contain any attachments.
     """
 
     __version__ = "1.3.1"

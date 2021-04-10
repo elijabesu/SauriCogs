@@ -1,6 +1,6 @@
 {
     "author" : ["saurichable"],
-    "install_msg" : "Thank you for installing my cog!",
+    "install_msg" : "Thank you for installing UniqueName!",
     "name" : "UniqueName",
     "short" : "Deny members' names to be the same as your Moderators'.",
     "description" : "Deny members' names to be the same as your Moderators'.",

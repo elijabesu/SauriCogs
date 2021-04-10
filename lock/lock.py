@@ -1,4 +1,3 @@
-import asyncio
 import discord
 import datetime
 import typing
@@ -11,7 +10,7 @@ from redbot.core.bot import Red
 
 class Lock(commands.Cog):
     """
-    Lock `@everyone` from sending messages.
+    Lock `@everyone` from sending messages in channels or the entire guild, and only allow Moderators to talk.
     """
 
     __version__ = "1.1.0"
