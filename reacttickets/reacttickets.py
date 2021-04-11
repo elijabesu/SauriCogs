@@ -14,7 +14,7 @@ class ReactTickets(commands.Cog):
     Reaction based assignable support tickets with custom cases (reasons).
     """
 
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -96,7 +96,7 @@ class ReactTickets(commands.Cog):
         manage_permissions=True,
     )
     async def ticketset(self, ctx: commands.Context):
-        """Various Verification settings."""
+        """Various ReactTickets settings."""
 
     @ticketset.command(name="channel")
     async def ticketset_channel(
@@ -243,7 +243,7 @@ class ReactTickets(commands.Cog):
 
     @ticketset.command(name="stop")
     async def ticketset_stop(self, ctx: commands.Context):
-        """Stop the verification."""
+        """Stop the support system."""
         data = await self.config.guild(ctx.guild).all()
 
         channel = ctx.guild.get_channel(data["request_channel"])
