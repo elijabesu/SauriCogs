@@ -14,7 +14,7 @@ class ReactTickets(commands.Cog):
     Reaction based assignable support tickets with custom cases (reasons).
     """
 
-    __version__ = "1.0.1"
+    __version__ = "1.0.2"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -457,7 +457,7 @@ class ReactTickets(commands.Cog):
             )
             embed.set_thumbnail(url=user.avatar_url)
             manager_msg = await guild.get_channel(settings["channel"]).send(
-                content=f"Channel: {user_channel.mention}",
+                content=f"User: {user.mention}\nChannel: {user_channel.mention}",
                 embed=embed,
             )
             embed.set_footer(text=f"Message ID: {manager_msg.id}")
@@ -481,22 +481,31 @@ class ReactTickets(commands.Cog):
         settings: dict,
     ):
         index = settings["active_channels"].index(channel.id)
-        target = await guild.fetch_member(settings["active_users"][index])
+        target_id = settings["active_users"][index]
+        target = await guild.fetch_member(target_id)
         manager_msg = await guild.get_channel(settings["channel"]).fetch_message(
             settings["active_msgs"][index]
         )
 
+        if not target:
+            await channel.send("User has left the guild. Close this ticket, please.")
+
         if emoji == "🔒":
-            await self._edit_manager_msg(
-                manager_msg, "Closed", True, f"by {user.mention}"
-            )
+            if not target:
+                await self._edit_manager_msg(
+                    manager_msg, "Closed", True, f"(user has left) by {user.mention}"
+                )
+            else:
+                await self._edit_manager_msg(
+                    manager_msg, "Closed", True, f"by {user.mention}"
+                )
 
             async with self.config.guild(guild).closed() as closed:
                 closed.append(channel.id)
             async with self.config.guild(guild).active_channels() as active_channels:
                 active_channels.remove(channel.id)
             async with self.config.guild(guild).active_users() as active_users:
-                active_users.remove(target.id)
+                active_users.remove(target_id)
             async with self.config.guild(guild).active_msgs() as active_msgs:
                 active_msgs.remove(manager_msg.id)
 
@@ -518,7 +527,7 @@ class ReactTickets(commands.Cog):
                 },
                 reason="Closed support ticket",
             )
-        elif emoji == "✋" and user.id != settings["active_users"]:
+        elif emoji == "✋" and user.id not in settings["active_users"]:
             if channel.name != f"open-{user.id}":
                 return
             await channel.edit(name=f"assigned-{target.id}", reason="Ticket assigned")
