@@ -14,7 +14,7 @@ class ReactTickets(commands.Cog):
     Reaction based assignable support tickets with custom cases (reasons).
     """
 
-    __version__ = "1.0.2"
+    __version__ = "1.0.3"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -482,7 +482,10 @@ class ReactTickets(commands.Cog):
     ):
         index = settings["active_channels"].index(channel.id)
         target_id = settings["active_users"][index]
-        target = await guild.fetch_member(target_id)
+        try:
+            target = await guild.fetch_member(target_id)
+        except discord.NotFound:
+            target = None
         manager_msg = await guild.get_channel(settings["channel"]).fetch_message(
             settings["active_msgs"][index]
         )
