@@ -14,7 +14,7 @@ class ReactTickets(commands.Cog):
     Reaction based assignable support tickets with custom cases (reasons).
     """
 
-    __version__ = "1.0.3"
+    __version__ = "1.0.4"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -531,7 +531,7 @@ class ReactTickets(commands.Cog):
                 reason="Closed support ticket",
             )
         elif emoji == "✋" and user.id not in settings["active_users"]:
-            if channel.name != f"open-{user.id}":
+            if channel.name != f"open-{target.id}":
                 return
             await channel.edit(name=f"assigned-{target.id}", reason="Ticket assigned")
             await self._edit_manager_msg(
