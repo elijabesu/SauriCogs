@@ -15,7 +15,7 @@ class Application(commands.Cog):
     Receive and moderate staff applications with customizable questions.
     """
 
-    __version__ = "1.3.1"
+    __version__ = "1.3.2"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -61,13 +61,16 @@ class Application(commands.Cog):
                 "Uh oh, the configuration is not correct. Ask the Admins to set it."
             )
 
+        role_add = None
+        channel = None
+
         if await self.config.guild(ctx.guild).applicant_id():
             try:
                 role_add = ctx.guild.get_role(
                     await self.config.guild(ctx.guild).applicant_id()
                 )
             except TypeError:
-                role_add = None
+                pass
             if not role_add:
                 role_add = get(ctx.guild.roles, name="Staff Applicant")
                 if not role_add:
@@ -79,21 +82,14 @@ class Application(commands.Cog):
                 await self.config.guild(ctx.guild).channel_id()
             )
         except TypeError:
-            channel = None
+            pass
         if not channel:
             channel = get(ctx.guild.text_channels, name="applications")
             if not channel:
                 return await ctx.send(
                     "Uh oh, the configuration is not correct. Ask the Admins to set it."
                 )
-        if not role_add:
-            return await ctx.send(
-                "Uh oh. Looks like your Admins haven't added the required role."
-            )
-        if not channel:
-            return await ctx.send(
-                "Uh oh. Looks like your Admins haven't added the required channel."
-            )
+
         try:
             await ctx.author.send("Let's start right away!")
         except discord.Forbidden:
@@ -139,7 +135,8 @@ class Application(commands.Cog):
 
         await channel.send(embed=embed)
 
-        await ctx.author.add_roles(role_add)
+        if role_add:
+            await ctx.author.add_roles(role_add)
         await ctx.author.send(
             "Your application has been sent to the Admins, thank you!"
         )
