@@ -14,7 +14,7 @@ class ReactTickets(commands.Cog):
     Reaction based assignable support tickets with custom cases (reasons).
     """
 
-    __version__ = "1.0.4"
+    __version__ = "1.0.5"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -50,7 +50,7 @@ class ReactTickets(commands.Cog):
                 channel = guild.get_channel(active_channels[i])
                 if not channel:
                     continue
-                if user_id in channel.name:
+                if str(user_id) in channel.name:
                     await channel.delete()
                     active_indexes.append(i)
             if len(active_indexes) > 0:
