@@ -20,7 +20,7 @@ class Cookies(commands.Cog):
     Collect cookies and steal from others.
     """
 
-    __version__ = "1.2.3"
+    __version__ = "1.2.4"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -674,6 +674,11 @@ class Cookies(commands.Cog):
     def _max_balance_check(value: int):
         if value > _MAX_BALANCE:
             return True
+
+    async def get_balance(self, user):
+        if await self.config.is_global():
+            return await self.config.user(user).cookies()
+        return await self.config.member(user).cookies()
 
     async def can_spend(self, user, amount):
         if await self.config.is_global():
