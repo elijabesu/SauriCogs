@@ -17,7 +17,7 @@ class AdvancedLock(commands.Cog):
     This version has some advanced settings.
     """
 
-    __version__ = "1.1.2"
+    __version__ = "1.1.3"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -811,12 +811,11 @@ class AdvancedLock(commands.Cog):
 
     async def _get_roles_from_content(self, ctx, content):
         content_list = content.split(",")
-        try:
-            role_list = [
-                discord.utils.get(ctx.guild.roles, name=role.strip(" ")).id
-                for role in content_list
-            ]
-        except Exception:
-            return None
-        else:
-            return role_list
+        role_list = []
+        for r in content_list:
+            try:
+                role = ctx.guild.get_role(int(r))
+            except ValueError:
+                role = discord.utils.get(ctx.guild.roles, name=r.strip(" "))
+            role_list.append(role.id)
+        return None if len(role_list) == 0 else role_list
