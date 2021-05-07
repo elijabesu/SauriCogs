@@ -16,7 +16,7 @@ class Marriage(commands.Cog):
     Marry, divorce, and give gifts to other members.
     """
 
-    __version__ = "1.6.2"
+    __version__ = "1.6.3"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -1030,7 +1030,10 @@ price:: {data.get('price')}""",
     async def _maybe_divorce(self, ctx, spouse, endtext, contentment):
         conf = await self._get_conf_group(ctx.guild)
         m_conf = await self._get_user_conf_group()
-        s_temp = await m_conf(spouse).contentment()
+        try:
+            s_temp = await m_conf(spouse).contentment()
+        except AttributeError:
+            return endtext
         new_s_temp = 0 if s_temp < contentment else s_temp - contentment
         await m_conf(spouse).contentment.set(new_s_temp)
         if new_s_temp <= 0:
