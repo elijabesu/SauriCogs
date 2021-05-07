@@ -13,7 +13,7 @@ class Suggestion(commands.Cog):
     Per guild, as well as global, suggestion box voting system.
     """
 
-    __version__ = "1.5.1"
+    __version__ = "1.6.0"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -91,6 +91,8 @@ class Suggestion(commands.Cog):
         embed.set_footer(
             text=f"Suggested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})"
         )
+        if ctx.message.attachments:
+            embed.set_image(url=ctx.message.attachments[0].url)
 
         if not suggest_id:
             if await self.config.toggle():
