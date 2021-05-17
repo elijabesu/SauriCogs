@@ -617,9 +617,9 @@ price:: {data.get('price')}""",
         try:
             await self.bot.wait_for("message", timeout=120, check=pred)
         except asyncio.TimeoutError:
-            return await ctx.send("Oh no... I was looking forward to the cerenomy...")
+            return await ctx.send("Oh no... I was looking forward to the ceremony...")
         if not pred.result:
-            return await ctx.send("Oh no... I was looking forward to the cerenomy...")
+            return await ctx.send("Oh no... I was looking forward to the ceremony...")
         default_amount = await conf.marprice()
         author_marcount = await m_conf(ctx.author).marcount()
         target_marcount = await m_conf(member).marcount()
