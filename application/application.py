@@ -15,7 +15,7 @@ class Application(commands.Cog):
     Receive and moderate staff applications with customizable questions.
     """
 
-    __version__ = "1.3.2"
+    __version__ = "1.3.3"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -295,11 +295,11 @@ class Application(commands.Cog):
         if (
             not accepter
             and not ctx.author.guild_permissions.administrator
-            or accepter
-            and accepter not in ctx.author.roles
+            or (accepter and accepter not in ctx.author.roles)
         ):
             return await ctx.send("Uh oh, you cannot use this command.")
-        role = MessagePredicate.valid_role(ctx)
+
+        applicant = None
         if await self.config.guild(ctx.guild).applicant_id():
             try:
                 applicant = ctx.guild.get_role(
@@ -313,13 +313,13 @@ class Application(commands.Cog):
                 return await ctx.send(
                     "Uh oh, the configuration is not correct. Ask the Admins to set it."
                 )
-            if applicant in target.roles:
-                await target.remove_roles(applicant)
-            else:
+            if applicant not in target.roles:
                 return await ctx.send(
                     f"Uh oh. Looks like {target.mention} hasn't applied for anything."
                 )
+
         await ctx.send(f"What role do you want to accept {target.name} as?")
+        role = MessagePredicate.valid_role(ctx)
         try:
             await self.bot.wait_for("message", timeout=30, check=role)
         except asyncio.TimeoutError:
@@ -331,6 +331,8 @@ class Application(commands.Cog):
             return await ctx.send(
                 "Uh oh, I cannot give them the role. It might be above all of my roles."
             )
+        if applicant:
+            await target.remove_roles(applicant)
         await ctx.send(f"Accepted {target.mention} as {role_add}.")
         await target.send(f"You have been accepted as {role_add} in {ctx.guild.name}.")
 
@@ -352,13 +354,14 @@ class Application(commands.Cog):
             )
         except TypeError:
             accepter = None
-        if not accepter:
-            if not ctx.author.guild_permissions.administrator:
-                return await ctx.send("Uh oh, you cannot use this command.")
-        else:
-            if accepter not in ctx.author.roles:
-                return await ctx.send("Uh oh, you cannot use this command.")
+        if (
+            not accepter
+            and not ctx.author.guild_permissions.administrator
+            or (accepter and accepter not in ctx.author.roles)
+        ):
+            return await ctx.send("Uh oh, you cannot use this command.")
 
+        applicant = None
         if await self.config.guild(ctx.guild).applicant_id():
             try:
                 applicant = ctx.guild.get_role(
@@ -372,9 +375,7 @@ class Application(commands.Cog):
                     return await ctx.send(
                         "Uh oh, the configuration is not correct. Ask the Admins to set it."
                     )
-            if applicant in target.roles:
-                await target.remove_roles(applicant)
-            else:
+            if applicant not in target.roles:
                 return await ctx.send(
                     f"Uh oh. Looks like {target.mention} hasn't applied for anything."
                 )
@@ -400,6 +401,8 @@ class Application(commands.Cog):
             )
         else:
             await target.send(f"Your application in {ctx.guild.name} has been denied.")
+        if applicant:
+            await target.remove_roles(applicant)
         await ctx.send(f"Denied {target.mention}'s application.")
 
     async def _default_questions_list(self):
