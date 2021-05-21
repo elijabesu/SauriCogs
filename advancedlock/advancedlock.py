@@ -17,7 +17,7 @@ class AdvancedLock(commands.Cog):
     This version has some advanced settings.
     """
 
-    __version__ = "1.1.3"
+    __version__ = "1.1.4"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -212,9 +212,12 @@ class AdvancedLock(commands.Cog):
         special = await self.config.guild(ctx.guild).special()
         if not special:
             return await ctx.send("Your initial setup is incorrect.")
-        is_already_channel = await self.config.guild(ctx.guild).channels.get_raw(
-            channel.id
-        )
+        try:
+            is_already_channel = await self.config.guild(ctx.guild).channels.get_raw(
+                channel.id
+            )
+        except KeyError:
+            is_already_channel = False
         if not is_already_channel:
             return await ctx.send("That channel has no extra permissions already.")
         if is_already_channel:
@@ -232,9 +235,12 @@ class AdvancedLock(commands.Cog):
             return await ctx.send(
                 f"You have to do `{ctx.clean_prefix}setlock setup` first!"
             )
-        is_already_channel = await self.config.guild(ctx.guild).channels.get_raw(
-            new_channel.id
-        )
+        try:
+            is_already_channel = await self.config.guild(ctx.guild).channels.get_raw(
+                new_channel.id
+            )
+        except KeyError:
+            is_already_channel = False
         if not is_already_channel:
             if new_channel.id not in await self.config.guild(ctx.guild).ignore():
                 async with self.config.guild(ctx.guild).ignore() as ignore:
@@ -261,9 +267,12 @@ class AdvancedLock(commands.Cog):
             return await ctx.send(
                 f"You have to do `{ctx.clean_prefix}setlock setup` first!"
             )
-        is_already_channel = await self.config.guild(ctx.guild).channels.get_raw(
-            new_channel.id
-        )
+        try:
+            is_already_channel = await self.config.guild(ctx.guild).channels.get_raw(
+                new_channel.id
+            )
+        except KeyError:
+            is_already_channel = False
         if not is_already_channel:
             is_ignored = await self.config.guild(ctx.guild).ignore(new_channel.id)
             if not is_ignored:
@@ -394,9 +403,12 @@ class AdvancedLock(commands.Cog):
             return await ctx.send(
                 f"You have to do `{ctx.clean_prefix}setlock setup` first!"
             )
-        is_already_channel = await self.config.guild(ctx.guild).channels.get_raw(
-            channel.id
-        )
+        try:
+            is_already_channel = await self.config.guild(ctx.guild).channels.get_raw(
+                channel.id
+            )
+        except KeyError:
+            is_already_channel = False
         if not is_already_channel:
             return await ctx.send("That channel has no extra permissions.")
         if is_already_channel:
