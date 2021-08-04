@@ -33,24 +33,25 @@ class Forwarding(commands.Cog):
         return f"{context}\n\nVersion: {self.__version__}"
 
     async def _send_to(self, embed):
-        guild = self.bot.get_guild(await self.config.guild_id())
+        settings = await self.config.all()
+        guild = self.bot.get_guild(settings["guild_id"])
         if not guild:
             return await self._send_to_owners(embed)
-        channel = guild.get_channel(await self.config.channel_id())
+        channel = guild.get_channel(settings["channel_id"])
         if not channel:
             return await self._send_to_owners(embed)
-        ping_role = guild.get_role(await self.config.ping_role_id())
-        ping_user = guild.get_member(await self.config.ping_user_id())
+        ping_role = guild.get_role(settings["ping_role_id"])
+        ping_user = guild.get_member(settings["ping_user_id"])
         if not ping_role:
             if not ping_user:
                 return await channel.send(embed=embed)
-            return await channel.send(content=f"{ping_user.mention}", embed=embed)
+            return await channel.send(content=ping_user.mention, embed=embed)
         if not ping_role.mentionable:
             await ping_role.edit(mentionable=True)
-            await channel.send(content=f"{ping_role.mention}", embed=embed)
+            await channel.send(content=ping_role.mention, embed=embed)
             await ping_role.edit(mentionable=False)
         else:
-            await channel.send(content=f"{ping_role.mention}", embed=embed)
+            await channel.send(content=ping_role.mention, embed=embed)
 
     async def _send_to_owners(self, embed):
         for owner_id in self.bot.owner_ids:
@@ -102,13 +103,17 @@ class Forwarding(commands.Cog):
         await ctx.send(f"Sent message to {destination}.")
 
     @checks.is_owner()
-    @commands.command()
+    @commands.command(name="self")
     @commands.guild_only()
     @checks.bot_has_permissions(add_reactions=True)
-    async def self(self, ctx: commands.Context, *, message: str):
+    async def _self(self, ctx: commands.Context, *, message: str):
         """Send yourself a DM. Owner command only."""
-        await ctx.author.send(message)
-        await ctx.tick()
+        try:
+            await ctx.author.send(message)
+        except discord.HTTPException:
+            await ctx.send("I can't DM you.")
+        else:
+            await ctx.tick()
 
     @commands.group(autohelp=True, aliases=["forwarding"])
     @checks.is_owner()
@@ -142,7 +147,7 @@ class Forwarding(commands.Cog):
             if isinstance(ping, discord.Role):
                 await self.config.ping_role_id.set(ping.id)
             else:
-                await self.config.ping_user_id(ping.id)
+                await self.config.ping_user_id.set(ping.id)
             await ctx.send(
                 f"I will ping {ping.name}.\n"
                 f"Remember to `{ctx.clean_prefix}forwardset channel`"
