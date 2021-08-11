@@ -13,7 +13,7 @@ class Suggestion(commands.Cog):
     Per guild, as well as global, suggestion box voting system.
     """
 
-    __version__ = "1.6.1"
+    __version__ = "1.6.2"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -494,6 +494,8 @@ class Suggestion(commands.Cog):
     async def on_reaction_add(self, reaction, user):
         message = reaction.message
         if user.id == self.bot.user.id:
+            return
+        if not message.guild:
             return
         # server suggestions
         if message.channel.id == await self.config.guild(message.guild).suggest_id():
