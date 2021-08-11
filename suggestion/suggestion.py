@@ -74,7 +74,7 @@ class Suggestion(commands.Cog):
     @commands.guild_only()
     @checks.bot_has_permissions(add_reactions=True)
     async def suggest(self, ctx: commands.Context, *, suggestion: str):
-        """Suggest something. Message is required."""
+        """Suggest something."""
         suggest_id = await self.config.guild(ctx.guild).suggest_id()
         if not suggest_id:
             if not await self.config.toggle():
@@ -253,7 +253,7 @@ class Suggestion(commands.Cog):
     async def suggestset_approved(
         self, ctx: commands.Context, channel: typing.Optional[discord.TextChannel]
     ):
-        """Set the channel for suggestions.
+        """Set the channel for approved suggestions.
 
         If the channel is not provided, approved suggestions will not be reposted."""
         if channel:
@@ -266,7 +266,7 @@ class Suggestion(commands.Cog):
     async def suggestset_rejected(
         self, ctx: commands.Context, channel: typing.Optional[discord.TextChannel]
     ):
-        """Set the channel for suggestions.
+        """Set the channel for rejected suggestions.
 
         If the channel is not provided, rejected suggestions will not be reposted."""
         if channel:
@@ -407,6 +407,7 @@ class Suggestion(commands.Cog):
         self, ctx: commands.Context, on_off: typing.Optional[bool]
     ):
         """Toggle global suggestions.
+
         If `on_off` is not provided, the state will be flipped."""
         target_state = on_off or not (await self.config.toggle())
         await self.config.toggle.set(target_state)
