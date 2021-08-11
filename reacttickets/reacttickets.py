@@ -14,7 +14,7 @@ class ReactTickets(commands.Cog):
     Reaction based assignable support tickets with custom cases (reasons).
     """
 
-    __version__ = "1.0.5"
+    __version__ = "1.0.6"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -421,6 +421,7 @@ class ReactTickets(commands.Cog):
                     send_messages=True,
                     embed_links=True,
                     attach_files=True,
+                    read_message_history=True,
                 ),
                 guild.get_role(settings["role"]): discord.PermissionOverwrite(
                     read_messages=True,
@@ -428,6 +429,7 @@ class ReactTickets(commands.Cog):
                     embed_links=True,
                     attach_files=True,
                     manage_messages=True,
+                    read_message_history=True,
                 ),
             }
             user_channel = await guild.create_text_channel(
@@ -526,6 +528,7 @@ class ReactTickets(commands.Cog):
                         embed_links=True,
                         attach_files=True,
                         manage_messages=True,
+                        read_message_history=True,
                     ),
                 },
                 reason="Closed support ticket",
