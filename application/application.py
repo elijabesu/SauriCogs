@@ -15,7 +15,7 @@ class Application(commands.Cog):
     Receive and moderate staff applications with customizable questions.
     """
 
-    __version__ = "1.3.3"
+    __version__ = "1.4.0"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -112,6 +112,12 @@ class Application(commands.Cog):
         def check(m):
             return m.author == ctx.author and m.channel == ctx.author.dm_channel
 
+        hastebin_content = (
+            f"New application in {ctx.guild.name} ({datetime.datetime.now()})\n\n"
+            f"User: {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})\n\n"
+            "Questions:"
+        )
+
         questions = await self.config.guild(ctx.guild).questions()  # list of lists
         default_questions = (
             await self._default_questions_list()
@@ -132,8 +138,22 @@ class Application(commands.Cog):
             except asyncio.TimeoutError:
                 return await ctx.author.send("You took too long. Try again, please.")
             embed.add_field(name=shortcut + ":", value=answer.content)
+            hastebin_content += f"\n{shortcut}:\t{answer.content}"
 
-        await channel.send(embed=embed)
+        try:
+            await channel.send(embed=embed)
+        except discord.errors.HTTPException:
+            import requests
+            import json
+
+            req = requests.post("https://hastebin.com/documents", data=hastebin_content)
+            key = json.loads(req.content)["key"]
+            await channel.send(
+                content=(
+                    f"New application has been submitted by {ctx.author.mention}\n"
+                    f"This application is too long, so here's a link to hastebin: https://hastebin.com/{key}"
+                )
+            )
 
         if role_add:
             await ctx.author.add_roles(role_add)
