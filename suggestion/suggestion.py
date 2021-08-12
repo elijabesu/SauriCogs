@@ -13,7 +13,7 @@ class Suggestion(commands.Cog):
     Per guild, as well as global, suggestion box voting system.
     """
 
-    __version__ = "1.6.2"
+    __version__ = "1.6.3"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -523,52 +523,44 @@ class Suggestion(commands.Cog):
                 return await ctx.send("Global suggestions aren't enabled.")
             if author_id not in self.bot.owner_ids:
                 return await ctx.send("Uh oh, you're not my owner.")
-            server = 1
-            if (
-                await self.config.custom("SUGGESTION", server, suggestion_id).msg_id()
-                != 0
-            ):
+            settings = await self.config.custom("SUGGESTION", 1, suggestion_id).all()
+            if settings["msg_id"] != 0:
                 content = f"Global suggestion #{suggestion_id}"
             else:
                 return await ctx.send("Uh oh, that suggestion doesn't seem to exist.")
         if not is_global:
-            server = server_id
-            if (
-                await self.config.custom("SUGGESTION", server, suggestion_id).msg_id()
-                == 0
-            ):
+            settings = await self.config.custom(
+                "SUGGESTION", server_id, suggestion_id
+            ).all()
+            if settings["msg_id"] == 0:
                 return await ctx.send("Uh oh, that suggestion doesn't seem to exist.")
             else:
                 content = f"Suggestion #{suggestion_id}"
-        op_info = await self.config.custom("SUGGESTION", server, suggestion_id).author()
+
+        op_info = settings["author"]
         op, op_name, op_discriminator, op_id, op_avatar = await self._get_op_info(
             ctx, op_info
         )
-        if await self.config.custom("SUGGESTION", server, suggestion_id).finished():
-            if await self.config.custom("SUGGESTION", server, suggestion_id).approved():
+
+        atext = f"Suggestion by {op_name}"
+        if settings["finished"]:
+            if settings["approved"]:
                 atext = f"Approved suggestion by {op_name}"
             else:
-                if await self.config.custom(
-                    "SUGGESTION", server, suggestion_id
-                ).rejected():
+                if settings["rejected"]:
                     atext = f"Rejected suggestion by {op_name}"
-        else:
-            atext = f"Suggestion by {op_name}"
+
         embed = discord.Embed(
             color=await ctx.embed_colour(),
-            description=await self.config.custom(
-                "SUGGESTION", server, suggestion_id
-            ).stext(),
+            description=settings["stext"],
         )
         embed.set_author(name=atext, icon_url=op_avatar)
         embed.set_footer(text=f"Suggested by {op_name}#{op_discriminator} ({op_id})")
 
-        if await self.config.custom("SUGGESTION", server, suggestion_id).reason():
+        if settings["reason"]:
             embed.add_field(
                 name="Reason:",
-                value=await self.config.custom(
-                    "SUGGESTION", server, suggestion_id
-                ).rtext(),
+                value=settings["rtext"],
                 inline=False,
             )
         return content, embed
@@ -709,8 +701,8 @@ class Suggestion(commands.Cog):
                 True
             )
         else:
-            await self.config.custom("SUGGESTION", server, suggestion_id).approved.set(
-                False
+            await self.config.custom("SUGGESTION", server, suggestion_id).rejected.set(
+                True
             )
         await ctx.tick()
 
