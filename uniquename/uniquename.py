@@ -58,6 +58,7 @@ class UniqueName(commands.Cog):
     @uniquenameset.command(name="roles")
     async def unset_roles(self, ctx: commands.Context):
         """View the protected roles."""
+        guild = ctx.guild
         roles = []
         for rid in await self.config.guild(guild).roles():
             role = guild.get_role(rid)
