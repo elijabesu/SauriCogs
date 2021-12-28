@@ -96,7 +96,7 @@ class CookieStore(commands.Cog):
         if self._over_zero(price, quantity):
             return await ctx.send("Uh oh, price/quantity have to be over 0.")
         conf = await self._get_conf_group(ctx.guild)
-        if await conf.roles.get_raw(role):
+        if role.name in await conf.roles():
             return await ctx.send(f"Uh oh, {role.name} is already registered.")
         await conf.roles.set_raw(
             role.name, value={"price": price, "quantity": quantity}
@@ -111,7 +111,7 @@ class CookieStore(commands.Cog):
         if self._over_zero(price, quantity):
             return await ctx.send("Uh oh, price/quantity have to be over 0.")
         conf = await self._get_conf_group(ctx.guild)
-        if await conf.items.get_raw(item):
+        if item in await conf.items():
             return await ctx.send(f"Uh oh, {item} is already registered.")
         await conf.items.set_raw(
             item,
@@ -131,7 +131,7 @@ class CookieStore(commands.Cog):
         if self._over_zero(price, quantity):
             return await ctx.send("Uh oh, price/quantity have to be over 0.")
         conf = await self._get_conf_group(ctx.guild)
-        if await conf.games.get_raw(game):
+        if game in await conf.games():
             return await ctx.send(f"Uh oh, {game} is already registered.")
         await conf.games.set_raw(
             game,
