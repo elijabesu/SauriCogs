@@ -410,7 +410,7 @@ class Cookies(commands.Cog):
     async def cookieset_cd(self, ctx: commands.Context, seconds: int):
         """Set the cooldown for `[p]cookie`.
 
-        This is in seconds! Default is 43200 seconds (24 hours)."""
+        This is in seconds! Default is 43200 seconds (12 hours)."""
         if seconds <= 0:
             return await ctx.send("Uh oh, cooldown has to be more than 0 seconds.")
         conf = (
