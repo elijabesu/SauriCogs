@@ -209,19 +209,15 @@ class Counting(commands.Cog):
             return
         last_id = await self.config.guild(message.guild).last()
         previous = await self.config.guild(message.guild).previous()
-        next_number = previous + 1
-        goal = await self.config.guild(message.guild).goal()
-        warning = await self.config.guild(message.guild).warning()
         seconds = await self.config.guild(message.guild).seconds()
         if message.author.id != last_id:
             try:
-                now = int(message.content)
-                if now - 1 == previous:
-                    await self.config.guild(message.guild).previous.set(now)
+                current = int(message.content)
+                if current - 1 == previous:
+                    await self.config.guild(message.guild).previous.set(current)
                     await self.config.guild(message.guild).last.set(message.author.id)
-                    n = now + 1
                     if await self.config.guild(message.guild).topic():
-                        return await self._set_topic(now, goal, n, message.channel)
+                        return await self._update_topic(message.channel)
                     return
             except (TypeError, ValueError):
                 pass
@@ -230,10 +226,10 @@ class Counting(commands.Cog):
             role = message.guild.get_role(int(rid))
             if role and role in message.author.roles:
                 return
-        if warning:
+        if await self.config.guild(message.guild).warning():
             if message.author.id != last_id:
                 warn_msg = await message.channel.send(
-                    f"The next message in this channel must be {next_number}"
+                    f"The next message in this channel must be {previous + 1}"
                 )
             else:
                 warn_msg = await message.channel.send(
@@ -271,13 +267,15 @@ class Counting(commands.Cog):
         except (TypeError, ValueError):
             return
 
-    async def _set_topic(self, now, goal, n, channel):
-        if goal != 0 and now < goal:
+    async def _update_topic(self, channel):
+        goal = await self.config.guild(channel.guild).goal()
+        prev = await self.config.guild(channel.guild).previous()
+        if goal != 0 and prev < goal:
             await channel.edit(
-                topic=f"Let's count! | Next message must be {n}! | Goal is {goal}!"
+                topic=f"Let's count! | Next message must be {prev + 1}! | Goal is {goal}!"
             )
-        elif goal != 0 and now == goal:
-            await channel.send("We did it, we reached the goal! :tada:")
+        elif goal != 0 and prev == goal:
+            await channel.send("We've reached the goal! :tada:")
             await channel.edit(topic=f"Goal reached! :tada:")
         else:
-            await channel.edit(topic=f"Let's count! | Next message must be {n}!")
+            await channel.edit(topic=f"Let's count! | Next message must be {prev + 1}!")
