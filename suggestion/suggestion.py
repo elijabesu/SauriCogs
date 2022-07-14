@@ -39,7 +39,7 @@ class Suggestion(commands.Cog):
         self.config.register_custom(
             "SUGGESTION",
             author=[],  # id, name, discriminator
-            guild=[],   # id, name, icon_url
+            guild_id=0,
             msg_id=0,
             finished=False,
             approved=False,
@@ -93,20 +93,15 @@ class Suggestion(commands.Cog):
             return await ctx.send(
                 "Uh oh, looks like the Admins haven't added the required channel."
             )
-        embed = await self._new_embed(ctx, suggestion, is_anonymous)
+        embed = discord.Embed(color=await ctx.embed_colour(), description=suggestion, title="New suggestion")
         if is_anonymous:
-            embed.set_author(
-                name="New suggestion",
-                icon_url=ctx.guild.icon_url,
-            )
+            footer = [f"Suggested in {ctx.guild.name} ({ctx.guild.id})", ctx.guild.icon_url]
         else:
-            embed.set_author(
-                name=f"Suggestion by {ctx.author.display_name}",
-                icon_url=ctx.author.avatar_url,
-            )
-            embed.set_footer(
-                text=f"Suggested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})"
-            )
+            footer = [f"Suggested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})", ctx.author.avatar_url]
+        embed.set_footer(
+            text=footer[0],
+            icon_url=footer[1]
+        )
         if ctx.message.attachments:
             embed.set_image(url=ctx.message.attachments[0].url)
 
@@ -131,6 +126,7 @@ class Suggestion(commands.Cog):
             author.append(ctx.author.id)
             author.append(ctx.author.name)
             author.append(ctx.author.discriminator)
+        await self.config.custom("SUGGESTION", server, s_id).guild_id.set(ctx.guild.id)
         await self.config.custom("SUGGESTION", server, s_id).stext.set(suggestion)
         await self.config.custom("SUGGESTION", server, s_id).msg_id.set(msg.id)
 
@@ -396,7 +392,7 @@ class Suggestion(commands.Cog):
         up_emoji, down_emoji = await self._get_emojis(ctx)
 
         embed = discord.Embed(
-            colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
+            colour=await ctx.embed_colour()
         )
         embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
         embed.title = "**__Suggestion settings (guild):__**"
@@ -524,7 +520,7 @@ class Suggestion(commands.Cog):
         servers_text = "None" if servers == [] else humanize_list(servers)
 
         embed = discord.Embed(
-            colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
+            colour=await ctx.embed_colour()
         )
         embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
         embed.title = "**__Suggestion settings (global):__**"
@@ -590,33 +586,28 @@ class Suggestion(commands.Cog):
         op, op_name, op_discriminator, op_id, op_avatar = await self._get_op_info(
             ctx, op_info
         )
+        suggested_in_guild = self.bot.get_guild(settings["guild_id"])
 
-        if is_anonymous:
-            atext = "New suggestion"
-            aicon = ctx.guild.icon_url
-        else:
-            atext = f"Suggestion by {op_name}"
-            aicon = op_avatar
+        atext = "New suggestion"
         if settings["finished"]:
             if settings["approved"]:
-                if is_anonymous:
-                    atext = "Approved suggestion"
-                else:
-                    atext = f"Approved suggestion by {op_name}"
-            else:
-                if settings["rejected"]:
-                    if is_anonymous:
-                        atext = "Rejected suggestion"
-                    else:
-                        atext = f"Rejected suggestion by {op_name}"
+                atext = "Approved suggestion"
+            elif settings["rejected"]:
+                atext = "Rejected suggestion"
 
         embed = discord.Embed(
             color=await ctx.embed_colour(),
             description=settings["stext"],
+            title=atext,
         )
-        embed.set_author(name=atext, icon_url=aicon)
-        if not is_anonymous:
-            embed.set_footer(text=f"Suggested by {op_name}#{op_discriminator} ({op_id})")
+        if is_anonymous:
+            footer = [f"Suggested in {suggested_in_guild.name} ({suggested_in_guild.id})", suggested_in_guild.icon_url]
+        else:
+            footer = [f"Suggested by {op_name}#{op_discriminator} ({op_id})", op_avatar]
+        embed.set_footer(
+            text=footer[0],
+            icon_url=footer[1]
+        )
 
         if settings["reason"]:
             embed.add_field(
@@ -680,11 +671,6 @@ class Suggestion(commands.Cog):
         except discord.Forbidden:
             pass
 
-    async def _new_embed(self, ctx, description, timestamp=False):
-        if timestamp:
-            return discord.Embed(color=await ctx.embed_colour(), description=description, timestamp=datetime.datetime.now())
-        return discord.Embed(color=await ctx.embed_colour(), description=description)
-
     async def _finish_suggestion(self, ctx, suggestion_id, is_global, approve, reason):
         if is_global:
             is_anonymous = await self.config.anonymous()
@@ -708,8 +694,8 @@ class Suggestion(commands.Cog):
                 )
         msg_id = await self.config.custom("SUGGESTION", server, suggestion_id).msg_id()
         if (
-            msg_id != 0
-            and await self.config.custom("SUGGESTION", server, suggestion_id).finished()
+                msg_id != 0
+                and await self.config.custom("SUGGESTION", server, suggestion_id).finished()
         ):
             return await ctx.send("This suggestion has been finished already.")
         try:
@@ -725,13 +711,19 @@ class Suggestion(commands.Cog):
         op, op_name, op_discriminator, op_id, op_avatar = await self._get_op_info(
             ctx, op_info
         )
+        suggested_in_guild = self.bot.get_guild(await self.config.custom("SUGGESTION", server, suggestion_id).guild_id())
 
         approved = "Approved" if approve else "Rejected"
 
+        embed.title = f"{approved} suggestion"
         if is_anonymous:
-            embed.set_author(name=f"{approved} suggestion", icon_url=ctx.guild.icon_url)
+            footer = [f"Suggested in {suggested_in_guild.name} ({suggested_in_guild.id})", suggested_in_guild.icon_url]
         else:
-            embed.set_author(name=f"{approved} suggestion by {op_name}", icon_url=op_avatar)
+            footer = [f"Suggested by {op_name}#{op_discriminator} ({op_id})", op_avatar]
+        embed.set_footer(
+            text=footer[0],
+            icon_url=footer[1]
+        )
         embed.add_field(
             name="Results:", value=await self._get_results(ctx, old_msg), inline=False
         )
