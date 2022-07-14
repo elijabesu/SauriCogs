@@ -13,7 +13,7 @@ class Suggestion(commands.Cog):
     Per guild, as well as global, suggestion box voting system.
     """
 
-    __version__ = "1.6.3"
+    __version__ = "1.7.0"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -30,14 +30,16 @@ class Suggestion(commands.Cog):
             down_emoji=None,
             delete_suggest=False,
             delete_suggestion=True,
+            anonymous=False,
         )
         self.config.register_global(
-            toggle=False, server_id=None, channel_id=None, next_id=1, ignore=[]
+            toggle=False, server_id=None, channel_id=None, next_id=1, ignore=[], anonymous=False,
         )
         self.config.init_custom("SUGGESTION", 2)  # server_id, suggestion_id
         self.config.register_custom(
             "SUGGESTION",
             author=[],  # id, name, discriminator
+            guild_id=0,
             msg_id=0,
             finished=False,
             approved=False,
@@ -83,19 +85,22 @@ class Suggestion(commands.Cog):
                 return await ctx.send("Uh oh, suggestions aren't enabled.")
             global_guild = self.bot.get_guild(await self.config.server_id())
             channel = global_guild.get_channel(await self.config.channel_id())
+            is_anonymous = await self.config.anonymous()
         else:
             channel = ctx.guild.get_channel(suggest_id)
+            is_anonymous = await self.config.guild(ctx.guild).anonymous()
         if not channel:
             return await ctx.send(
-                "Uh oh, looks like your Admins haven't added the required channel."
+                "Uh oh, looks like the Admins haven't added the required channel."
             )
-        embed = discord.Embed(color=await ctx.embed_colour(), description=suggestion)
-        embed.set_author(
-            name=f"Suggestion by {ctx.author.display_name}",
-            icon_url=ctx.author.avatar_url,
-        )
+        embed = discord.Embed(color=await ctx.embed_colour(), description=suggestion, title="New suggestion")
+        if is_anonymous:
+            footer = [f"Suggested in {ctx.guild.name} ({ctx.guild.id})", ctx.guild.icon_url]
+        else:
+            footer = [f"Suggested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})", ctx.author.avatar_url]
         embed.set_footer(
-            text=f"Suggested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})"
+            text=footer[0],
+            icon_url=footer[1]
         )
         if ctx.message.attachments:
             embed.set_image(url=ctx.message.attachments[0].url)
@@ -121,6 +126,7 @@ class Suggestion(commands.Cog):
             author.append(ctx.author.id)
             author.append(ctx.author.name)
             author.append(ctx.author.discriminator)
+        await self.config.custom("SUGGESTION", server, s_id).guild_id.set(ctx.guild.id)
         await self.config.custom("SUGGESTION", server, s_id).stext.set(suggestion)
         await self.config.custom("SUGGESTION", server, s_id).msg_id.set(msg.id)
 
@@ -335,7 +341,9 @@ class Suggestion(commands.Cog):
     async def suggestset_delete(
         self, ctx: commands.Context, on_off: typing.Optional[bool]
     ):
-        """Toggle whether suggestions in the original suggestion channel get deleted after being approved/rejected."""
+        """Toggle whether suggestions in the original suggestion channel get deleted after being approved/rejected.
+
+        If `on_off` is not provided, the state will be flipped."""
         target_state = on_off or not (
             await self.config.guild(ctx.guild).delete_suggestion()
         )
@@ -345,6 +353,24 @@ class Suggestion(commands.Cog):
             "Suggestions will be deleted upon approving/rejecting from the original suggestion channel."
             if target_state
             else "Suggestions will stay in the original channel after approving/rejecting."
+        )
+
+    @suggestset.command(name="anonymous")
+    async def suggestset_anonymous(
+            self, ctx: commands.Context, on_off: typing.Optional[bool]
+    ):
+        """Toggle whether server suggestions are anonymous.
+
+        If `on_off` is not provided, the state will be flipped."""
+        target_state = on_off or not (
+            await self.config.guild(ctx.guild).anonymous()
+        )
+
+        await self.config.guild(ctx.guild).anonymous.set(target_state)
+        await ctx.send(
+            "Server suggestions will be anonymous."
+            if target_state
+            else "Server suggestions will not be anonymous."
         )
 
     @suggestset.command(name="settings")
@@ -366,7 +392,7 @@ class Suggestion(commands.Cog):
         up_emoji, down_emoji = await self._get_emojis(ctx)
 
         embed = discord.Embed(
-            colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
+            colour=await ctx.embed_colour()
         )
         embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
         embed.title = "**__Suggestion settings (guild):__**"
@@ -376,6 +402,7 @@ class Suggestion(commands.Cog):
         embed.add_field(name="Suggest channel*:", value=suggest_channel)
         embed.add_field(name="Approved channel:", value=approve_channel)
         embed.add_field(name="Rejected channel:", value=reject_channel)
+        embed.add_field(name="Anonymous:", value=data["anonymous"])
         embed.add_field(name="Up emoji:", value=up_emoji)
         embed.add_field(name="Down emoji:", value=down_emoji)
         embed.add_field(
@@ -460,6 +487,21 @@ class Suggestion(commands.Cog):
         else:
             await ctx.send(f"{server.name} already isn't in the ignored list.")
 
+    @globalset.command(name="anonymous")
+    async def suggestset_globalset_anonymous(
+        self, ctx: commands.Context, on_off: typing.Optional[bool]
+    ):
+        """Toggle whether global suggestions are anonymous.
+
+        If `on_off` is not provided, the state will be flipped."""
+        target_state = on_off or not (await self.config.anonymous())
+        await self.config.anonymous.set(target_state)
+        await ctx.send(
+            "Global suggestions will be anonymous."
+            if target_state
+            else "Global suggestions will not be anonymous."
+        )
+
     @globalset.command(name="settings")
     async def suggestset_globalset_settings(self, ctx: commands.Context):
         """See current settings."""
@@ -478,7 +520,7 @@ class Suggestion(commands.Cog):
         servers_text = "None" if servers == [] else humanize_list(servers)
 
         embed = discord.Embed(
-            colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
+            colour=await ctx.embed_colour()
         )
         embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
         embed.title = "**__Suggestion settings (global):__**"
@@ -486,6 +528,7 @@ class Suggestion(commands.Cog):
         embed.set_footer(text="*required to function properly")
         embed.add_field(name="Enabled*:", value=data["toggle"])
         embed.add_field(name="Channel*:", value=channel)
+        embed.add_field(name="Anonymous:", value=data["anonymous"])
         embed.add_field(name="Ignored servers:", value=servers_text, inline=False)
 
         await ctx.send(embed=embed)
@@ -519,6 +562,7 @@ class Suggestion(commands.Cog):
         self, ctx, author_id, server_id, suggestion_id, is_global
     ):
         if is_global:
+            is_anonymous = await self.config.anonymous()
             if not await self.config.toggle():
                 return await ctx.send("Global suggestions aren't enabled.")
             if author_id not in self.bot.owner_ids:
@@ -528,7 +572,8 @@ class Suggestion(commands.Cog):
                 content = f"Global suggestion #{suggestion_id}"
             else:
                 return await ctx.send("Uh oh, that suggestion doesn't seem to exist.")
-        if not is_global:
+        else:
+            is_anonymous = await self.config.guild(ctx.guild).anonymous()
             settings = await self.config.custom(
                 "SUGGESTION", server_id, suggestion_id
             ).all()
@@ -541,21 +586,28 @@ class Suggestion(commands.Cog):
         op, op_name, op_discriminator, op_id, op_avatar = await self._get_op_info(
             ctx, op_info
         )
+        suggested_in_guild = self.bot.get_guild(settings["guild_id"])
 
-        atext = f"Suggestion by {op_name}"
+        atext = "New suggestion"
         if settings["finished"]:
             if settings["approved"]:
-                atext = f"Approved suggestion by {op_name}"
-            else:
-                if settings["rejected"]:
-                    atext = f"Rejected suggestion by {op_name}"
+                atext = "Approved suggestion"
+            elif settings["rejected"]:
+                atext = "Rejected suggestion"
 
         embed = discord.Embed(
             color=await ctx.embed_colour(),
             description=settings["stext"],
+            title=atext,
         )
-        embed.set_author(name=atext, icon_url=op_avatar)
-        embed.set_footer(text=f"Suggested by {op_name}#{op_discriminator} ({op_id})")
+        if is_anonymous:
+            footer = [f"Suggested in {suggested_in_guild.name} ({suggested_in_guild.id})", suggested_in_guild.icon_url]
+        else:
+            footer = [f"Suggested by {op_name}#{op_discriminator} ({op_id})", op_avatar]
+        embed.set_footer(
+            text=footer[0],
+            icon_url=footer[1]
+        )
 
         if settings["reason"]:
             embed.add_field(
@@ -621,12 +673,14 @@ class Suggestion(commands.Cog):
 
     async def _finish_suggestion(self, ctx, suggestion_id, is_global, approve, reason):
         if is_global:
+            is_anonymous = await self.config.anonymous()
             try:
                 server, old_channel = await self._check_global(ctx)
             except TypeError:
                 return
         else:
             server = ctx.guild.id
+            is_anonymous = await self.config.guild(ctx.guild).anonymous()
             old_channel = ctx.guild.get_channel(
                 await self.config.guild(ctx.guild).suggest_id()
             )
@@ -640,8 +694,8 @@ class Suggestion(commands.Cog):
                 )
         msg_id = await self.config.custom("SUGGESTION", server, suggestion_id).msg_id()
         if (
-            msg_id != 0
-            and await self.config.custom("SUGGESTION", server, suggestion_id).finished()
+                msg_id != 0
+                and await self.config.custom("SUGGESTION", server, suggestion_id).finished()
         ):
             return await ctx.send("This suggestion has been finished already.")
         try:
@@ -657,10 +711,19 @@ class Suggestion(commands.Cog):
         op, op_name, op_discriminator, op_id, op_avatar = await self._get_op_info(
             ctx, op_info
         )
+        suggested_in_guild = self.bot.get_guild(await self.config.custom("SUGGESTION", server, suggestion_id).guild_id())
 
         approved = "Approved" if approve else "Rejected"
 
-        embed.set_author(name=f"{approved} suggestion by {op_name}", icon_url=op_avatar)
+        embed.title = f"{approved} suggestion"
+        if is_anonymous:
+            footer = [f"Suggested in {suggested_in_guild.name} ({suggested_in_guild.id})", suggested_in_guild.icon_url]
+        else:
+            footer = [f"Suggested by {op_name}#{op_discriminator} ({op_id})", op_avatar]
+        embed.set_footer(
+            text=footer[0],
+            icon_url=footer[1]
+        )
         embed.add_field(
             name="Results:", value=await self._get_results(ctx, old_msg), inline=False
         )
