@@ -12,7 +12,7 @@ class Forwarding(commands.Cog):
     Forward all DMs sent to the bot to the bot owner (or a specified channel), including messages with attachments.
     """
 
-    __version__ = "2.4.0"
+    __version__ = "2.4.1"
 
     def __init__(self, bot):
         self.bot = bot
@@ -102,12 +102,11 @@ class Forwarding(commands.Cog):
         await destination.send(message)
         await ctx.send(f"Sent message to {destination}.")
 
-    @checks.is_owner()
     @commands.command(name="self")
     @commands.guild_only()
     @checks.bot_has_permissions(add_reactions=True)
     async def _self(self, ctx: commands.Context, *, message: str):
-        """Send yourself a DM. Owner command only."""
+        """Send yourself a DM."""
         try:
             await ctx.author.send(message)
         except discord.HTTPException:
