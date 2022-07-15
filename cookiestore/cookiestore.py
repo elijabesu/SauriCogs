@@ -16,7 +16,7 @@ class CookieStore(commands.Cog):
     Additional store with redeemable items to my Cookies cog.
     """
 
-    __version__ = "1.1.0"
+    __version__ = "1.1.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -48,6 +48,7 @@ class CookieStore(commands.Cog):
     async def cookiestoreset(self, ctx):
         """Various Cookie Store settings."""
 
+    @checks.is_owner()
     @cookiestoreset.command(name="gg")
     async def cookiestoreset_gg(
         self,
@@ -79,6 +80,8 @@ class CookieStore(commands.Cog):
         """Toggle store for current server.
 
         If `on_off` is not provided, the state will be flipped."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         conf = await self._get_conf_group(ctx.guild)
         target_state = on_off or not (await conf.enabled())
         await conf.enabled.set(target_state)
@@ -93,6 +96,8 @@ class CookieStore(commands.Cog):
         self, ctx: commands.Context, role: discord.Role, price: int, quantity: int
     ):
         """Add a purchasable (returnable) role."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         if self._over_zero(price, quantity):
             return await ctx.send("Uh oh, price/quantity have to be over 0.")
         conf = await self._get_conf_group(ctx.guild)
@@ -108,6 +113,8 @@ class CookieStore(commands.Cog):
         self, ctx: commands.Context, item: str, price: int, quantity: int, redeem: bool
     ):
         """Add a purchasable (returnable) item."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         if self._over_zero(price, quantity):
             return await ctx.send("Uh oh, price/quantity have to be over 0.")
         conf = await self._get_conf_group(ctx.guild)
@@ -128,6 +135,8 @@ class CookieStore(commands.Cog):
         self, ctx: commands.Context, game: str, price: int, quantity: int, redeem: bool
     ):
         """Add a purchasable (non-returnable) game."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         if self._over_zero(price, quantity):
             return await ctx.send("Uh oh, price/quantity have to be over 0.")
         conf = await self._get_conf_group(ctx.guild)
@@ -152,6 +161,8 @@ class CookieStore(commands.Cog):
         self, ctx: commands.Context, role: discord.Role
     ):
         """Remove a purchasable role."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         conf = await self._get_conf_group(ctx.guild)
         if not await conf.roles.get_raw(role):
             return await ctx.send(f"Uh oh, {role.name} is not registered.")
@@ -161,6 +172,8 @@ class CookieStore(commands.Cog):
     @cookiestoreset_remove.command(name="item")
     async def cookiestoreset_remove_item(self, ctx: commands.Context, item: str):
         """Remove a purchasable item."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         conf = await self._get_conf_group(ctx.guild)
         if not await conf.items.get_raw(item):
             return await ctx.send(f"Uh oh, {item} is not registered.")
@@ -170,6 +183,8 @@ class CookieStore(commands.Cog):
     @cookiestoreset_remove.command(name="game")
     async def cookiestoreset_remove_game(self, ctx: commands.Context, game: str):
         """Remove a purchasable game."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         conf = await self._get_conf_group(ctx.guild)
         if not await conf.games.get_raw(game):
             return await ctx.send(f"Uh oh, {game} is not registered.")
@@ -179,6 +194,8 @@ class CookieStore(commands.Cog):
     @cookiestoreset.command(name="show")
     async def cookiestoreset_show(self, ctx: commands.Context, *, item: str):
         """Show information about a purchasable item/role/game key."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         item = item.strip("@")
         conf = await self._get_conf_group(ctx.guild)
         items = await conf.items.get_raw()
@@ -210,6 +227,8 @@ class CookieStore(commands.Cog):
         self, ctx: commands.Context, item: str, quantity: int
     ):
         """Change the quantity of an existing purchasable item."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         if self._over_zero(quantity):
             return await ctx.send("Uh oh, quantity has to be more than 0.")
         conf = await self._get_conf_group(ctx.guild)
@@ -238,6 +257,8 @@ class CookieStore(commands.Cog):
         """Set the role/member that should be pinged when a member wants to redeem their item.
 
         If who isn't provided, it will show the current ping set."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         conf = await self._get_conf_group(ctx.guild)
         if not who:
             ping_id = await conf.ping()
@@ -261,6 +282,8 @@ class CookieStore(commands.Cog):
         self, ctx: commands.Context, confirmation: typing.Optional[bool]
     ):
         """Delete all items from the store."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         if not confirmation:
             return await ctx.send(
                 "This will delete **all** items. This action **cannot** be undone.\n"
@@ -280,6 +303,8 @@ class CookieStore(commands.Cog):
         self, ctx: commands.Context, confirmation: typing.Optional[bool]
     ):
         """Delete all items from all members' inventories."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         if not confirmation:
             return await ctx.send(
                 "This will delete **all** items from all members' inventories. This action **cannot** be undone.\n"

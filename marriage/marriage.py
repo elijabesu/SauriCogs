@@ -16,7 +16,7 @@ class Marriage(commands.Cog):
     Marry, divorce, and give gifts to other members.
     """
 
-    __version__ = "1.6.3"
+    __version__ = "1.6.4"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -138,6 +138,7 @@ class Marriage(commands.Cog):
     async def marryset(self, ctx: commands.Context):
         """Various Marriage settings."""
 
+    @checks.is_owner()
     @marryset.command(name="gg")
     async def marryset_gg(
         self,
@@ -167,6 +168,8 @@ class Marriage(commands.Cog):
         """Toggle Marriage.
 
         If `on_off` is not provided, the state will be flipped."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         conf = await self._get_conf_group(ctx.guild)
         target_state = on_off or not (await conf.toggle())
         await conf.toggle.set(target_state)
@@ -192,6 +195,8 @@ class Marriage(commands.Cog):
     @marryset.command(name="multiple")
     async def marryset_multiple(self, ctx: commands.Context, state: bool):
         """Enable/disable whether members can be married to multiple people at once."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         conf = await self._get_conf_group(ctx.guild)
         await conf.multi.set(state)
         await ctx.send(f"Members {'can' if state else 'cannot'} marry multiple people.")
@@ -201,6 +206,8 @@ class Marriage(commands.Cog):
         """Set the price for getting married.
 
         With each past marriage, the cost of getting married is 50% more"""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         if price <= 0:
             return await ctx.send("Uh oh, price cannot be 0 or less.")
         conf = await self._get_conf_group(ctx.guild)
@@ -212,6 +219,8 @@ class Marriage(commands.Cog):
         """Set the MULTIPLIER for getting divorced.
 
         This is a multiplier, not the price! Default is 2."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         if multiplier <= 1:
             return await ctx.send("Uh oh, that ain't a valia multiplier.")
         conf = await self._get_conf_group(ctx.guild)
@@ -308,6 +317,8 @@ class Marriage(commands.Cog):
         Available parameters are `{author}` and `{target}`
 
         If you don't want consent_description, use empty quotation marks."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         if action in await self._get_actions(ctx):
             return await ctx.send("Uh oh, that's already a registerOHed action.")
         conf = await self._get_conf_group(ctx.guild)
@@ -326,6 +337,8 @@ class Marriage(commands.Cog):
     @marryset_actions.command(name="remove")
     async def marryset_actions_remove(self, ctx: commands.Context, action: str):
         """Remove a custom action."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         if action not in await self._get_actions(ctx):
             return await ctx.send("Uh oh, that's not a registered action.")
 
@@ -340,6 +353,8 @@ class Marriage(commands.Cog):
     @marryset_actions.command(name="show")
     async def marryset_actions_show(self, ctx: commands.Context, action: str):
         """Show a custom action."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         if await self._is_removed(ctx, action):
             return await ctx.send("Uh oh, that's not a registered action.")
 
@@ -364,6 +379,8 @@ description:: {data.get('description')}""",
     @marryset_actions.command(name="list")
     async def marryset_actions_list(self, ctx: commands.Context):
         """Show custom action."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         actions = await self._get_actions(ctx)
         await ctx.send(humanize_list(actions))
 
@@ -378,6 +395,8 @@ description:: {data.get('description')}""",
         """Add a custom gift.
 
         Available parameters are `{author}` and `{target}`"""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         if gift in await self._get_gifts(ctx):
             return await ctx.send("Uh oh, that's already a registered gift.")
 
@@ -390,6 +409,8 @@ description:: {data.get('description')}""",
     @marryset_gifts.command(name="remove")
     async def marryset_gifts_remove(self, ctx: commands.Context, gift: str):
         """Remove a custom gift."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         if gift not in await self._get_gifts(ctx):
             return await ctx.send("Uh oh, that's not a registered gift.")
 
@@ -404,6 +425,8 @@ description:: {data.get('description')}""",
     @marryset_gifts.command(name="show")
     async def marryset_gifts_show(self, ctx: commands.Context, gift: str):
         """Show a custom gift."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         if await self._is_removed(ctx, gift):
             return await ctx.send("Uh oh, that's not a registered gift.")
 
@@ -425,6 +448,8 @@ price:: {data.get('price')}""",
     @marryset_gifts.command(name="list")
     async def marryset_gifts_list(self, ctx: commands.Context):
         """Show custom gift."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         gifts = await self._get_gifts(ctx)
         await ctx.send(humanize_list(gifts))
 

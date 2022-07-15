@@ -20,7 +20,7 @@ class Cookies(commands.Cog):
     Collect cookies and steal from others.
     """
 
-    __version__ = "1.3.0"
+    __version__ = "1.3.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -343,6 +343,7 @@ class Cookies(commands.Cog):
     async def cookieset(self, ctx):
         """Various Cookies settings."""
 
+    @checks.is_owner()
     @cookieset.command(name="gg")
     async def cookieset_gg(
         self,
@@ -351,6 +352,8 @@ class Cookies(commands.Cog):
         confirmation: typing.Optional[bool],
     ):
         """Switch from per-guild to global cookies and vice versa."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         if await self.config.is_global() == make_global:
             return await ctx.send("Uh oh, you're not really changing anything.")
         if not confirmation:
@@ -370,6 +373,8 @@ class Cookies(commands.Cog):
         """Set the amount of cookies members can obtain.
 
         If 0, members will get a random amount."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         if amount < 0:
             return await ctx.send("Uh oh, the amount cannot be negative.")
         if self._max_balance_check(amount):
@@ -411,6 +416,8 @@ class Cookies(commands.Cog):
         """Set the cooldown for `[p]cookie`.
 
         This is in seconds! Default is 43200 seconds (12 hours)."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         if seconds <= 0:
             return await ctx.send("Uh oh, cooldown has to be more than 0 seconds.")
         conf = (
@@ -426,6 +433,8 @@ class Cookies(commands.Cog):
         """Set the cooldown for `[p]steal`.
 
         This is in seconds! Default is 43200 seconds (12 hours)."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         if seconds <= 0:
             return await ctx.send("Uh oh, cooldown has to be more than 0 seconds.")
         conf = (
@@ -443,6 +452,8 @@ class Cookies(commands.Cog):
         """Toggle cookie stealing for current server.
 
         If `on_off` is not provided, the state will be flipped."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         conf = (
             self.config
             if await self.config.is_global()
@@ -460,6 +471,8 @@ class Cookies(commands.Cog):
         self, ctx: commands.Context, target: discord.Member, amount: int
     ):
         """Set someone's amount of cookies."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         if amount <= 0:
             return await ctx.send("Uh oh, amount has to be more than 0.")
         if self._max_balance_check(amount):
@@ -479,6 +492,8 @@ class Cookies(commands.Cog):
         self, ctx: commands.Context, target: discord.Member, amount: int
     ):
         """Add cookies to someone."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         if amount <= 0:
             return await ctx.send("Uh oh, amount has to be more than 0.")
         um_conf = (
@@ -499,6 +514,8 @@ class Cookies(commands.Cog):
         self, ctx: commands.Context, target: discord.Member, amount: int
     ):
         """Take cookies away from someone."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         if amount <= 0:
             return await ctx.send("Uh oh, amount has to be more than 0.")
         um_conf = (
@@ -519,6 +536,8 @@ class Cookies(commands.Cog):
         self, ctx: commands.Context, confirmation: typing.Optional[bool]
     ):
         """Delete all cookies from all users."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         if not confirmation:
             return await ctx.send(
                 "This will delete **all** cookies from all users. This action **cannot** be undone.\n"
@@ -535,6 +554,8 @@ class Cookies(commands.Cog):
         self, ctx: commands.Context, rate: typing.Union[int, float]
     ):
         """Set the exchange rate for `[p]cookieexchange`."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         if rate <= 0:
             return await ctx.send("Uh oh, rate has to be more than 0.")
         conf = (
@@ -552,6 +573,8 @@ class Cookies(commands.Cog):
     @cookieset.command(name="resetcooldown", aliases=["resetcd"])
     async def cookieset_resetcd(self, ctx: commands.Context, confirmation: typing.Optional[bool]):
         """Reset all cooldowns from all users."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         if not confirmation:
             return await ctx.send(
                 "This will delete both `[p]cookie` and `[p]steal` cooldowns from all users.\n"
@@ -609,6 +632,8 @@ class Cookies(commands.Cog):
         self, ctx: commands.Context, role: discord.Role, amount: int
     ):
         """Set cookies for role."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         if amount <= 0:
             return await ctx.send("Uh oh, amount has to be more than 0.")
         await self.config.role(role).cookies.set(amount)
@@ -617,12 +642,16 @@ class Cookies(commands.Cog):
     @role.command(name="del")
     async def cookieset_role_del(self, ctx: commands.Context, role: discord.Role):
         """Delete cookies for role."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         await self.config.role(role).cookies.set(0)
         await ctx.send(f"Gaining {role.name} will now not give any :cookie:")
 
     @role.command(name="show")
     async def cookieset_role_show(self, ctx: commands.Context, role: discord.Role):
         """Show how many cookies a role gives."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         cookies = int(await self.config.role(role).cookies())
         await ctx.send(f"Gaining {role.name} gives {cookies} :cookie:")
 
@@ -633,6 +662,8 @@ class Cookies(commands.Cog):
         """Set cookies multipler for role. Disabled when random amount is enabled.
 
         Default is 1 (aka the same amount)."""
+        if await self.config.is_global() and not self.bot.is_owner(ctx.author):
+            return await ctx.send("You're not my owner.")
         if multiplier <= 0:
             return await ctx.send("Uh oh, multiplier has to be more than 0.")
         await self.config.role(role).multiplier.set(multiplier)
