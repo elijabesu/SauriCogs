@@ -1,5 +1,5 @@
 from .uniquename import UniqueName
 
 
-def setup(bot):
-    bot.add_cog(UniqueName(bot))
+async def setup(bot):
+    await bot.add_cog(UniqueName(bot))

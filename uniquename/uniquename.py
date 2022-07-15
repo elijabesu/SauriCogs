@@ -120,7 +120,7 @@ class UniqueName(commands.Cog):
         embed = discord.Embed(
             colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
         )
-        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
+        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon)
         embed.title = "**__Unique Name settings:__**"
         embed.set_footer(text="*required to function properly")
 

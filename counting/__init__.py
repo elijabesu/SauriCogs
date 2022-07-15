@@ -1,5 +1,5 @@
 from .counting import Counting
 
 
-def setup(bot):
-    bot.add_cog(Counting(bot))
+async def setup(bot):
+    await bot.add_cog(Counting(bot))

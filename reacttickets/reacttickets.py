@@ -289,7 +289,7 @@ class ReactTickets(commands.Cog):
         embed = discord.Embed(
             colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
         )
-        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
+        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon)
         embed.title = "**__Reaction Tickets settings:__**"
         embed.set_footer(text="*required to function properly")
 
@@ -444,7 +444,7 @@ class ReactTickets(commands.Cog):
                 description="To close this ticket, react with 🔒 below.",
                 timestamp=datetime.datetime.utcnow(),
             )
-            embed.set_thumbnail(url=user.avatar_url)
+            embed.set_thumbnail(url=user.avatar)
             embed.set_footer(text=f"{user.name}#{user.discriminator} ({user.id})")
             embed_user_message = await user_channel.send(
                 content=f"{user.mention}, a staff member will be with you shortly.",
@@ -457,7 +457,7 @@ class ReactTickets(commands.Cog):
                 description=reason,
                 timestamp=datetime.datetime.utcnow(),
             )
-            embed.set_thumbnail(url=user.avatar_url)
+            embed.set_thumbnail(url=user.avatar)
             manager_msg = await guild.get_channel(settings["channel"]).send(
                 content=f"User: {user.mention}\nChannel: {user_channel.mention}",
                 embed=embed,

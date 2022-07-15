@@ -275,7 +275,7 @@ class Marriage(commands.Cog):
         embed = discord.Embed(
             colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
         )
-        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
+        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon)
         embed.title = "**__Marriage settings:__**"
         embed.add_field(name="Global:", value=str(is_global))
         embed.add_field(name="Enabled*:", value=str(data["toggle"]))
@@ -492,9 +492,9 @@ price:: {data.get('price')}""",
                 giftos.append(textos)
         gift_text = "None" if giftos == [] else humanize_list(giftos)
         e = discord.Embed(colour=member.color)
-        e.set_author(name=f"{member.name}'s Profile", icon_url=member.avatar_url)
+        e.set_author(name=f"{member.name}'s Profile", icon_url=member.avatar)
         e.set_footer(text=f"{member.name}#{member.discriminator} ({member.id})")
-        e.set_thumbnail(url=member.avatar_url)
+        e.set_thumbnail(url=member.avatar)
         e.add_field(name="About:", value=await m_conf.about(), inline=False)
         e.add_field(name="Status:", value=rs_status)
         if is_married:

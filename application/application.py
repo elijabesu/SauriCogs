@@ -101,7 +101,7 @@ class Application(commands.Cog):
         embed = discord.Embed(
             color=await ctx.embed_colour(), timestamp=datetime.datetime.now()
         )
-        embed.set_author(name="New application!", icon_url=ctx.author.avatar_url)
+        embed.set_author(name="New application!", icon_url=ctx.author.avatar)
         embed.set_footer(
             text=f"{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})"
         )
@@ -284,7 +284,7 @@ class Application(commands.Cog):
         embed = discord.Embed(
             colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
         )
-        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
+        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon)
         embed.set_footer(text="*required to function properly")
 
         embed.title = "**__Application settings:__**"

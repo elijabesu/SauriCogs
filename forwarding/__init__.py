@@ -1,6 +1,6 @@
 from .forwarding import Forwarding
 
 
-def setup(bot):
+async def setup(bot):
     n = Forwarding(bot)
-    bot.add_cog(n)
+    await bot.add_cog(n)

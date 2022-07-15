@@ -95,9 +95,9 @@ class Suggestion(commands.Cog):
             )
         embed = discord.Embed(color=await ctx.embed_colour(), description=suggestion, title="New suggestion")
         if is_anonymous:
-            footer = [f"Suggested in {ctx.guild.name} ({ctx.guild.id})", ctx.guild.icon_url]
+            footer = [f"Suggested in {ctx.guild.name} ({ctx.guild.id})", ctx.guild.icon]
         else:
-            footer = [f"Suggested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})", ctx.author.avatar_url]
+            footer = [f"Suggested by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})", ctx.author.avatar]
         embed.set_footer(
             text=footer[0],
             icon_url=footer[1]
@@ -186,7 +186,7 @@ class Suggestion(commands.Cog):
         Only works for non global suggestions."""
         if is_global:
             try:
-                server, old_channel = await self._check_global(ctx)
+                server, channel = await self._check_global(ctx)
             except TypeError:
                 return
         else:
@@ -394,7 +394,7 @@ class Suggestion(commands.Cog):
         embed = discord.Embed(
             colour=await ctx.embed_colour()
         )
-        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
+        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon)
         embed.title = "**__Suggestion settings (guild):__**"
 
         embed.set_footer(text="*required to function properly")
@@ -522,7 +522,7 @@ class Suggestion(commands.Cog):
         embed = discord.Embed(
             colour=await ctx.embed_colour()
         )
-        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
+        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon)
         embed.title = "**__Suggestion settings (global):__**"
 
         embed.set_footer(text="*required to function properly")
@@ -540,21 +540,14 @@ class Suggestion(commands.Cog):
             return
         if not message.guild:
             return
-        # server suggestions
-        if message.channel.id == await self.config.guild(message.guild).suggest_id():
-            for message_reaction in message.reactions:
-                if (
-                    message_reaction.emoji != reaction.emoji
-                    and user in await message_reaction.users().flatten()
-                ):
-                    await message_reaction.remove(user)
 
-        # global suggestions
-        if message.channel.id == await self.config.channel_id():
+        # server suggestions
+        if message.channel.id == await self.config.guild(message.guild).suggest_id()\
+                or message.channel.id == await self.config.channel_id():
             for message_reaction in message.reactions:
                 if (
                     message_reaction.emoji != reaction.emoji
-                    and user in await message_reaction.users().flatten()
+                    and user in [react_user async for react_user in message_reaction.users()]
                 ):
                     await message_reaction.remove(user)
 
@@ -601,7 +594,7 @@ class Suggestion(commands.Cog):
             title=atext,
         )
         if is_anonymous:
-            footer = [f"Suggested in {suggested_in_guild.name} ({suggested_in_guild.id})", suggested_in_guild.icon_url]
+            footer = [f"Suggested in {suggested_in_guild.name} ({suggested_in_guild.id})", suggested_in_guild.icon]
         else:
             footer = [f"Suggested by {op_name}#{op_discriminator} ({op_id})", op_avatar]
         embed.set_footer(
@@ -641,17 +634,17 @@ class Suggestion(commands.Cog):
 
     async def _get_op_info(self, ctx, op_info):
         if len(op_info) == 0:
-            return None, "Unknown", 0000, 0000000000000000000, ctx.guild.icon_url
+            return None, "Unknown", 0000, 0000000000000000000, ctx.guild.icon
         op_id = op_info[0]
         op = await self.bot.fetch_user(op_id)
         if op:
             op_name = op.name
             op_discriminator = op.discriminator
-            op_avatar = op.avatar_url
+            op_avatar = op.avatar
         else:
             op_name = op_info[1]
             op_discriminator = op_info[2]
-            op_avatar = ctx.guild.icon_url
+            op_avatar = ctx.guild.icon
 
         return op, op_name, op_discriminator, op_id, op_avatar
 
@@ -717,7 +710,7 @@ class Suggestion(commands.Cog):
 
         embed.title = f"{approved} suggestion"
         if is_anonymous:
-            footer = [f"Suggested in {suggested_in_guild.name} ({suggested_in_guild.id})", suggested_in_guild.icon_url]
+            footer = [f"Suggested in {suggested_in_guild.name} ({suggested_in_guild.id})", suggested_in_guild.icon]
         else:
             footer = [f"Suggested by {op_name}#{op_discriminator} ({op_id})", op_avatar]
         embed.set_footer(

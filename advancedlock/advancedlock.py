@@ -363,7 +363,7 @@ class AdvancedLock(commands.Cog):
         if c_list == []:
             c_desc = "Not specified"
         embed = discord.Embed(colour=await ctx.embed_colour(), timestamp=datetime.now())
-        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
+        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon)
         embed.title = "**__Advanced Lock settings:__**"
         embed.add_field(name="Enabled:", value=toggle)
         embed.add_field(name="Moderator role:", value=mod)

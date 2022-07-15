@@ -1,5 +1,5 @@
 from .lvlupcookies import LevelUpCookies
 
 
-def setup(bot):
-    bot.add_cog(LevelUpCookies(bot))
+async def setup(bot):
+    await bot.add_cog(LevelUpCookies(bot))

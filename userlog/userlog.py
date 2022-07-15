@@ -84,7 +84,7 @@ class UserLog(commands.Cog):
         embed = discord.Embed(
             colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
         )
-        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
+        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon)
         embed.title = "**__User Log settings:__**"
 
         embed.set_footer(text="*required to function properly")
@@ -121,10 +121,10 @@ class UserLog(commands.Cog):
         embed.set_footer(text=f"User ID: {member.id}")
         embed.set_author(
             name=f"{member.name} has joined the guild",
-            url=member.avatar_url,
-            icon_url=member.avatar_url,
+            url=member.avatar,
+            icon_url=member.avatar,
         )
-        embed.set_thumbnail(url=member.avatar_url)
+        embed.set_thumbnail(url=member.avatar)
         await channel.send(embed=embed)
 
     @commands.Cog.listener()
@@ -148,8 +148,8 @@ class UserLog(commands.Cog):
         embed.set_footer(text=f"User ID: {member.id}")
         embed.set_author(
             name=f"{member.name} has left the guild",
-            url=member.avatar_url,
-            icon_url=member.avatar_url,
+            url=member.avatar,
+            icon_url=member.avatar,
         )
-        embed.set_thumbnail(url=member.avatar_url)
+        embed.set_thumbnail(url=member.avatar)
         await channel.send(embed=embed)

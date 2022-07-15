@@ -1,5 +1,5 @@
 from .pick import Pick
 
 
-def setup(bot):
-    bot.add_cog(Pick(bot))
+async def setup(bot):
+    await bot.add_cog(Pick(bot))

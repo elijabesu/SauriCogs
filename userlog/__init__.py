@@ -1,5 +1,5 @@
 from .userlog import UserLog
 
 
-def setup(bot):
-    bot.add_cog(UserLog(bot))
+async def setup(bot):
+    await bot.add_cog(UserLog(bot))

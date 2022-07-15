@@ -77,7 +77,7 @@ class LevelUpCookies(commands.Cog):
             )
             embed.set_author(
                 name=f"Cookie rewards for {ctx.guild.name}",
-                icon_url=ctx.guild.icon_url,
+                icon_url=ctx.guild.icon,
             )
             page_list.append(embed)
         await menu(ctx, page_list, DEFAULT_CONTROLS)

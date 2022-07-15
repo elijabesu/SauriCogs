@@ -73,7 +73,7 @@ class Forwarding(commands.Cog):
                 description=message.content,
                 timestamp=message.created_at,
             )
-            embed.set_author(name=message.author, icon_url=message.author.avatar_url)
+            embed.set_author(name=message.author, icon_url=message.author.avatar)
             embed.set_footer(text=f"User ID: {message.author.id}")
             await message.author.send("Message has been delivered.")
         else:
@@ -82,7 +82,7 @@ class Forwarding(commands.Cog):
                 description=message.content,
                 timestamp=message.created_at,
             )
-            embed.set_author(name=message.author, icon_url=message.author.avatar_url)
+            embed.set_author(name=message.author, icon_url=message.author.avatar)
             embed.set_image(url=message.attachments[0].url)
             embed.set_footer(text=f"User ID: {message.author.id}")
             await message.author.send(
@@ -173,7 +173,7 @@ class Forwarding(commands.Cog):
         embed = discord.Embed(
             colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
         )
-        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon_url)
+        embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon)
         embed.title = "**__Unique Name settings:__**"
         embed.set_footer(text="*required to function properly")
 
