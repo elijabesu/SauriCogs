@@ -20,7 +20,7 @@ class Cookies(commands.Cog):
     Collect cookies and steal from others.
     """
 
-    __version__ = "1.2.3"
+    __version__ = "1.3.0"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -518,17 +518,17 @@ class Cookies(commands.Cog):
     async def cookieset_reset(
         self, ctx: commands.Context, confirmation: typing.Optional[bool]
     ):
-        """Delete all cookies from all members."""
+        """Delete all cookies from all users."""
         if not confirmation:
             return await ctx.send(
-                "This will delete **all** cookies from all members. This action **cannot** be undone.\n"
+                "This will delete **all** cookies from all users. This action **cannot** be undone.\n"
                 f"If you're sure, type `{ctx.clean_prefix}cookieset reset yes`."
             )
         if await self.config.is_global():
             await self.config.clear_all_users()
         else:
             await self.config.clear_all_members(ctx.guild)
-        await ctx.send("All cookies have been deleted from all members.")
+        await ctx.send("All cookies have been deleted from all users.")
 
     @cookieset.command(name="rate")
     async def cookieset_rate(
@@ -548,6 +548,18 @@ class Cookies(commands.Cog):
         await ctx.send(
             f"Set the exchange rate {rate}. This means that 100 {currency} will give you {test_amount} :cookie:"
         )
+
+    @cookieset.command(name="resetcooldown", aliases=["resetcd"])
+    async def cookieset_resetcd(self, ctx: commands.Context, confirmation: typing.Optional[bool]):
+        """Reset all cooldowns from all users."""
+        if not confirmation:
+            return await ctx.send(
+                "This will delete both `[p]cookie` and `[p]steal` cooldowns from all users.\n"
+                f"If you're sure, type `{ctx.clean_prefix}cookieset resetcd yes`."
+            )
+
+        await self._reset_cooldowns(ctx)
+        await ctx.send("All cooldowns have been deleted from all users.")
 
     @cookieset.command(name="settings")
     async def cookieset_settings(self, ctx: commands.Context):
@@ -708,3 +720,16 @@ class Cookies(commands.Cog):
             else self.config.member(user)
         )
         return await conf.cookies()
+
+    async def _reset_cooldowns(self, ctx):
+        if await self.config.is_global():
+            users = self.config._get_base_group(self.config.USER)
+            async with users.all() as all_users:
+                for user in all_users:
+                    all_users[user]["next_cookie"] = 0
+        else:
+            members = self.config._get_base_group(self.config.MEMBER)
+            async with members.all() as all_members:
+                cur_guild = str(ctx.guild.id)
+                for m in all_members[cur_guild]:
+                    all_members[cur_guild][m]["next_cookie"] = 0
