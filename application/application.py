@@ -15,7 +15,7 @@ class Application(commands.Cog):
     Receive and moderate staff applications with customizable questions.
     """
 
-    __version__ = "1.4.0"
+    __version__ = "2.0.0a"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -160,6 +160,45 @@ class Application(commands.Cog):
         await ctx.author.send(
             "Your application has been sent to the Admins, thank you!"
         )
+
+    @commands.command()
+    async def sendappl(self, ctx):
+        class MyModal(discord.ui.Modal, title="Staff application"):
+            position = discord.ui.TextInput(label="Position")
+            # name = discord.ui.TextInput(label="Name")
+            age = discord.ui.TextInput(label="Age")
+            timezone = discord.ui.TextInput(label="Timezone")
+            active_hours = discord.ui.TextInput(label="Active hours per day")
+            # active_days = discord.ui.TextInput(label="Active days per week")
+            experience = discord.ui.TextInput(label="Previous experience", style=discord.TextStyle.paragraph)
+            # reason = discord.ui.TextInput(label="Reason for applying", style=discord.TextStyle.paragraph)
+
+            async def on_submit(self, interaction):
+                author = interaction.user
+                await interaction.response.send_message(f"Thanks for applying, {author.name}!", ephemeral=True)
+                # await interaction.client.send_to_owners(content=f"User: {self.name}\nResponse: {self.answer}")
+                embed = discord.Embed(timestamp=datetime.datetime.now())
+                embed.title = "New application!"
+                embed.set_footer(
+                    text=f"{author.name}#{author.discriminator} ({author.id})",
+                    icon_url=author.avatar
+                )
+                embed.add_field(name="Position:", value=self.position)
+                # embed.add_field(name="Name", value=self.name)
+                embed.add_field(name="Age", value=self.age)
+                embed.add_field(name="Timezone", value=self.timezone)
+                embed.add_field(name="Active hours/day", value=self.active_hours)
+                # embed.add_field(name="Active days/week", value=self.active_days)
+                embed.add_field(name="Previous experience", value=self.experience, inline=False)
+                # embed.add_field(name="Reason", value=self.reason, inline=False)
+                await interaction.client.send_to_owners(embed=embed)
+
+        class MyView(discord.ui.View):
+            @discord.ui.button(label="Apply", style=discord.ButtonStyle.gray)
+            async def button_callback(self, interaction, button):
+                await interaction.response.send_modal(MyModal())
+
+        await ctx.send(content="Click that shit!", view=MyView())
 
     @checks.admin_or_permissions(administrator=True)
     @commands.group(autohelp=True, aliases=["setapply", "applicationset"])
