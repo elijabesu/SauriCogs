@@ -27,18 +27,16 @@ class Application(commands.Cog):
             accepter_id=None,
             channel_id=None,
             questions=[
-                ["What position are you applying for?", "Position", 120],
-                ["What is your name?", "Name", 120],
-                ["How old are you?", "Age", 120],
-                ["What timezone are you in? (Google is your friend.)", "Timezone", 120],
-                ["How many days per week can you be active?", "Active days/week", 120],
-                ["How many hours per day can you be active?", "Active hours/day", 120],
-                [
-                    "Do you have any previous experience? If so, please describe.",
-                    "Previous experience",
-                    120,
-                ],
-                ["Why do you want to be a member of our staff?", "Reason", 120],
+                {
+                    "position": "moderator",
+                    "questions": [
+                        "Age:",
+                        "Timezone:",
+                        "Active hours per day",
+                        "Active days per week",
+                        "Describe your previous experience:",
+                    ],
+                },
             ],
         )
 
@@ -206,6 +204,15 @@ class Application(commands.Cog):
     @checks.bot_has_permissions(manage_channels=True, manage_roles=True)
     async def applyset(self, ctx: commands.Context):
         """Various Application settings."""
+
+    @applyset.group(autohelp=True, name="positions")
+    async def applyset_positions(self, ctx: commands.Context):
+        """Manage open positions."""
+
+    @positions.command(name="add")
+    async def applyset_positions_add(self, ctx: commands.Context):
+        """Add a new open position."""
+        # TODO
 
     @applyset.command(name="questions")
     async def applyset_questions(self, ctx: commands.Context):
