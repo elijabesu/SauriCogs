@@ -6,6 +6,7 @@ from discord.utils import get
 
 from redbot.core import Config, checks, commands
 from redbot.core.utils.predicates import MessagePredicate
+from redbot.core.utils.chat_formatting import humanize_list
 
 from redbot.core.bot import Red
 
@@ -26,18 +27,8 @@ class Application(commands.Cog):
             applicant_id=None,
             accepter_id=None,
             channel_id=None,
-            questions=[
-                {
-                    "position": "moderator",
-                    "questions": [
-                        "Age:",
-                        "Timezone:",
-                        "Active hours per day",
-                        "Active days per week",
-                        "Describe your previous experience:",
-                    ],
-                },
-            ],
+            applications={},
+            message_id=None,
         )
 
     async def red_delete_data_for_user(self, *, requester, user_id):
@@ -54,6 +45,7 @@ class Application(commands.Cog):
     @checks.bot_has_permissions(manage_roles=True)
     async def apply(self, ctx: commands.Context):
         """Apply to be a staff member."""
+        # TODO delete
         if not await self.config.guild(ctx.guild).channel_id():
             return await ctx.send(
                 "Uh oh, the configuration is not correct. Ask the Admins to set it."
@@ -161,6 +153,7 @@ class Application(commands.Cog):
 
     @commands.command()
     async def sendappl(self, ctx):
+        # TODO rewrite
         class MyModal(discord.ui.Modal, title="Staff application"):
             position = discord.ui.TextInput(label="Position")
             # name = discord.ui.TextInput(label="Name")
@@ -198,10 +191,10 @@ class Application(commands.Cog):
 
         await ctx.send(content="Click that shit!", view=MyView())
 
-    @checks.admin_or_permissions(administrator=True)
+    # @checks.admin_or_permissions(administrator=True)
     @commands.group(autohelp=True, aliases=["setapply", "applicationset"])
     @commands.guild_only()
-    @checks.bot_has_permissions(manage_channels=True, manage_roles=True)
+    # @checks.bot_has_permissions(manage_channels=True, manage_roles=True)
     async def applyset(self, ctx: commands.Context):
         """Various Application settings."""
 
@@ -209,72 +202,49 @@ class Application(commands.Cog):
     async def applyset_positions(self, ctx: commands.Context):
         """Manage open positions."""
 
-    @positions.command(name="add")
-    async def applyset_positions_add(self, ctx: commands.Context):
+    @applyset_positions.command(name="add")
+    async def applyset_positions_add(self, ctx: commands.Context, role: discord.Role):
         """Add a new open position."""
-        # TODO
-
-    @applyset.command(name="questions")
-    async def applyset_questions(self, ctx: commands.Context):
-        """Set custom application questions."""
-        current_questions = "**Current questions:**"
-        for question in await self.config.guild(ctx.guild).questions():
-            try:
-                current_questions += "\n" + question[0]
-            except TypeError:
-                current_questions = (
-                    "Uh oh, couldn't fetch your questions.\n"
-                    + await self._default_questions_string()
-                )
-                break
-        await ctx.send(current_questions)
-
         same_context = MessagePredicate.same_context(ctx)
-        valid_int = MessagePredicate.valid_int(ctx)
-
-        await ctx.send("How many questions?")
-        try:
-            number_of_questions = await self.bot.wait_for(
-                "message", timeout=60, check=valid_int
-            )
-        except asyncio.TimeoutError:
-            return await ctx.send("You took too long. Try again, please.")
+        valid_bool = MessagePredicate.yes_or_no(ctx)
 
         list_of_questions = []
-        for _ in range(int(number_of_questions.content)):
+        for _ in range(5):
             question_list = []
 
-            await ctx.send("Enter question: ")
-            try:
-                custom_question = await self.bot.wait_for(
-                    "message", timeout=60, check=same_context
-                )
-            except asyncio.TimeoutError:
-                return await ctx.send("You took too long. Try again, please.")
+            await ctx.send("Enter a question (keep it under 45 characters): ")
+            while True:
+                try:
+                    custom_question = await self.bot.wait_for(
+                        "message", timeout=60, check=same_context
+                    )
+                except asyncio.TimeoutError:
+                    return await ctx.send("You took too long. Try again, please.")
+                if len(custom_question.content) <= 45:
+                    break
             question_list.append(custom_question.content)
 
-            await ctx.send(
-                "Enter how the question will look in final embed (f.e. Name): "
-            )
+            await ctx.send("Do you expect a long answer? (yes/no)")
             try:
-                shortcut = await self.bot.wait_for(
-                    "message", timeout=60, check=same_context
-                )
+                await self.bot.wait_for("message", timeout=30, check=valid_bool)
             except asyncio.TimeoutError:
                 return await ctx.send("You took too long. Try again, please.")
-            question_list.append(shortcut.content)
-
-            await ctx.send("Enter how many seconds the applicant has to answer: ")
-            try:
-                time = await self.bot.wait_for("message", timeout=60, check=valid_int)
-            except asyncio.TimeoutError:
-                return await ctx.send("You took too long. Try again, please.")
-            question_list.append(int(valid_int.result))
+            question_list.append(valid_bool.result)
 
             list_of_questions.append(question_list)
 
-        await self.config.guild(ctx.guild).questions.set(list_of_questions)
-        await ctx.send("Done!")
+        await self.config.guild(ctx.guild).applications.set_raw(
+            role.id, value={"questions": list_of_questions}
+        )
+        await ctx.send("Done.")
+
+    @applyset_positions.command(name="remove", aliases=["del", "rem", "delete"])
+    async def applyset_positions_del(self, ctx: commands.Context, role: discord.Role):
+        applications = await self.config.guild(ctx.guild).applications()
+        if role.id not in applications:
+            return await ctx.send("I have no records of this position.")
+        await self.config.guild(ctx.guild).applications.clear_raw(role.id)
+        await ctx.send("Done.")
 
     @applyset.command(name="applicant")
     async def applyset_applicant(
@@ -326,7 +296,7 @@ class Application(commands.Cog):
         accepter = accepter.name if accepter else "None (guild admins)"
         applicant = ctx.guild.get_role(data["applicant_id"])
         applicant = applicant.name if applicant else "None"
-        questions = "".join(question[0] + "\n" for question in data["questions"])
+        positions = humanize_list([ctx.guild.get_role(int(role_id)).name for role_id in list(data["applications"])])
         embed = discord.Embed(
             colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
         )
@@ -337,7 +307,7 @@ class Application(commands.Cog):
         embed.add_field(name="Channel*:", value=channel)
         embed.add_field(name="Accepter:", value=accepter)
         embed.add_field(name="Applicant:", value=applicant)
-        embed.add_field(name="Questions:", value=questions.strip())
+        embed.add_field(name="Positions:", value=positions)
         await ctx.send(embed=embed)
 
     @commands.command()
