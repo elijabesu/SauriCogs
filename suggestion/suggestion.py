@@ -13,7 +13,7 @@ class Suggestion(commands.Cog):
     Per guild, as well as global, suggestion box voting system.
     """
 
-    __version__ = "1.7.0"
+    __version__ = "1.7.1"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -587,6 +587,8 @@ class Suggestion(commands.Cog):
             ctx, op_info
         )
         suggested_in_guild = self.bot.get_guild(settings["guild_id"])
+        if suggested_in_guild is None:
+            suggested_in_guild = ctx.guild
 
         atext = "New suggestion"
         if settings["finished"]:
@@ -712,6 +714,8 @@ class Suggestion(commands.Cog):
             ctx, op_info
         )
         suggested_in_guild = self.bot.get_guild(await self.config.custom("SUGGESTION", server, suggestion_id).guild_id())
+        if suggested_in_guild is None:
+            suggested_in_guild = ctx.guild
 
         approved = "Approved" if approve else "Rejected"
 
