@@ -24,13 +24,28 @@ class Pick(commands.Cog):
     @commands.command()
     @commands.guild_only()
     @checks.mod()
-    async def pick(self, ctx: commands.Context, *, role: typing.Optional[discord.Role]):
+    async def pick(self, ctx: commands.Context, embed: typing.Optional[bool]=True, *, role: typing.Optional[discord.Role]):
         """Pick a random user. *Output is a user ID.*
 
         I suggest using [nestedcommands by tmerc](https://github.com/tmercswims/tmerc-cogs)
         Example of usage `[p]say Congratulations <@$(pick)>! You won!`"""
         if not role or not role.members:
+            role = ctx.guild.default_role
             winner = random.choice(ctx.guild.members)
         else:
+            role = role
             winner = random.choice(role.members)
-        await ctx.send(f"{winner.id}")
+        if embed:
+            embed: discord.Embed = discord.Embed()
+            embed.title = name=f"{winner}"
+            embed.description = f"Mention: {winner.mention} - Id: {winner.id}"
+            embed.color = 0xffd700
+            embed.set_thumbnail(url=winner.avatar_url)
+            embed.add_field(
+                name="Chosen among the members of the role:",
+                value=f"{role.mention} ({role.id})")
+            embed.set_author(name=winner, icon_url=winner.avatar_url)
+            embed.set_footer(text="Chosen by the cog Pick.", icon_url="https://static.vecteezy.com/ti/vecteur-libre/p1/2477187-icone-de-decoration-etoile-doree-gratuit-vectoriel.jpg")
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send(f"{winner.id}")
