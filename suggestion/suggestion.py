@@ -13,7 +13,7 @@ class Suggestion(commands.Cog):
     Per guild, as well as global, suggestion box voting system.
     """
 
-    __version__ = "1.7.1"
+    __version__ = "1.7.2"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -150,9 +150,11 @@ class Suggestion(commands.Cog):
         ctx: commands.Context,
         suggestion_id: int,
         is_global: typing.Optional[bool],
+        *,
+        reason: typing.Optional[str],
     ):
-        """Approve a suggestion."""
-        await self._finish_suggestion(ctx, suggestion_id, is_global, True, None)
+        """Approve a suggestion. Reason is optional."""
+        await self._finish_suggestion(ctx, suggestion_id, is_global, True, reason)
 
     @checks.admin()
     @commands.command()
@@ -195,16 +197,18 @@ class Suggestion(commands.Cog):
                 channel = ctx.guild.get_channel(
                     await self.config.guild(ctx.guild).reject_id()
                 )
+            elif ctx.guild.get_channel(
+                await self.config.guild(ctx.guild).approve_id()
+            ):
+                channel = ctx.guild.get_channel(
+                    await self.config.guild(ctx.guild).approve_id()
+                )
             else:
                 channel = ctx.guild.get_channel(
                     await self.config.guild(ctx.guild).suggest_id()
                 )
         msg_id = await self.config.custom("SUGGESTION", server, suggestion_id).msg_id()
         if msg_id != 0:
-            if not await self.config.custom(
-                "SUGGESTION", server, suggestion_id
-            ).rejected():
-                return await ctx.send("This suggestion hasn't been rejected.")
             if await self.config.custom("SUGGESTION", server, suggestion_id).reason():
                 return await ctx.send("This suggestion already has a reason.")
             content, embed = await self._build_suggestion(
