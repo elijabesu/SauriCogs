@@ -104,7 +104,7 @@ class UserLog(commands.Cog):
         )
         if not channel:
             return
-        time = datetime.datetime.utcnow()
+        time = datetime.now(timezone.utc)
         users = len(member.guild.members)
         since_created = (time - member.created_at).days
         user_created = member.created_at.strftime("%Y-%m-%d, %H:%M")
