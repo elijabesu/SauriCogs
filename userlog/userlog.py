@@ -106,10 +106,9 @@ class UserLog(commands.Cog):
             return
         time = datetime.now(timezone.utc)
         users = len(member.guild.members)
-        since_created = (time - member.created_at).days
-        user_created = member.created_at.strftime("%Y-%m-%d, %H:%M")
+        user_created = member.strftime("%Y-%m-%d, %H:%M")
 
-        created_on = f"{user_created} ({since_created} days ago)"
+        created_on = f"{user_created}"
 
         embed = discord.Embed(
             description=f"{member.mention} ({member.name}#{member.discriminator})",
