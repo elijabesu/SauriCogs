@@ -104,11 +104,12 @@ class UserLog(commands.Cog):
         )
         if not channel:
             return
-        time = datetime.now(timezone.utc)
+        time = datetime.datetime.utcnow()
         users = len(member.guild.members)
-        user_created = member.strftime("%Y-%m-%d, %H:%M")
+        since_created = (time - member.created_at).days
+        user_created = member.created_at.strftime("%Y-%m-%d, %H:%M")
 
-        created_on = f"{user_created}"
+        created_on = f"{user_created} ({since_created} days ago)"
 
         embed = discord.Embed(
             description=f"{member.mention} ({member.name}#{member.discriminator})",
