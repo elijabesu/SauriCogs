@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timezone
 import discord
 import typing
 
@@ -82,7 +82,7 @@ class UserLog(commands.Cog):
         channel = ctx.guild.get_channel(await self.config.guild(ctx.guild).channel())
         channel = "None" if not channel else channel.mention
         embed = discord.Embed(
-            colour=await ctx.embed_colour(), timestamp=datetime.datetime.now()
+            colour=await ctx.embed_colour(), timestamp=datetime.now()
         )
         embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon)
         embed.title = "**__User Log settings:__**"
@@ -104,7 +104,7 @@ class UserLog(commands.Cog):
         )
         if not channel:
             return
-        time = datetime.datetime.utcnow()
+        time = datetime.now(timezone.utc)
         users = len(member.guild.members)
         since_created = (time - member.created_at).days
         user_created = member.created_at.strftime("%Y-%m-%d, %H:%M")
@@ -137,7 +137,7 @@ class UserLog(commands.Cog):
         )
         if not channel:
             return
-        time = datetime.datetime.utcnow()
+        time = datetime.now()
         users = len(member.guild.members)
         embed = discord.Embed(
             description=f"{member.mention} ({member.name}#{member.discriminator})",
